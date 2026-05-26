@@ -1,17 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { useState } from "react"
 
-import WelcomeScreen from "./components/WelcomeScreen"
+import WelcomeScreen from "./components/WelcomeScreen.jsx"
 
-import Home from "./components/Home"
-import Register from "./components/Register"
-import Success from "./components/Success"
-import Scanner from "./components/Scanner"
-import Payment from "./components/Payment"
+import Home from "./components/Home.jsx"
+import Register from "./components/Register.jsx"
+import Success from "./components/Success.jsx"
+import Scanner from "./components/Scanner.jsx"
+import Payment from "./components/Payment.jsx"
 
 // OPTIONAL
-// Create this later if you want admin dashboard
-// import Admin from "./components/Admin"
+// import Admin from "./components/Admin.jsx"
 
 export default function App() {
 
@@ -35,25 +34,25 @@ export default function App() {
 
             <Routes>
 
-              {/* HOME PAGE */}
+              {/* HOME */}
               <Route
                 path="/"
                 element={<Home />}
               />
 
-              {/* REGISTER PAGE */}
+              {/* REGISTER */}
               <Route
                 path="/register"
                 element={<Register />}
               />
 
-              {/* PAYMENT PAGE */}
+              {/* PAYMENT */}
               <Route
                 path="/payment"
                 element={<Payment />}
               />
 
-              {/* SUCCESS PAGE */}
+              {/* SUCCESS */}
               <Route
                 path="/success"
                 element={<Success />}
@@ -65,7 +64,7 @@ export default function App() {
                 element={<Scanner />}
               />
 
-              {/* OPTIONAL ADMIN PAGE */}
+              {/* OPTIONAL ADMIN */}
               {/*
               <Route
                 path="/admin"
@@ -73,26 +72,32 @@ export default function App() {
               />
               */}
 
-              {/* 404 PAGE */}
+              {/* 404 */}
               <Route
                 path="*"
                 element={
 
-                  <div style={{
-                    background: "black",
-                    color: "red",
-                    height: "100vh",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexDirection: "column",
-                    fontFamily: "Arial"
-                  }}>
+                  <div
+                    style={{
+                      background: "black",
+                      color: "red",
+                      minHeight: "100vh",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexDirection: "column",
+                      fontFamily: "Arial",
+                      textAlign: "center",
+                      padding: "20px"
+                    }}
+                  >
 
-                    <h1 style={{
-                      fontSize: "70px",
-                      marginBottom: "10px"
-                    }}>
+                    <h1
+                      style={{
+                        fontSize: "80px",
+                        marginBottom: "10px"
+                      }}
+                    >
                       404
                     </h1>
 
@@ -100,9 +105,12 @@ export default function App() {
                       PAGE NOT FOUND
                     </h2>
 
-                    <p style={{
-                      color: "white"
-                    }}>
+                    <p
+                      style={{
+                        color: "white",
+                        marginTop: "10px"
+                      }}
+                    >
                       MGS SYSTEM ERROR
                     </p>
 
@@ -110,14 +118,16 @@ export default function App() {
                       onClick={() => window.location.href = "/"}
 
                       style={{
-                        marginTop: "20px",
-                        padding: "15px 30px",
+                        marginTop: "25px",
+                        padding: "15px 35px",
                         background: "red",
                         border: "none",
-                        borderRadius: "10px",
+                        borderRadius: "12px",
                         color: "white",
                         cursor: "pointer",
-                        fontSize: "16px"
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        boxShadow: "0 0 15px rgba(255,0,0,0.6)"
                       }}
                     >
 
