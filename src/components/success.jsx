@@ -7,8 +7,7 @@ import { db } from "../firebase/config"
 import {
   doc,
   setDoc
-}
-from "firebase/firestore"
+} from "firebase/firestore"
 
 export default function Success() {
 
@@ -19,52 +18,67 @@ export default function Success() {
 
     async function generateTicket() {
 
-      const customer =
-        JSON.parse(localStorage.getItem("mgsCustomer"))
+      try {
 
-      if (!customer) return
+        const customer =
+          JSON.parse(
+            localStorage.getItem("mgsCustomer")
+          )
 
-      const ticketId = uuidv4()
+        if (!customer) return
 
-      const newTicket = {
+        const ticketId = uuidv4()
 
-        id: ticketId,
+        const newTicket = {
 
-        name: customer.fullName,
+          id: ticketId,
 
-        email: customer.email,
+          name:
+            customer.fullName || "Guest",
 
-        phone: customer.phone,
+          email:
+            customer.email || "",
 
-        type: customer.ticketType,
+          phone:
+            customer.phone || "",
 
-        quantity: customer.quantity,
+          type:
+            customer.ticketType || "vibe",
 
-        total: customer.total,
+          quantity:
+            Number(customer.quantity) || 1,
 
-        used: false,
+          total:
+            Number(customer.total) || 0,
 
-        status: "VALID",
+          used: false,
 
-        createdAt: new Date().toISOString()
+          status: "VALID",
 
-      }
+          createdAt:
+            new Date().toISOString()
 
-      // SAVE TO FIREBASE
-      await setDoc(
-        doc(db, "tickets", ticketId),
-        newTicket
-      )
+        }
 
-      setTicket(newTicket)
-
-      // GENERATE QR
-      const qrImage =
-        await QRCode.toDataURL(
-          JSON.stringify(newTicket)
+        // SAVE TO FIREBASE
+        await setDoc(
+          doc(db, "tickets", ticketId),
+          newTicket
         )
 
-      setQr(qrImage)
+        // GENERATE QR
+        const qrCode =
+          await QRCode.toDataURL(ticketId)
+
+        setQr(qrCode)
+
+        setTicket(newTicket)
+
+      } catch (error) {
+
+        console.log(error)
+
+      }
 
     }
 
@@ -72,22 +86,24 @@ export default function Success() {
 
   }, [])
 
+  // LOADING SCREEN
   if (!ticket) {
 
     return (
 
       <div style={{
         minHeight: "100vh",
-        background: "black",
+        background: "#000",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        color: "white"
+        color: "white",
+        fontFamily: "Arial"
       }}>
 
-        <h2>
+        <h1>
           Generating Ticket...
-        </h2>
+        </h1>
 
       </div>
 
@@ -99,49 +115,71 @@ export default function Success() {
 
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(to bottom, #000, #111)",
-      color: "white",
+      background:
+        "linear-gradient(to bottom, #000, #111)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      padding: "20px"
+      padding: "20px",
+      fontFamily: "Arial"
     }}>
 
       <div style={{
-        background: "#111",
-        padding: "35px",
-        borderRadius: "25px",
-        textAlign: "center",
         width: "380px",
-        boxShadow: "0 0 30px rgba(255,0,0,0.6)"
+        background: "#111",
+        borderRadius: "25px",
+        padding: "30px",
+        boxShadow: "0 0 25px rgba(255,0,0,0.5)",
+        textAlign: "center",
+        color: "white"
       }}>
 
         <h1 style={{
           color: "red",
-          marginBottom: "10px",
-          letterSpacing: "3px"
+          marginBottom: "5px"
         }}>
-          MGS EVENT TICKET
+          MGS EVENT
         </h1>
 
+        <h2 style={{
+          marginTop: "0",
+          color: "#ccc",
+          fontSize: "18px"
+        }}>
+          EVENT TICKET
+        </h2>
+
         <p style={{
-          color: "#aaa",
+          color: "#999",
           marginBottom: "25px"
         }}>
-          JULY 31 - AUGUST 01
+          JULY 31 — AUGUST 01
         </p>
 
         <div style={{
           background: "#1a1a1a",
-          padding: "20px",
           borderRadius: "15px",
-          marginBottom: "25px"
+          padding: "20px",
+          marginBottom: "25px",
+          textAlign: "left"
         }}>
 
           <p>
             <strong>Name:</strong>
             {" "}
             {ticket.name}
+          </p>
+
+          <p>
+            <strong>Email:</strong>
+            {" "}
+            {ticket.email}
+          </p>
+
+          <p>
+            <strong>Phone:</strong>
+            {" "}
+            {ticket.phone}
           </p>
 
           <p>
@@ -177,7 +215,7 @@ export default function Success() {
 
           <img
             src={qr}
-            alt="QR Code"
+            alt="QR CODE"
             width="220"
           />
 
@@ -191,9 +229,9 @@ export default function Success() {
         </h3>
 
         <p style={{
-          fontSize: "14px",
-          wordBreak: "break-all",
-          color: "#ccc"
+          fontSize: "13px",
+          color: "#ccc",
+          wordBreak: "break-all"
         }}>
           {ticket.id}
         </p>
@@ -203,11 +241,11 @@ export default function Success() {
           background: "rgba(255,0,0,0.15)",
           padding: "12px",
           borderRadius: "10px",
-          color: "#ffb3b3",
-          fontSize: "14px"
+          fontSize: "14px",
+          color: "#ffb3b3"
         }}>
 
-          Present this QR code at the entrance for scanning.
+          Present this QR code at the gate for validation.
 
         </div>
 
