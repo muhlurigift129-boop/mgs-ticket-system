@@ -70,33 +70,41 @@ export default function Home() {
         </h3>
 
         <div style={{
-          marginBottom: "15px"
+          marginBottom: "20px"
         }}>
+
           <h2 style={{
-            margin: 0
+            margin: 0,
+            color: "white"
           }}>
             R300
           </h2>
 
           <p style={{
-            color: "#bbb"
+            color: "#bbb",
+            marginTop: "5px"
           }}>
             FULL EVENT ACCESS
           </p>
+
         </div>
 
         <div>
+
           <h2 style={{
-            margin: 0
+            margin: 0,
+            color: "white"
           }}>
             R100
           </h2>
 
           <p style={{
-            color: "#bbb"
+            color: "#bbb",
+            marginTop: "5px"
           }}>
             VIBE ACCESS
           </p>
+
         </div>
 
       </div>
@@ -110,8 +118,15 @@ export default function Home() {
         justifyContent: "center"
       }}>
 
+        {/* REGISTER BUTTON */}
         <button
-          onClick={() => navigate("/register")}
+          onClick={() => {
+
+            console.log("Navigating To Register")
+
+            navigate("/register")
+
+          }}
 
           style={{
             padding: "18px 50px",
@@ -122,14 +137,24 @@ export default function Home() {
             fontSize: "20px",
             cursor: "pointer",
             fontWeight: "bold",
-            boxShadow: "0 0 15px rgba(255,0,0,0.6)"
+            boxShadow: "0 0 15px rgba(255,0,0,0.6)",
+            transition: "0.3s"
           }}
         >
+
           GET TICKETS
+
         </button>
 
+        {/* QR BUTTON */}
         <button
-          onClick={() => navigate("/scanner")}
+          onClick={() => {
+
+            console.log("Navigating To Scanner")
+
+            navigate("/scanner")
+
+          }}
 
           style={{
             padding: "18px 40px",
@@ -138,10 +163,13 @@ export default function Home() {
             border: "1px solid red",
             borderRadius: "12px",
             fontSize: "18px",
-            cursor: "pointer"
+            cursor: "pointer",
+            transition: "0.3s"
           }}
         >
+
           QR SCANNER
+
         </button>
 
       </div>
