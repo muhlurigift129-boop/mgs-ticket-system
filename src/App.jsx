@@ -8,9 +8,7 @@ import Register from "./components/Register.jsx"
 import Success from "./components/Success.jsx"
 import Scanner from "./components/Scanner.jsx"
 import Payment from "./components/Payment.jsx"
-
-// OPTIONAL
-// import Admin from "./components/Admin.jsx"
+import Admin from "./components/Admin.jsx"
 
 export default function App() {
 
@@ -34,25 +32,25 @@ export default function App() {
 
             <Routes>
 
-              {/* HOME */}
+              {/* HOME PAGE */}
               <Route
                 path="/"
                 element={<Home />}
               />
 
-              {/* REGISTER */}
+              {/* REGISTER PAGE */}
               <Route
                 path="/register"
                 element={<Register />}
               />
 
-              {/* PAYMENT */}
+              {/* PAYMENT PAGE */}
               <Route
                 path="/payment"
                 element={<Payment />}
               />
 
-              {/* SUCCESS */}
+              {/* PAYMENT SUCCESS */}
               <Route
                 path="/success"
                 element={<Success />}
@@ -64,70 +62,101 @@ export default function App() {
                 element={<Scanner />}
               />
 
-              {/* OPTIONAL ADMIN */}
-              {/*
+              {/* ADMIN DASHBOARD */}
               <Route
                 path="/admin"
                 element={<Admin />}
               />
-              */}
 
-              {/* 404 */}
+              {/* 404 PAGE */}
               <Route
                 path="*"
                 element={
 
                   <div
                     style={{
-                      background: "black",
+                      background:
+                        "linear-gradient(to bottom, #000, #111)",
+
                       color: "red",
+
                       minHeight: "100vh",
+
                       display: "flex",
+
                       justifyContent: "center",
+
                       alignItems: "center",
+
                       flexDirection: "column",
+
                       fontFamily: "Arial",
+
                       textAlign: "center",
+
                       padding: "20px"
                     }}
                   >
 
                     <h1
                       style={{
-                        fontSize: "80px",
-                        marginBottom: "10px"
+                        fontSize: "90px",
+                        marginBottom: "10px",
+                        textShadow:
+                          "0 0 20px rgba(255,0,0,0.8)"
                       }}
                     >
                       404
                     </h1>
 
-                    <h2>
+                    <h2
+                      style={{
+                        letterSpacing: "3px"
+                      }}
+                    >
                       PAGE NOT FOUND
                     </h2>
 
                     <p
                       style={{
-                        color: "white",
-                        marginTop: "10px"
+                        color: "#ccc",
+                        marginTop: "10px",
+                        maxWidth: "400px"
                       }}
                     >
-                      MGS SYSTEM ERROR
+                      The page you are trying to access
+                      does not exist inside the MGS
+                      production system.
                     </p>
 
                     <button
-                      onClick={() => window.location.href = "/"}
+                      onClick={() => {
+                        window.location.href = "/"
+                      }}
 
                       style={{
-                        marginTop: "25px",
-                        padding: "15px 35px",
+                        marginTop: "30px",
+
+                        padding: "15px 40px",
+
                         background: "red",
+
                         border: "none",
+
                         borderRadius: "12px",
+
                         color: "white",
+
                         cursor: "pointer",
+
                         fontSize: "16px",
+
                         fontWeight: "bold",
-                        boxShadow: "0 0 15px rgba(255,0,0,0.6)"
+
+                        boxShadow:
+                          "0 0 20px rgba(255,0,0,0.6)",
+
+                        transition: "0.3s"
                       }}
                     >
 

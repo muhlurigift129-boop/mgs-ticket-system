@@ -38,10 +38,23 @@ ${ticket.id}
 Present your QR code at the entrance.`
 
     window.open(
-
-      `https://wa.me/${ticket.phone}?text=${encodeURIComponent(message)}`
-
+      `https://wa.me/${ticket.phone}?text=${encodeURIComponent(message)}`,
+      "_blank"
     )
+
+  }
+
+  // DOWNLOAD TICKET
+  function downloadTicket() {
+
+    window.print()
+
+  }
+
+  // BACK HOME
+  function goHome() {
+
+    window.location.href = "/"
 
   }
 
@@ -55,12 +68,26 @@ Present your QR code at the entrance.`
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        color: "white"
+        color: "white",
+        fontFamily: "Arial"
       }}>
 
-        <h1>
-          Loading Ticket...
-        </h1>
+        <div style={{
+          textAlign: "center"
+        }}>
+
+          <h1 style={{
+            color: "red",
+            marginBottom: "20px"
+          }}>
+            MGS
+          </h1>
+
+          <h2>
+            Loading Ticket...
+          </h2>
+
+        </div>
 
       </div>
 
@@ -77,104 +104,145 @@ Present your QR code at the entrance.`
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      padding: "20px"
+      padding: "20px",
+      fontFamily: "Arial"
     }}>
 
       <div style={{
         background: "#111",
         padding: "35px",
-        borderRadius: "20px",
-        width: "380px",
+        borderRadius: "25px",
+        width: "400px",
         textAlign: "center",
-        boxShadow: "0 0 30px rgba(255,0,0,0.6)"
+        boxShadow: "0 0 35px rgba(255,0,0,0.6)",
+        border: "1px solid rgba(255,0,0,0.3)"
       }}>
 
-        <h1 style={{
-          color: "red",
-          marginBottom: "10px",
-          letterSpacing: "2px"
-        }}>
-          PAYMENT SUCCESS
-        </h1>
+        {/* HEADER */}
 
-        <p style={{
-          color: "#aaa",
+        <div style={{
           marginBottom: "25px"
         }}>
-          MGS EVENT TICKET
-        </p>
+
+          <h1 style={{
+            color: "red",
+            marginBottom: "10px",
+            letterSpacing: "3px",
+            fontSize: "32px"
+          }}>
+            PAYMENT SUCCESS
+          </h1>
+
+          <p style={{
+            color: "#999",
+            fontSize: "15px"
+          }}>
+            MGS EVENT OFFICIAL TICKET
+          </p>
+
+        </div>
+
+        {/* CUSTOMER INFO */}
 
         <div style={{
           background: "#1a1a1a",
-          padding: "20px",
-          borderRadius: "15px",
-          marginBottom: "25px"
+          padding: "25px",
+          borderRadius: "18px",
+          marginBottom: "25px",
+          textAlign: "left",
+          border: "1px solid #222"
         }}>
 
           <h2 style={{
             color: "white",
-            marginBottom: "15px"
+            marginBottom: "20px",
+            textAlign: "center"
           }}>
             {ticket.name}
           </h2>
 
-          <p>
+          <p style={infoStyle}>
             <strong>Email:</strong>
             {" "}
             {ticket.email}
           </p>
 
-          <p>
+          <p style={infoStyle}>
             <strong>Phone:</strong>
             {" "}
             {ticket.phone}
           </p>
 
-          <p>
+          <p style={infoStyle}>
             <strong>Ticket:</strong>
             {" "}
-            {ticket.ticketType}
+            {
+
+              ticket.ticketType === "full"
+
+                ? "FULL EVENT"
+
+                : "VIBE ONLY"
+
+            }
           </p>
 
-          <p>
+          <p style={infoStyle}>
             <strong>Quantity:</strong>
             {" "}
             {ticket.quantity}
           </p>
 
-          <p>
+          <p style={infoStyle}>
             <strong>Total:</strong>
             {" "}
             R{ticket.total}
           </p>
 
-          <p style={{
-            color: "lime",
-            marginTop: "15px",
-            fontWeight: "bold"
+          <div style={{
+            marginTop: "20px",
+            background: "rgba(0,255,0,0.12)",
+            padding: "12px",
+            borderRadius: "10px",
+            textAlign: "center"
           }}>
-            STATUS: PAID ✅
-          </p>
+
+            <span style={{
+              color: "lime",
+              fontWeight: "bold",
+              letterSpacing: "1px"
+            }}>
+              STATUS: PAID ✅
+            </span>
+
+          </div>
 
         </div>
 
-        {/* QR CODE */}
+        {/* QR */}
+
         {
 
           ticket.qr && (
 
             <div style={{
-              background: "white",
-              padding: "15px",
-              borderRadius: "15px",
-              display: "inline-block"
+              marginBottom: "25px"
             }}>
 
-              <img
-                src={ticket.qr}
-                alt="QR Code"
-                width="220"
-              />
+              <div style={{
+                background: "white",
+                padding: "18px",
+                borderRadius: "18px",
+                display: "inline-block"
+              }}>
+
+                <img
+                  src={ticket.qr}
+                  alt="QR Code"
+                  width="230"
+                />
+
+              </div>
 
             </div>
 
@@ -183,29 +251,55 @@ Present your QR code at the entrance.`
         }
 
         {/* TICKET ID */}
+
         <div style={{
-          marginTop: "20px"
+          background: "#1a1a1a",
+          padding: "15px",
+          borderRadius: "12px",
+          marginBottom: "25px"
         }}>
 
           <h3 style={{
-            color: "red"
+            color: "red",
+            marginBottom: "10px"
           }}>
-            Ticket ID
+            TICKET ID
           </h3>
 
           <p style={{
-            fontSize: "13px",
-            wordBreak: "break-all",
-            color: "#ccc"
+            fontSize: "12px",
+            color: "#bbb",
+            wordBreak: "break-all"
           }}>
             {ticket.id}
           </p>
 
         </div>
 
-        {/* BUTTONS */}
+        {/* INFO */}
+
         <div style={{
-          marginTop: "30px",
+          background: "rgba(255,0,0,0.08)",
+          padding: "15px",
+          borderRadius: "12px",
+          marginBottom: "25px",
+          border: "1px solid rgba(255,0,0,0.2)"
+        }}>
+
+          <p style={{
+            color: "#ffb3b3",
+            fontSize: "14px",
+            lineHeight: "22px"
+          }}>
+            Present this QR code at the entrance.
+            Duplicate or fake tickets will be rejected automatically.
+          </p>
+
+        </div>
+
+        {/* BUTTONS */}
+
+        <div style={{
           display: "flex",
           flexDirection: "column",
           gap: "15px"
@@ -219,11 +313,12 @@ Present your QR code at the entrance.`
               padding: "15px",
               background: "#25D366",
               border: "none",
-              borderRadius: "10px",
+              borderRadius: "12px",
               color: "white",
               fontWeight: "bold",
               cursor: "pointer",
-              fontSize: "16px"
+              fontSize: "16px",
+              transition: "0.3s"
             }}
 
           >
@@ -234,13 +329,13 @@ Present your QR code at the entrance.`
 
           <button
 
-            onClick={() => window.print()}
+            onClick={downloadTicket}
 
             style={{
               padding: "15px",
               background: "red",
               border: "none",
-              borderRadius: "10px",
+              borderRadius: "12px",
               color: "white",
               fontWeight: "bold",
               cursor: "pointer",
@@ -253,6 +348,27 @@ Present your QR code at the entrance.`
 
           </button>
 
+          <button
+
+            onClick={goHome}
+
+            style={{
+              padding: "15px",
+              background: "#222",
+              border: "1px solid #333",
+              borderRadius: "12px",
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+              fontSize: "16px"
+            }}
+
+          >
+
+            BACK HOME
+
+          </button>
+
         </div>
 
       </div>
@@ -260,5 +376,13 @@ Present your QR code at the entrance.`
     </div>
 
   )
+
+}
+
+const infoStyle = {
+
+  marginBottom: "12px",
+  color: "#ddd",
+  fontSize: "15px"
 
 }

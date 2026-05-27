@@ -3,16 +3,13 @@ import QRCode from "qrcode"
 import { v4 as uuidv4 } from "uuid"
 
 import { db } from "../firebase/config"
-
-import {
-  doc,
-  setDoc
-} from "firebase/firestore"
+import { doc, setDoc } from "firebase/firestore"
 
 export default function Success() {
 
   const [ticket, setTicket] = useState(null)
   const [qr, setQr] = useState("")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
 
@@ -20,12 +17,21 @@ export default function Success() {
 
       try {
 
-        const customer =
-          JSON.parse(
-            localStorage.getItem("mgsCustomer")
-          )
+        // PREVENT DOUBLE CREATION (IMPORTANT FOR PAYFAST)
+        const existing =
+          sessionStorage.getItem("mgs_ticket_created")
 
-        if (!customer) return
+        if (existing) return
+
+        const raw =
+          localStorage.getItem("mgsCustomer")
+
+        if (!raw) {
+          setLoading(false)
+          return
+        }
+
+        const customer = JSON.parse(raw)
 
         const ticketId = uuidv4()
 
@@ -33,34 +39,22 @@ export default function Success() {
 
           id: ticketId,
 
-          name:
-            customer.fullName || "Guest",
+          name: customer.fullName || "Guest",
+          email: customer.email || "",
+          phone: customer.phone || "",
 
-          email:
-            customer.email || "",
-
-          phone:
-            customer.phone || "",
-
-          type:
-            customer.ticketType || "vibe",
-
-          quantity:
-            Number(customer.quantity) || 1,
-
-          total:
-            Number(customer.total) || 0,
+          type: customer.ticketType || "vibe",
+          quantity: Number(customer.quantity) || 1,
+          total: Number(customer.total) || 0,
 
           used: false,
-
           status: "VALID",
 
-          createdAt:
-            new Date().toISOString()
+          createdAt: new Date().toISOString()
 
         }
 
-        // SAVE TO FIREBASE
+        // SAVE TO FIREBASE (ONLY ONCE)
         await setDoc(
           doc(db, "tickets", ticketId),
           newTicket
@@ -70,15 +64,20 @@ export default function Success() {
         const qrCode =
           await QRCode.toDataURL(ticketId)
 
+        setTicket(newTicket)
         setQr(qrCode)
 
-        setTicket(newTicket)
+        // MARK AS CREATED
+        sessionStorage.setItem(
+          "mgs_ticket_created",
+          "true"
+        )
 
       } catch (error) {
-
-        console.log(error)
-
+        console.log("Ticket Error:", error)
       }
+
+      setLoading(false)
 
     }
 
@@ -87,7 +86,7 @@ export default function Success() {
   }, [])
 
   // LOADING SCREEN
-  if (!ticket) {
+  if (loading || !ticket) {
 
     return (
 
@@ -101,9 +100,7 @@ export default function Success() {
         fontFamily: "Arial"
       }}>
 
-        <h1>
-          Generating Ticket...
-        </h1>
+        <h2>Generating Secure Ticket...</h2>
 
       </div>
 
@@ -115,8 +112,7 @@ export default function Success() {
 
     <div style={{
       minHeight: "100vh",
-      background:
-        "linear-gradient(to bottom, #000, #111)",
+      background: "linear-gradient(to bottom, #000, #111)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -134,119 +130,75 @@ export default function Success() {
         color: "white"
       }}>
 
-        <h1 style={{
-          color: "red",
-          marginBottom: "5px"
-        }}>
+        <h1 style={{ color: "red" }}>
           MGS EVENT
         </h1>
 
-        <h2 style={{
-          marginTop: "0",
-          color: "#ccc",
-          fontSize: "18px"
-        }}>
-          EVENT TICKET
-        </h2>
-
-        <p style={{
-          color: "#999",
-          marginBottom: "25px"
-        }}>
-          JULY 31 — AUGUST 01
+        <p style={{ color: "#aaa" }}>
+          OFFICIAL ENTRY TICKET
         </p>
 
         <div style={{
           background: "#1a1a1a",
+          padding: "15px",
           borderRadius: "15px",
-          padding: "20px",
-          marginBottom: "25px",
-          textAlign: "left"
+          textAlign: "left",
+          marginBottom: "20px"
         }}>
 
-          <p>
-            <strong>Name:</strong>
-            {" "}
-            {ticket.name}
-          </p>
+          <p><b>Name:</b> {ticket.name}</p>
+          <p><b>Email:</b> {ticket.email}</p>
+          <p><b>Phone:</b> {ticket.phone}</p>
 
           <p>
-            <strong>Email:</strong>
-            {" "}
-            {ticket.email}
+            <b>Ticket:</b>{" "}
+            {ticket.type === "full"
+              ? "Full Event (R300)"
+              : "Vibe Only (R100)"}
           </p>
 
-          <p>
-            <strong>Phone:</strong>
-            {" "}
-            {ticket.phone}
-          </p>
-
-          <p>
-            <strong>Ticket:</strong>
-            {" "}
-            {
-              ticket.type === "full"
-                ? "Full Event"
-                : "Vibe Only"
-            }
-          </p>
-
-          <p>
-            <strong>Quantity:</strong>
-            {" "}
-            {ticket.quantity}
-          </p>
-
-          <p>
-            <strong>Total:</strong>
-            {" "}
-            R{ticket.total}
-          </p>
+          <p><b>Qty:</b> {ticket.quantity}</p>
+          <p><b>Total:</b> R{ticket.total}</p>
 
         </div>
 
         <div style={{
           background: "white",
-          padding: "15px",
-          borderRadius: "15px",
-          display: "inline-block"
+          padding: "12px",
+          borderRadius: "12px"
         }}>
 
-          <img
-            src={qr}
-            alt="QR CODE"
-            width="220"
-          />
+          {qr && (
+            <img
+              src={qr}
+              width="220"
+              alt="QR Code"
+            />
+          )}
 
         </div>
 
-        <h3 style={{
-          marginTop: "25px",
-          color: "red"
-        }}>
+        <h3 style={{ color: "red", marginTop: "20px" }}>
           Ticket ID
         </h3>
 
         <p style={{
-          fontSize: "13px",
-          color: "#ccc",
-          wordBreak: "break-all"
+          fontSize: "12px",
+          wordBreak: "break-all",
+          color: "#ccc"
         }}>
           {ticket.id}
         </p>
 
         <div style={{
-          marginTop: "25px",
+          marginTop: "20px",
           background: "rgba(255,0,0,0.15)",
-          padding: "12px",
+          padding: "10px",
           borderRadius: "10px",
-          fontSize: "14px",
+          fontSize: "13px",
           color: "#ffb3b3"
         }}>
-
-          Present this QR code at the gate for validation.
-
+          Scan this QR at the gate. Do not share your ticket.
         </div>
 
       </div>

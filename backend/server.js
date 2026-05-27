@@ -3,6 +3,7 @@ const cors = require("cors")
 const dotenv = require("dotenv")
 const axios = require("axios")
 const QRCode = require("qrcode")
+const crypto = require("crypto")
 const { v4: uuidv4 } = require("uuid")
 const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
@@ -14,17 +15,77 @@ dotenv.config()
 
 const app = express()
 
+// ========================================
 // MIDDLEWARE
-app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+// ========================================
 
+app.use(cors())
+
+app.use(express.json())
+
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+)
+
+
+// ========================================
 // TEST ROUTE
+// ========================================
+
 app.get("/", (req, res) => {
 
   res.send("MGS PRODUCTION SERVER RUNNING")
 
 })
+
+
+// ========================================
+// JWT AUTH MIDDLEWARE
+// ========================================
+
+function verifyAdmin(req, res, next) {
+
+  try {
+
+    const token =
+      req.headers.authorization?.split(" ")[1]
+
+    if (!token) {
+
+      return res.status(401).json({
+
+        success: false,
+
+        message: "NO TOKEN"
+
+      })
+
+    }
+
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    )
+
+    next()
+
+  }
+
+  catch (error) {
+
+    return res.status(401).json({
+
+      success: false,
+
+      message: "INVALID TOKEN"
+
+    })
+
+  }
+
+}
 
 
 // ========================================
@@ -67,13 +128,13 @@ app.post("/verify-payment", async (req, res) => {
 
     }
 
-    // GENERATE QR CODE
+    // QR CODE
     const qrCode =
       await QRCode.toDataURL(ticketId)
 
     ticket.qr = qrCode
 
-    // SAVE TO FIREBASE
+    // SAVE FIREBASE
     await db
       .collection("tickets")
       .doc(ticketId)
@@ -86,7 +147,8 @@ app.post("/verify-payment", async (req, res) => {
 
       success: true,
 
-      message: "Ticket Generated Successfully",
+      message:
+        "Ticket Generated Successfully",
 
       ticket
 
@@ -123,14 +185,62 @@ app.post("/payfast-itn", async (req, res) => {
 
     const paymentData = req.body
 
-    // CHECK PAYMENT STATUS
+    // VERIFY PAYMENT COMPLETE
     if (
       paymentData.payment_status !== "COMPLETE"
     ) {
 
       return res
         .status(400)
-        .send("Payment Not Complete")
+        .send("PAYMENT NOT COMPLETE")
+
+    }
+
+    // PAYFAST VALIDATION
+    const verifyResponse =
+      await axios.post(
+
+        "https://www.payfast.co.za/eng/query/validate",
+
+        paymentData,
+
+        {
+
+          headers: {
+
+            "Content-Type":
+              "application/x-www-form-urlencoded"
+
+          }
+
+        }
+
+      )
+
+    if (
+      verifyResponse.data !== "VALID"
+    ) {
+
+      return res
+        .status(400)
+        .send("PAYFAST VALIDATION FAILED")
+
+    }
+
+    // CHECK DUPLICATE PAYMENT
+    const existing =
+      await db
+        .collection("tickets")
+        .where(
+          "paymentId",
+          "==",
+          paymentData.pf_payment_id
+        )
+        .get()
+
+    if (!existing.empty) {
+
+      return res.send("ALREADY PROCESSED")
 
     }
 
@@ -169,7 +279,8 @@ app.post("/payfast-itn", async (req, res) => {
 
       status: "VALID",
 
-      createdAt: new Date().toISOString()
+      createdAt:
+        new Date().toISOString()
 
     }
 
@@ -188,6 +299,8 @@ app.post("/payfast-itn", async (req, res) => {
     // SEND EMAIL
     await sendTicketEmail(ticket)
 
+    console.log("TICKET CREATED")
+
     res.status(200).send("ITN RECEIVED")
 
   }
@@ -204,7 +317,7 @@ app.post("/payfast-itn", async (req, res) => {
 
 
 // ========================================
-// QR VALIDATION ROUTE
+// QR VALIDATION
 // ========================================
 
 app.post("/validate-ticket", async (req, res) => {
@@ -242,7 +355,8 @@ app.post("/validate-ticket", async (req, res) => {
 
         valid: false,
 
-        message: "TICKET ALREADY USED"
+        message:
+          "TICKET ALREADY USED"
 
       })
 
@@ -254,9 +368,25 @@ app.post("/validate-ticket", async (req, res) => {
       used: true,
 
       usedAt:
-        new Date().toISOString()
+        new Date().toISOString(),
+
+      status: "USED"
 
     })
+
+    // LOG SCAN
+    await db
+      .collection("scanLogs")
+      .add({
+
+        ticketId: ticket.id,
+
+        fullName: ticket.fullName,
+
+        scannedAt:
+          new Date().toISOString()
+
+      })
 
     res.json({
 
@@ -300,40 +430,53 @@ app.post("/admin-login", async (req, res) => {
       password
     } = req.body
 
-    // CHECK LOGIN
+    const adminUser =
+      process.env.ADMIN_USER
+
+    const adminPass =
+      process.env.ADMIN_PASS
+
     if (
-
-      username === process.env.ADMIN_USER &&
-
-      password === process.env.ADMIN_PASS
-
+      username !== adminUser ||
+      password !== adminPass
     ) {
 
-      const token = jwt.sign(
+      return res.status(401).json({
 
-        { admin: true },
+        success: false,
 
-        process.env.JWT_SECRET,
-
-        { expiresIn: "7d" }
-
-      )
-
-      return res.json({
-
-        success: true,
-
-        token
+        message:
+          "INVALID CREDENTIALS"
 
       })
 
     }
 
-    res.status(401).json({
+    const token = jwt.sign(
 
-      success: false,
+      {
 
-      message: "Invalid Credentials"
+        admin: true,
+
+        username
+
+      },
+
+      process.env.JWT_SECRET,
+
+      {
+
+        expiresIn: "7d"
+
+      }
+
+    )
+
+    res.json({
+
+      success: true,
+
+      token
 
     })
 
@@ -357,41 +500,132 @@ app.post("/admin-login", async (req, res) => {
 
 
 // ========================================
-// GET ALL TICKETS (ADMIN)
+// GET ALL TICKETS
 // ========================================
 
-app.get("/tickets", async (req, res) => {
+app.get(
+  "/tickets",
+  verifyAdmin,
 
-  try {
+  async (req, res) => {
 
-    const snapshot =
-      await db.collection("tickets").get()
+    try {
 
-    const tickets = []
+      const snapshot =
+        await db
+          .collection("tickets")
+          .orderBy(
+            "createdAt",
+            "desc"
+          )
+          .get()
 
-    snapshot.forEach((doc) => {
+      const tickets = []
 
-      tickets.push(doc.data())
+      snapshot.forEach((doc) => {
 
-    })
+        tickets.push(doc.data())
 
-    res.json(tickets)
+      })
+
+      res.json(tickets)
+
+    }
+
+    catch (error) {
+
+      console.log(error)
+
+      res.status(500).json({
+
+        error: error.message
+
+      })
+
+    }
 
   }
 
-  catch (error) {
+)
 
-    console.log(error)
 
-    res.status(500).json({
+// ========================================
+// ANALYTICS ROUTE
+// ========================================
 
-      error: error.message
+app.get(
+  "/analytics",
+  verifyAdmin,
 
-    })
+  async (req, res) => {
+
+    try {
+
+      const snapshot =
+        await db
+          .collection("tickets")
+          .get()
+
+      const tickets = []
+
+      snapshot.forEach((doc) => {
+
+        tickets.push(doc.data())
+
+      })
+
+      const totalTickets =
+        tickets.length
+
+      const usedTickets =
+        tickets.filter(
+          t => t.used
+        ).length
+
+      const unusedTickets =
+        tickets.filter(
+          t => !t.used
+        ).length
+
+      const revenue =
+        tickets.reduce(
+
+          (sum, ticket) =>
+            sum + Number(ticket.total),
+
+          0
+
+        )
+
+      res.json({
+
+        totalTickets,
+
+        usedTickets,
+
+        unusedTickets,
+
+        revenue
+
+      })
+
+    }
+
+    catch (error) {
+
+      console.log(error)
+
+      res.status(500).json({
+
+        error: error.message
+
+      })
+
+    }
 
   }
 
-})
+)
 
 
 // ========================================
@@ -409,13 +643,32 @@ async function sendTicketEmail(ticket) {
 
         auth: {
 
-          user: process.env.EMAIL_USER,
+          user:
+            process.env.EMAIL_USER,
 
-          pass: process.env.EMAIL_PASS
+          pass:
+            process.env.EMAIL_PASS
 
         }
 
       })
+
+    const whatsappLink =
+
+      `https://wa.me/${ticket.phone}?text=` +
+
+      encodeURIComponent(
+
+        `Hello ${ticket.fullName},
+
+Your MGS Event Ticket is ready.
+
+Ticket ID:
+${ticket.id}
+
+Please present your QR code at the entrance.`
+
+      )
 
     const html = `
 
@@ -502,17 +755,44 @@ async function sendTicketEmail(ticket) {
           ${ticket.id}
         </p>
 
+        <div style="
+          text-align:center;
+          margin-top:25px;
+        ">
+
+          <a
+            href="${whatsappLink}"
+
+            style="
+              background:red;
+              color:white;
+              padding:12px 25px;
+              text-decoration:none;
+              border-radius:10px;
+              font-weight:bold;
+            "
+          >
+
+            SEND TO WHATSAPP
+
+          </a>
+
+        </div>
+
       </div>
 
     `
 
     await transporter.sendMail({
 
-      from: process.env.EMAIL_USER,
+      from:
+        process.env.EMAIL_USER,
 
-      to: ticket.email,
+      to:
+        ticket.email,
 
-      subject: "MGS EVENT TICKET",
+      subject:
+        "MGS EVENT TICKET",
 
       html
 
