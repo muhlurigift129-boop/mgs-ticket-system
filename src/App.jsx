@@ -1,5 +1,5 @@
 import {
-  HashRRouter,
+  HashRouter,
   Routes,
   Route,
   Navigate,
