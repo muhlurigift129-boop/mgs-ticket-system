@@ -1,5 +1,5 @@
 import {
-  BrowserRouter,
+  HashRRouter,
   Routes,
   Route,
   Navigate,
@@ -70,7 +70,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
 
         {/* LOADING SCREEN ROUTE */}
@@ -102,6 +102,6 @@ export default function App() {
         )}
 
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
