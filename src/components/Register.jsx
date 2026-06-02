@@ -1,6 +1,9 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export default function Register({ ticketType, quantity, total }) {
+
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -10,18 +13,16 @@ export default function Register({ ticketType, quantity, total }) {
   })
 
   function handleChange(e) {
-
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
-
   }
 
   function handleSubmit(e) {
-
     e.preventDefault()
 
+    // Save customer data
     localStorage.setItem(
       "mgsCustomer",
       JSON.stringify({
@@ -32,12 +33,13 @@ export default function Register({ ticketType, quantity, total }) {
       })
     )
 
-    window.location.href = "/payment"
+    console.log("Navigating to payment...")
 
+    // IMPORTANT: React Router navigation (NO page reload)
+    navigate("/payment")
   }
 
   return (
-
     <div style={{
       minHeight: "100vh",
       background: "black",
@@ -100,15 +102,8 @@ export default function Register({ ticketType, quantity, total }) {
             onChange={handleChange}
             style={inputStyle}
           >
-
-            <option value="email">
-              Send Ticket Via Email
-            </option>
-
-            <option value="whatsapp">
-              Send Ticket Via WhatsApp
-            </option>
-
+            <option value="email">Send Ticket Via Email</option>
+            <option value="whatsapp">Send Ticket Via WhatsApp</option>
           </select>
 
           <div style={{
@@ -117,15 +112,10 @@ export default function Register({ ticketType, quantity, total }) {
             borderRadius: "12px",
             marginBottom: "25px"
           }}>
-
-            <h3 style={{ color: "red" }}>
-              ORDER SUMMARY
-            </h3>
+            <h3 style={{ color: "red" }}>ORDER SUMMARY</h3>
 
             <p>
-              Ticket: {ticketType === "full"
-                ? "Full Event"
-                : "Vibe Only"}
+              Ticket: {ticketType === "full" ? "Full Event" : "Vibe Only"}
             </p>
 
             <p>
@@ -140,7 +130,6 @@ export default function Register({ ticketType, quantity, total }) {
 
           <button
             type="submit"
-
             style={{
               width: "100%",
               padding: "18px",
@@ -152,9 +141,7 @@ export default function Register({ ticketType, quantity, total }) {
               cursor: "pointer"
             }}
           >
-
             CONTINUE TO PAYMENT
-
           </button>
 
         </form>
@@ -162,12 +149,10 @@ export default function Register({ ticketType, quantity, total }) {
       </div>
 
     </div>
-
   )
 }
 
 const inputStyle = {
-
   width: "100%",
   padding: "16px",
   marginBottom: "20px",
@@ -177,5 +162,4 @@ const inputStyle = {
   color: "white",
   fontSize: "16px",
   outline: "none"
-
 }
