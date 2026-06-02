@@ -1,9 +1,6 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 
 export default function Register() {
-
-  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -19,7 +16,9 @@ export default function Register() {
     vibe: 100
   }
 
-  const total = prices[formData.ticketType] * formData.quantity
+  const total =
+    prices[formData.ticketType] *
+    Number(formData.quantity)
 
   function handleChange(e) {
     setFormData({
@@ -31,7 +30,6 @@ export default function Register() {
   function handleSubmit(e) {
     e.preventDefault()
 
-    // SAVE ORDER
     localStorage.setItem(
       "mgs_order",
       JSON.stringify({
@@ -40,21 +38,22 @@ export default function Register() {
       })
     )
 
-    // GO TO PAYMENT PAGE
-    navigate("/payment")
+    console.log("Going to payment page")
+
+    window.location.hash = "#/payment"
   }
 
   return (
-
-    <div style={{
-      background: "#000",
-      minHeight: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "30px"
-    }}>
-
+    <div
+      style={{
+        background: "#000",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "30px"
+      }}
+    >
       <form
         onSubmit={handleSubmit}
         style={{
@@ -66,39 +65,87 @@ export default function Register() {
           boxShadow: "0 0 20px red"
         }}
       >
-
-        <h1 style={{ color: "red", textAlign: "center" }}>
+        <h1
+          style={{
+            color: "red",
+            textAlign: "center",
+            marginBottom: "20px"
+          }}
+        >
           MGS TICKETS
         </h1>
 
-        <input name="name" placeholder="Full Name" onChange={handleChange} style={inputStyle} required />
-        <input name="email" placeholder="Email" onChange={handleChange} style={inputStyle} required />
-        <input name="phone" placeholder="Phone / WhatsApp" onChange={handleChange} style={inputStyle} required />
+        <input
+          name="name"
+          placeholder="Full Name"
+          onChange={handleChange}
+          style={inputStyle}
+          required
+        />
 
-        <select name="ticketType" onChange={handleChange} style={inputStyle}>
-          <option value="full">Full Event - R300</option>
-          <option value="vibe">Vibe Only - R100</option>
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          onChange={handleChange}
+          style={inputStyle}
+          required
+        />
+
+        <input
+          name="phone"
+          placeholder="Phone / WhatsApp"
+          onChange={handleChange}
+          style={inputStyle}
+          required
+        />
+
+        <select
+          name="ticketType"
+          onChange={handleChange}
+          style={inputStyle}
+        >
+          <option value="full">
+            Full Event - R300
+          </option>
+
+          <option value="vibe">
+            Vibe Only - R100
+          </option>
         </select>
 
         <input
           type="number"
           name="quantity"
           min="1"
+          defaultValue="1"
           onChange={handleChange}
           style={inputStyle}
-          defaultValue={1}
         />
 
-        <select name="deliveryMethod" onChange={handleChange} style={inputStyle}>
-          <option value="email">Email</option>
-          <option value="whatsapp">WhatsApp</option>
+        <select
+          name="deliveryMethod"
+          onChange={handleChange}
+          style={inputStyle}
+        >
+          <option value="email">
+            Email Ticket
+          </option>
+
+          <option value="whatsapp">
+            WhatsApp Ticket
+          </option>
         </select>
 
-        <div style={{
-          textAlign: "center",
-          margin: "20px 0",
-          color: "red"
-        }}>
+        <div
+          style={{
+            textAlign: "center",
+            margin: "20px 0",
+            color: "red",
+            fontSize: "24px",
+            fontWeight: "bold"
+          }}
+        >
           TOTAL: R{total}
         </div>
 
@@ -109,16 +156,16 @@ export default function Register() {
             padding: "18px",
             background: "red",
             border: "none",
+            borderRadius: "10px",
             color: "white",
             fontSize: "18px",
-            cursor: "pointer"
+            cursor: "pointer",
+            fontWeight: "bold"
           }}
         >
           CONTINUE TO PAYMENT
         </button>
-
       </form>
-
     </div>
   )
 }
@@ -130,5 +177,6 @@ const inputStyle = {
   borderRadius: "10px",
   background: "#1a1a1a",
   border: "1px solid #333",
-  color: "white"
+  color: "white",
+  boxSizing: "border-box"
 }
