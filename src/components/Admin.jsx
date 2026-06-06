@@ -5,58 +5,63 @@ import {
   getDocs
 } from "firebase/firestore"
 
+import * as XLSX from "xlsx"
+
 import { db } from "../firebase/config"
 
 export default function Admin() {
 
   const [tickets, setTickets] = useState([])
-
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  async function loadTickets() {
 
-    async function loadTickets() {
+    try {
 
-      try {
+      setLoading(true)
 
-        const querySnapshot =
-          await getDocs(
-            collection(db, "tickets")
-          )
+      const snapshot =
+        await getDocs(
+          collection(db, "tickets")
+        )
 
-        const data = []
+      const data = []
 
-        querySnapshot.forEach((doc) => {
+      snapshot.forEach((doc) => {
 
-          data.push(doc.data())
-
+        data.push({
+          firestoreId: doc.id,
+          ...doc.data()
         })
 
-        setTickets(data)
+      })
 
-      }
-
-      catch (error) {
-
-        console.log(error)
-
-        alert("Failed To Load Tickets")
-
-      }
-
-      finally {
-
-        setLoading(false)
-
-      }
+      setTickets(data)
 
     }
+
+    catch (error) {
+
+      console.error(error)
+
+      alert("Failed To Load Tickets")
+
+    }
+
+    finally {
+
+      setLoading(false)
+
+    }
+
+  }
+
+  useEffect(() => {
 
     loadTickets()
 
   }, [])
 
-  // ANALYTICS
   const usedTickets =
     tickets.filter(ticket => ticket.used)
 
@@ -70,243 +75,276 @@ export default function Admin() {
 
     }, 0)
 
+  const fullEvent =
+    tickets.filter(
+      t => t.type === "full"
+    ).length
+
+  const vibeOnly =
+    tickets.filter(
+      t => t.type === "vibe"
+    ).length
+
+  const vibeDrinks =
+    tickets.filter(
+      t => t.type === "vibeDrinks"
+    ).length
+
+  const vibeFood =
+    tickets.filter(
+      t => t.type === "vibeFood"
+    ).length
+
+  function exportExcel() {
+
+    const rows = tickets.map(ticket => ({
+
+      Name:
+        ticket.name ||
+        ticket.fullName,
+
+      Email:
+        ticket.email,
+
+      Phone:
+        ticket.phone,
+
+      Package:
+        ticket.packageName,
+
+      Quantity:
+        ticket.quantity,
+
+      Total:
+        ticket.total,
+
+      Status:
+        ticket.used
+          ? "USED"
+          : "VALID"
+
+    }))
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(rows)
+
+    const workbook =
+      XLSX.utils.book_new()
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "MGS Tickets"
+    )
+
+    XLSX.writeFile(
+      workbook,
+      "MGS_Attendees.xlsx"
+    )
+  }
+
   return (
 
     <div style={{
-      background: "linear-gradient(to bottom, #000, #111)",
-      color: "white",
-      minHeight: "100vh",
-      padding: "30px",
-      fontFamily: "Arial"
+      background:
+        "linear-gradient(to bottom,#000,#111)",
+      minHeight:"100vh",
+      color:"white",
+      padding:"30px"
     }}>
 
-      {/* HEADER */}
-
       <div style={{
-        marginBottom: "40px",
-        textAlign: "center"
+        textAlign:"center",
+        marginBottom:"40px"
       }}>
 
         <h1 style={{
-          color: "red",
-          fontSize: "40px",
-          letterSpacing: "3px"
+          color:"red",
+          fontSize:"42px"
         }}>
           MGS ADMIN DASHBOARD
         </h1>
 
         <p style={{
-          color: "#aaa"
+          color:"#aaa"
         }}>
-          LIVE EVENT MANAGEMENT SYSTEM
+          LIVE EVENT MANAGEMENT
         </p>
 
       </div>
 
-      {/* ANALYTICS */}
+      <div style={{
+        display:"flex",
+        justifyContent:"center",
+        gap:"15px",
+        flexWrap:"wrap",
+        marginBottom:"30px"
+      }}>
+
+        <button
+          onClick={loadTickets}
+          style={buttonStyle}
+        >
+          REFRESH
+        </button>
+
+        <button
+          onClick={exportExcel}
+          style={buttonStyle}
+        >
+          EXPORT EXCEL
+        </button>
+
+      </div>
 
       <div style={{
-        display: "grid",
+        display:"grid",
         gridTemplateColumns:
-          "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "20px",
-        marginBottom: "40px"
+          "repeat(auto-fit,minmax(220px,1fr))",
+        gap:"20px",
+        marginBottom:"40px"
       }}>
 
         <div style={cardStyle}>
-          <h2>Total Tickets</h2>
-
-          <h1 style={{
-            color: "red"
-          }}>
-            {tickets.length}
-          </h1>
+          <h3>Total Tickets</h3>
+          <h1>{tickets.length}</h1>
         </div>
 
         <div style={cardStyle}>
-          <h2>Used Tickets</h2>
-
-          <h1 style={{
-            color: "orange"
-          }}>
-            {usedTickets.length}
-          </h1>
+          <h3>Attendance</h3>
+          <h1>{usedTickets.length}</h1>
         </div>
 
         <div style={cardStyle}>
-          <h2>Unused Tickets</h2>
-
-          <h1 style={{
-            color: "lime"
-          }}>
-            {unusedTickets.length}
-          </h1>
+          <h3>Unused</h3>
+          <h1>{unusedTickets.length}</h1>
         </div>
 
         <div style={cardStyle}>
-          <h2>Total Revenue</h2>
-
-          <h1 style={{
-            color: "cyan"
-          }}>
-            R{totalRevenue}
-          </h1>
+          <h3>Revenue</h3>
+          <h1>R{totalRevenue}</h1>
         </div>
 
       </div>
 
-      {/* LOADING */}
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:
+          "repeat(auto-fit,minmax(220px,1fr))",
+        gap:"20px",
+        marginBottom:"40px"
+      }}>
+
+        <div style={cardStyle}>
+          <h3>Full Event</h3>
+          <h1>{fullEvent}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Vibe Only</h3>
+          <h1>{vibeOnly}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Vibe + Drinks</h3>
+          <h1>{vibeDrinks}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Vibe + Food</h3>
+          <h1>{vibeFood}</h1>
+        </div>
+
+      </div>
 
       {
 
-        loading && (
+        loading ? (
 
-          <div style={{
-            textAlign: "center",
-            marginTop: "50px"
+          <h2 style={{
+            textAlign:"center"
           }}>
+            Loading Tickets...
+          </h2>
 
-            <h2>
-              Loading Tickets...
-            </h2>
+        ) : (
 
-          </div>
+          tickets.map(ticket => (
 
-        )
+            <div
+              key={ticket.id}
+              style={{
+                background:"#111",
+                border:"1px solid red",
+                borderRadius:"20px",
+                padding:"25px",
+                marginBottom:"20px",
+                boxShadow:
+                  "0 0 15px rgba(255,0,0,.3)"
+              }}
+            >
 
-      }
-
-      {/* TICKETS */}
-
-      {
-
-        !loading && tickets.map(ticket => (
-
-          <div
-            key={ticket.id}
-
-            style={{
-              background: "#111",
-              padding: "25px",
-              marginBottom: "20px",
-              borderRadius: "20px",
-              border: "1px solid red",
-              boxShadow:
-                "0 0 15px rgba(255,0,0,0.3)"
-            }}
-          >
-
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "20px"
-            }}>
-
-              {/* LEFT */}
-
-              <div>
-
-                <h2 style={{
-                  color: "red",
-                  marginBottom: "10px"
-                }}>
-                  {ticket.fullName}
-                </h2>
-
-                <p>
-                  <strong>Email:</strong>
-                  {" "}
-                  {ticket.email}
-                </p>
-
-                <p>
-                  <strong>Phone:</strong>
-                  {" "}
-                  {ticket.phone || "N/A"}
-                </p>
-
-                <p>
-                  <strong>Ticket:</strong>
-                  {" "}
-                  {ticket.ticketType || "Full"}
-                </p>
-
-                <p>
-                  <strong>Quantity:</strong>
-                  {" "}
-                  {ticket.quantity || 1}
-                </p>
-
-                <p>
-                  <strong>Total:</strong>
-                  {" "}
-                  R{ticket.total || ticket.amount}
-                </p>
-
-              </div>
-
-              {/* RIGHT */}
-
-              <div style={{
-                textAlign: "right"
+              <h2 style={{
+                color:"red"
               }}>
+                {
+                  ticket.name ||
+                  ticket.fullName
+                }
+              </h2>
 
-                <h3 style={{
+              <p>Email: {ticket.email}</p>
+
+              <p>Phone: {ticket.phone}</p>
+
+              <p>
+                Package:
+                {" "}
+                {ticket.packageName}
+              </p>
+
+              <p>
+                Quantity:
+                {" "}
+                {ticket.quantity}
+              </p>
+
+              <p>
+                Total:
+                {" "}
+                R{ticket.total}
+              </p>
+
+              <p>
+                Status:
+                {" "}
+                <span style={{
                   color:
                     ticket.used
-                      ? "orange"
-                      : "lime"
+                    ? "orange"
+                    : "lime"
                 }}>
-
                   {
-
                     ticket.used
-                      ? "USED"
-                      : "UNUSED"
-
+                    ? "USED"
+                    : "VALID"
                   }
+                </span>
+              </p>
 
-                </h3>
-
-                <p style={{
-                  color: "#aaa",
-                  marginTop: "15px",
-                  maxWidth: "250px",
-                  wordBreak: "break-all"
-                }}>
-
-                  {ticket.id}
-
-                </p>
-
-                {
-
-                  ticket.qr && (
-
-                    <img
-                      src={ticket.qr}
-                      alt="QR"
-                      width="120"
-                      style={{
-                        marginTop: "15px",
-                        borderRadius: "10px",
-                        background: "white",
-                        padding: "5px"
-                      }}
-                    />
-
-                  )
-
-                }
-
-              </div>
+              <p style={{
+                color:"#999",
+                fontSize:"12px",
+                wordBreak:"break-all"
+              }}>
+                {ticket.id}
+              </p>
 
             </div>
 
-          </div>
+          ))
 
-        ))
+        )
 
       }
 
@@ -318,17 +356,35 @@ export default function Admin() {
 
 const cardStyle = {
 
-  background: "#111",
+  background:"#111",
 
-  padding: "25px",
+  border:"1px solid red",
 
-  borderRadius: "20px",
+  borderRadius:"20px",
 
-  border: "1px solid red",
+  padding:"25px",
 
-  textAlign: "center",
+  textAlign:"center",
 
   boxShadow:
-    "0 0 15px rgba(255,0,0,0.3)"
+    "0 0 15px rgba(255,0,0,.3)"
+
+}
+
+const buttonStyle = {
+
+  background:"red",
+
+  color:"white",
+
+  border:"none",
+
+  padding:"15px 25px",
+
+  borderRadius:"10px",
+
+  cursor:"pointer",
+
+  fontWeight:"bold"
 
 }

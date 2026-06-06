@@ -1,16 +1,43 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-export default function Register({ ticketType, quantity, total }) {
+export default function Register() {
 
   const navigate = useNavigate()
+
+  const selectedTicket =
+    JSON.parse(
+      localStorage.getItem("selectedTicket")
+    ) || {
+      type: "full"
+    }
+
+  const prices = {
+    full: 300,
+    vibe: 100,
+    vibeDrinks: 200,
+    vibeFood: 200
+  }
+
+  const ticketNames = {
+    full: "FULL EVENT",
+    vibe: "VIBE ONLY",
+    vibeDrinks: "VIBE + DRINKS",
+    vibeFood: "VIBE + FOOD"
+  }
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
-    delivery: "email"
+    delivery: "email",
+    ticketType: selectedTicket.type,
+    quantity: 1
   })
+
+  const total =
+    prices[formData.ticketType] *
+    Number(formData.quantity)
 
   function handleChange(e) {
     setFormData({
@@ -22,47 +49,70 @@ export default function Register({ ticketType, quantity, total }) {
   function handleSubmit(e) {
     e.preventDefault()
 
-    // Save customer data
+    const order = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      delivery: formData.delivery,
+      ticketType: formData.ticketType,
+      ticketName:
+        ticketNames[formData.ticketType],
+      quantity: Number(formData.quantity),
+      total
+    }
+
     localStorage.setItem(
       "mgsCustomer",
-      JSON.stringify({
-        ...formData,
-        ticketType,
-        quantity,
-        total
-      })
+      JSON.stringify(order)
     )
 
-    console.log("Navigating to payment...")
+    console.log("Order Saved:", order)
 
-    // IMPORTANT: React Router navigation (NO page reload)
     navigate("/payment")
   }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "black",
-      color: "white",
-      padding: "40px"
-    }}>
-
-      <div style={{
-        maxWidth: "500px",
-        margin: "0 auto",
-        background: "#111",
-        padding: "40px",
-        borderRadius: "20px",
-        boxShadow: "0 0 30px rgba(255,0,0,0.5)"
-      }}>
-
-        <h1 style={{
-          color: "red",
-          textAlign: "center",
-          marginBottom: "30px"
-        }}>
-          CUSTOMER DETAILS
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(to bottom,#000,#111)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "30px"
+      }}
+    >
+      <div
+        style={{
+          width: "500px",
+          background: "#111",
+          padding: "40px",
+          borderRadius: "25px",
+          boxShadow:
+            "0 0 35px rgba(255,0,0,0.5)",
+          color: "white"
+        }}
+      >
+        <h1
+          style={{
+            textAlign: "center",
+            color: "red",
+            marginBottom: "10px"
+          }}
+        >
+          MGS REGISTRATION
         </h1>
+
+        <p
+          style={{
+            textAlign: "center",
+            color: "#aaa",
+            marginBottom: "30px"
+          }}
+        >
+          Complete your details below
+        </p>
 
         <form onSubmit={handleSubmit}>
 
@@ -97,35 +147,95 @@ export default function Register({ ticketType, quantity, total }) {
           />
 
           <select
+            name="ticketType"
+            value={formData.ticketType}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            <option value="full">
+              Full Event - R300
+            </option>
+
+            <option value="vibe">
+              Vibe Only - R100
+            </option>
+
+            <option value="vibeDrinks">
+              Vibe + Drinks - R200
+            </option>
+
+            <option value="vibeFood">
+              Vibe + Food - R200
+            </option>
+          </select>
+
+          <input
+            type="number"
+            name="quantity"
+            min="1"
+            value={formData.quantity}
+            onChange={handleChange}
+            style={inputStyle}
+          />
+
+          <select
             name="delivery"
             value={formData.delivery}
             onChange={handleChange}
             style={inputStyle}
           >
-            <option value="email">Send Ticket Via Email</option>
-            <option value="whatsapp">Send Ticket Via WhatsApp</option>
+            <option value="email">
+              Email Ticket
+            </option>
+
+            <option value="whatsapp">
+              WhatsApp Ticket
+            </option>
           </select>
 
-          <div style={{
-            background: "#1a1a1a",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "25px"
-          }}>
-            <h3 style={{ color: "red" }}>ORDER SUMMARY</h3>
+          <div
+            style={{
+              background: "#1a1a1a",
+              padding: "20px",
+              borderRadius: "15px",
+              marginBottom: "20px",
+              border: "1px solid #222"
+            }}
+          >
+            <h3
+              style={{
+                color: "red",
+                marginBottom: "15px"
+              }}
+            >
+              ORDER SUMMARY
+            </h3>
 
             <p>
-              Ticket: {ticketType === "full" ? "Full Event" : "Vibe Only"}
+              Ticket:
+              {" "}
+              {ticketNames[formData.ticketType]}
             </p>
 
             <p>
-              Quantity: {quantity}
+              Price Per Ticket:
+              {" "}
+              R{prices[formData.ticketType]}
             </p>
 
-            <h2>
-              Total: R{total}
+            <p>
+              Quantity:
+              {" "}
+              {formData.quantity}
+            </p>
+
+            <h2
+              style={{
+                color: "red"
+              }}
+            >
+              TOTAL: R{total}
             </h2>
-
           </div>
 
           <button
@@ -137,7 +247,8 @@ export default function Register({ ticketType, quantity, total }) {
               border: "none",
               borderRadius: "12px",
               color: "white",
-              fontSize: "20px",
+              fontSize: "18px",
+              fontWeight: "bold",
               cursor: "pointer"
             }}
           >
@@ -145,21 +256,19 @@ export default function Register({ ticketType, quantity, total }) {
           </button>
 
         </form>
-
       </div>
-
     </div>
   )
 }
 
 const inputStyle = {
   width: "100%",
-  padding: "16px",
-  marginBottom: "20px",
+  padding: "15px",
+  marginBottom: "15px",
   borderRadius: "10px",
   border: "1px solid #333",
   background: "#1a1a1a",
   color: "white",
   fontSize: "16px",
-  outline: "none"
+  boxSizing: "border-box"
 }

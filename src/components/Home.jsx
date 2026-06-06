@@ -1,248 +1,234 @@
-import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export default function Home() {
 
-  const [ticketType, setTicketType] = useState("full")
-  const [quantity, setQuantity] = useState(1)
+  const navigate = useNavigate()
 
-  const ticketPrice =
-    ticketType === "full"
-      ? 300
-      : 100
+  const tickets = [
+    {
+      name: "FULL EVENT",
+      price: 300,
+      description: "Full access to the entire MGS experience",
+      type: "full",
+      popular: true,
+      features: [
+        "Full Event Access",
+        "Main Stage",
+        "Networking",
+        "All Activities"
+      ]
+    },
+    {
+      name: "VIBE ONLY",
+      price: 100,
+      description: "Enjoy the atmosphere and entertainment",
+      type: "vibe",
+      features: [
+        "Event Entry",
+        "Live Entertainment",
+        "Music & Vibes"
+      ]
+    },
+    {
+      name: "VIBE + DRINKS",
+      price: 200,
+      description: "Entertainment with drinks included",
+      type: "vibeDrinks",
+      features: [
+        "Event Entry",
+        "Selected Drinks",
+        "Live Entertainment"
+      ]
+    },
+    {
+      name: "VIBE + FOOD",
+      price: 200,
+      description: "Entertainment with food included",
+      type: "vibeFood",
+      features: [
+        "Event Entry",
+        "Meal Included",
+        "Live Entertainment"
+      ]
+    }
+  ]
 
-  const total = ticketPrice * quantity
-
-  function handleProceed() {
+  function selectTicket(ticket) {
 
     localStorage.setItem(
-      "ticketData",
-      JSON.stringify({
-        ticketType,
-        quantity,
-        total
-      })
+      "selectedTicket",
+      JSON.stringify(ticket)
     )
 
-    window.location.href = "/register"
-
+    navigate("/register")
   }
 
   return (
 
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(to bottom, #000000, #111111)",
-      color: "white",
-      padding: "40px"
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(180deg,#000000,#111111)",
+        color: "white",
+        padding: "40px 20px"
+      }}
+    >
 
-      <div style={{
-        textAlign: "center",
-        marginTop: "30px"
-      }}>
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "60px"
+        }}
+      >
 
-        <h1 style={{
-          color: "red",
-          fontSize: "65px",
-          marginBottom: "10px",
-          letterSpacing: "4px",
-          fontWeight: "900"
-        }}>
-          MGS EVENTS
+        <h1
+          style={{
+            color: "red",
+            fontSize: "70px",
+            marginBottom: "10px",
+            letterSpacing: "3px"
+          }}
+        >
+          MGS EVENT
         </h1>
 
-        <p style={{
-          color: "#ccc",
-          fontSize: "22px",
-          letterSpacing: "2px"
-        }}>
-          JULY 31 — AUGUST 01
-        </p>
+        <h2
+          style={{
+            color: "white"
+          }}
+        >
+          JULY 31 – AUGUST 01
+        </h2>
 
-        <p style={{
-          color: "#888",
-          marginTop: "10px"
-        }}>
-          BUILT FROM THE GROUND UP
+        <p
+          style={{
+            color: "#aaa",
+            maxWidth: "700px",
+            margin: "20px auto"
+          }}
+        >
+          Choose your preferred ticket package and
+          secure your place at the MGS Event.
         </p>
 
       </div>
 
-      <div style={{
-        maxWidth: "550px",
-        margin: "50px auto",
-        background: "#111",
-        padding: "40px",
-        borderRadius: "20px",
-        boxShadow: "0 0 30px rgba(255,0,0,0.5)"
-      }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(280px,1fr))",
+          gap: "25px",
+          maxWidth: "1300px",
+          margin: "0 auto"
+        }}
+      >
 
-        <h2 style={{
-          color: "red",
-          marginBottom: "30px",
-          textAlign: "center",
-          fontSize: "32px"
-        }}>
-          SELECT YOUR TICKET
-        </h2>
+        {tickets.map((ticket) => (
 
-        <div style={{
-          marginBottom: "25px"
-        }}>
-
-          <button
-            onClick={() => setTicketType("full")}
-
+          <div
+            key={ticket.type}
             style={{
-              width: "100%",
-              padding: "20px",
-              marginBottom: "18px",
-              borderRadius: "15px",
-              border: ticketType === "full"
-                ? "2px solid red"
-                : "2px solid #333",
-              background: ticketType === "full"
-                ? "rgba(255,0,0,0.15)"
-                : "#1a1a1a",
-              color: "white",
-              fontSize: "20px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              transition: "0.3s"
+              background: "#111",
+              border:
+                ticket.popular
+                  ? "3px solid red"
+                  : "1px solid #333",
+              borderRadius: "25px",
+              padding: "30px",
+              textAlign: "center",
+              position: "relative",
+              boxShadow:
+                ticket.popular
+                  ? "0 0 30px rgba(255,0,0,.5)"
+                  : "0 0 15px rgba(255,255,255,.05)"
             }}
           >
 
-            🔥 FULL EVENT — R300
+            {ticket.popular && (
 
-            <div style={{
-              fontSize: "14px",
-              color: "#aaa",
-              marginTop: "8px",
-              fontWeight: "normal"
-            }}>
-              Access To Entire Event Experience
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-12px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: "red",
+                  color: "white",
+                  padding: "6px 15px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: "bold"
+                }}
+              >
+                MOST POPULAR
+              </div>
+
+            )}
+
+            <h2
+              style={{
+                color: "red",
+                marginTop: "10px"
+              }}
+            >
+              {ticket.name}
+            </h2>
+
+            <h1
+              style={{
+                fontSize: "48px",
+                margin: "20px 0"
+              }}
+            >
+              R{ticket.price}
+            </h1>
+
+            <p
+              style={{
+                color: "#bbb",
+                marginBottom: "20px"
+              }}
+            >
+              {ticket.description}
+            </p>
+
+            <div
+              style={{
+                textAlign: "left",
+                marginBottom: "25px"
+              }}
+            >
+              {ticket.features.map((feature) => (
+                <p key={feature}>
+                  ✓ {feature}
+                </p>
+              ))}
             </div>
 
-          </button>
+            <button
+              onClick={() =>
+                selectTicket(ticket)
+              }
+              style={{
+                width: "100%",
+                padding: "16px",
+                background: "red",
+                border: "none",
+                borderRadius: "12px",
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "17px",
+                cursor: "pointer"
+              }}
+            >
+              BUY NOW
+            </button>
 
-          <button
-            onClick={() => setTicketType("vibe")}
+          </div>
 
-            style={{
-              width: "100%",
-              padding: "20px",
-              borderRadius: "15px",
-              border: ticketType === "vibe"
-                ? "2px solid red"
-                : "2px solid #333",
-              background: ticketType === "vibe"
-                ? "rgba(255,0,0,0.15)"
-                : "#1a1a1a",
-              color: "white",
-              fontSize: "20px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              transition: "0.3s"
-            }}
-          >
-
-            🎉 VIBE ONLY — R100
-
-            <div style={{
-              fontSize: "14px",
-              color: "#aaa",
-              marginTop: "8px",
-              fontWeight: "normal"
-            }}>
-              Access To Vibe Session Only
-            </div>
-
-          </button>
-
-        </div>
-
-        <div style={{
-          marginBottom: "30px"
-        }}>
-
-          <label style={{
-            display: "block",
-            marginBottom: "12px",
-            color: "#aaa",
-            fontSize: "16px"
-          }}>
-            Number Of Tickets
-          </label>
-
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) =>
-              setQuantity(Number(e.target.value))
-            }
-
-            style={{
-              width: "100%",
-              padding: "18px",
-              borderRadius: "12px",
-              border: "1px solid #333",
-              background: "#1a1a1a",
-              color: "white",
-              fontSize: "18px",
-              outline: "none"
-            }}
-          />
-
-        </div>
-
-        <div style={{
-          background: "#1a1a1a",
-          padding: "25px",
-          borderRadius: "15px",
-          marginBottom: "30px",
-          textAlign: "center"
-        }}>
-
-          <p style={{
-            color: "#888",
-            marginBottom: "10px"
-          }}>
-            ORDER TOTAL
-          </p>
-
-          <h2 style={{
-            color: "white",
-            fontSize: "40px"
-          }}>
-            <span style={{ color: "red" }}>
-              R{total}
-            </span>
-          </h2>
-
-        </div>
-
-        <button
-          onClick={handleProceed}
-
-          style={{
-            width: "100%",
-            padding: "20px",
-            background: "red",
-            color: "white",
-            border: "none",
-            borderRadius: "15px",
-            fontSize: "22px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            transition: "0.3s",
-            boxShadow: "0 0 20px rgba(255,0,0,0.4)"
-          }}
-        >
-
-          PROCEED TO REGISTER
-
-        </button>
+        ))}
 
       </div>
 
