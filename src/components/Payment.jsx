@@ -121,19 +121,19 @@ export default function Payment() {
           <input
             type="hidden"
             name="return_url"
-            value="http://localhost:5173/success"
+            value="https://mgs-ticket-system-frontend.onrender.com/success"
           />
 
           <input
             type="hidden"
             name="cancel_url"
-            value="http://localhost:5173"
+            value="https://mgs-ticket-system-frontend.onrender.com"
           />
 
           <input
             type="hidden"
             name="notify_url"
-            value="http://localhost:5173"
+            value="https://mgs-ticket-system-frontend.onrender.com"
           />
 
           <input
