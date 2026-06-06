@@ -34,9 +34,17 @@ app.use(
 // TEST ROUTE
 // ========================================
 
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
 
-  res.send("MGS PRODUCTION SERVER RUNNING")
+  res.json({
+
+    success: true,
+
+    status: "ONLINE",
+
+    service: "MGS Backend"
+
+  })
 
 })
 
@@ -179,139 +187,137 @@ app.post("/verify-payment", async (req, res) => {
 
 app.post("/payfast-itn", async (req, res) => {
 
-  try {
+try {
 
-    console.log("PAYFAST ITN RECEIVED")
+```
+console.log("PAYFAST ITN RECEIVED")
 
-    const paymentData = req.body
+const paymentData = req.body
 
-    // VERIFY PAYMENT COMPLETE
-    if (
-      paymentData.payment_status !== "COMPLETE"
-    ) {
+if (paymentData.payment_status !== "COMPLETE") {
 
-      return res
-        .status(400)
-        .send("PAYMENT NOT COMPLETE")
+  return res
+    .status(400)
+    .send("PAYMENT NOT COMPLETE")
 
-    }
+}
 
-    // PAYFAST VALIDATION
-    const verifyResponse =
-      await axios.post(
+const verifyResponse = await axios.post(
 
-        "https://www.payfast.co.za/eng/query/validate",
+  "https://www.payfast.co.za/eng/query/validate",
 
-        paymentData,
+  new URLSearchParams(paymentData).toString(),
 
-        {
+  {
 
-          headers: {
+    headers: {
 
-            "Content-Type":
-              "application/x-www-form-urlencoded"
-
-          }
-
-        }
-
-      )
-
-    if (
-      verifyResponse.data !== "VALID"
-    ) {
-
-      return res
-        .status(400)
-        .send("PAYFAST VALIDATION FAILED")
+      "Content-Type":
+        "application/x-www-form-urlencoded"
 
     }
-
-    // CHECK DUPLICATE PAYMENT
-    const existing =
-      await db
-        .collection("tickets")
-        .where(
-          "paymentId",
-          "==",
-          paymentData.pf_payment_id
-        )
-        .get()
-
-    if (!existing.empty) {
-
-      return res.send("ALREADY PROCESSED")
-
-    }
-
-    // CREATE TICKET
-    const ticketId = uuidv4()
-
-    const ticket = {
-
-      id: ticketId,
-
-      fullName:
-        paymentData.name_first || "Customer",
-
-      email:
-        paymentData.email_address,
-
-      phone:
-        paymentData.custom_str1 || "",
-
-      ticketType:
-        paymentData.item_name || "MGS Ticket",
-
-      quantity: 1,
-
-      total:
-        paymentData.amount_gross,
-
-      paymentId:
-        paymentData.pf_payment_id,
-
-      paymentStatus: "PAID",
-
-      used: false,
-
-      locked: false,
-
-      status: "VALID",
-
-      createdAt:
-        new Date().toISOString()
-
-    }
-
-    // GENERATE QR
-    const qrCode =
-      await QRCode.toDataURL(ticketId)
-
-    ticket.qr = qrCode
-
-    // SAVE FIREBASE
-    await db
-      .collection("tickets")
-      .doc(ticketId)
-      .set(ticket)
-
-    // SEND EMAIL
-    await sendTicketEmail(ticket)
-
-    console.log("TICKET CREATED")
-
-    res.status(200).send("ITN RECEIVED")
 
   }
 
-  catch (error) {
+)
 
-    console.log(error)
+if (
+  !verifyResponse.data.includes("VALID")
+) {
 
-    res.status(500).send(error.message)
+  console.log("PAYFAST VALIDATION FAILED")
 
-  }
+  return res
+    .status(400)
+    .send("PAYFAST VALIDATION FAILED")
+
+}
+
+const existing = await db
+  .collection("tickets")
+  .where(
+    "paymentId",
+    "==",
+    paymentData.pf_payment_id
+  )
+  .get()
+
+if (!existing.empty) {
+
+  return res.send("ALREADY PROCESSED")
+
+}
+
+const ticketId = uuidv4()
+
+const ticket = {
+
+  id: ticketId,
+
+  fullName:
+    paymentData.name_first || "Customer",
+
+  email:
+    paymentData.email_address || "",
+
+  phone:
+    paymentData.custom_str1 || "",
+
+  ticketType:
+    paymentData.item_name || "MGS Ticket",
+
+  quantity: 1,
+
+  total:
+    Number(
+      paymentData.amount_gross || 0
+    ),
+
+  paymentId:
+    paymentData.pf_payment_id,
+
+  paymentStatus: "PAID",
+
+  used: false,
+
+  status: "VALID",
+
+  createdAt:
+    new Date().toISOString()
+
+}
+
+const qrCode =
+  await QRCode.toDataURL(ticketId)
+
+ticket.qr = qrCode
+
+await db
+  .collection("tickets")
+  .doc(ticketId)
+  .set(ticket)
+
+await sendTicketEmail(ticket)
+
+console.log("TICKET CREATED")
+
+return res.status(200)
+  .send("ITN RECEIVED")
+```
+
+}
+
+catch (error) {
+
+```
+console.log(error)
+
+return res
+  .status(500)
+  .send(error.message)
+```
+
+}
 
 })
 
@@ -596,6 +602,22 @@ app.get(
           0
 
         )
+       
+      const fullTickets =
+        tickets.filter(
+          t =>
+            String(t.ticketType)
+              .toLowerCase()
+              .includes("full")
+        ).length
+
+      const vibeTickets =
+        tickets.filter(
+         t =>
+           String(t.ticketType)
+             .toLowerCase()
+             .includes("vibe")
+       ).length
 
       res.json({
 
@@ -604,8 +626,12 @@ app.get(
         usedTickets,
 
         unusedTickets,
+        
+        revenue,
 
-        revenue
+        fullTickets,
+
+        vibeTickets
 
       })
 
