@@ -133,7 +133,7 @@ export default function Payment() {
           <input
             type="hidden"
             name="notify_url"
-            value="https://mgs-ticket-system-frontend.onrender.com"
+            value="https://mgs-ticket-system-backend.onrender.com/payfast-itn"
           />
 
           <input
