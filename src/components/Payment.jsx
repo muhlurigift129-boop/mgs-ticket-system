@@ -154,13 +154,13 @@ export default function Payment() {
           <input
             type="hidden"
             name="return_url"
-            value="https://mgs-ticket-system-frontend.onrender.com/success"
+            value="https://mgs-ticket-system-frontend.onrender.com/#/success"
           />
 
           <input
             type="hidden"
             name="cancel_url"
-            value="https://mgs-ticket-system-frontend.onrender.com"
+            value="https://mgs-ticket-system-frontend.onrender.com/#/"
           />
 
           <input
