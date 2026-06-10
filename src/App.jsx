@@ -16,92 +16,160 @@ import Payment from "./components/Payment.jsx"
 import Success from "./components/Success.jsx"
 import Scanner from "./components/Scanner.jsx"
 import Admin from "./components/Admin.jsx"
+import AdminLogin from "./components/AdminLogin.jsx"
+
+// PROTECTED ADMIN ROUTE
+function ProtectedAdmin({ children }) {
+
+  const isAdmin =
+    localStorage.getItem("mgs_admin")
+
+  if (isAdmin !== "true") {
+    return <Navigate to="/admin-login" />
+  }
+
+  return children
+}
 
 // 404 PAGE
 function NotFound() {
+
   const navigate = useNavigate()
 
   return (
-    <div style={{
-      background: "linear-gradient(to bottom, #000, #111)",
-      color: "red",
-      minHeight: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      flexDirection: "column",
-      fontFamily: "Arial",
-      textAlign: "center",
-      padding: "20px"
-    }}>
 
-      <h1 style={{ fontSize: "90px", marginBottom: "10px" }}>
+    <div
+      style={{
+        background:
+          "linear-gradient(to bottom,#000,#111)",
+        color: "red",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        textAlign: "center"
+      }}
+    >
+
+      <h1
+        style={{
+          fontSize: "90px"
+        }}
+      >
         404
       </h1>
 
-      <h2>PAGE NOT FOUND</h2>
-
-      <p style={{ color: "#ccc", marginTop: "10px", maxWidth: "400px" }}>
-        This route does not exist.
-      </p>
+      <h2>
+        PAGE NOT FOUND
+      </h2>
 
       <button
         onClick={() => navigate("/")}
         style={{
-          marginTop: "30px",
+          marginTop: "20px",
           padding: "15px 40px",
           background: "red",
           border: "none",
-          borderRadius: "12px",
+          borderRadius: "10px",
           color: "white",
-          cursor: "pointer",
-          fontSize: "16px",
-          fontWeight: "bold"
+          cursor: "pointer"
         }}
       >
         BACK HOME
       </button>
+
     </div>
+
   )
 }
 
 export default function App() {
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] =
+    useState(true)
 
   return (
+
     <HashRouter>
+
       <Routes>
 
-        {/* LOADING SCREEN ROUTE */}
-        {loading && (
+        {loading ? (
+
           <Route
             path="*"
             element={
-              <WelcomeScreen onFinish={() => setLoading(false)} />
+              <WelcomeScreen
+                onFinish={() =>
+                  setLoading(false)
+                }
+              />
             }
           />
-        )}
 
-        {/* MAIN ROUTES */}
-        {!loading && (
+        ) : (
+
           <>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/success" element={<Success />} />
-            <Route path="/scanner" element={<Scanner />} />
-            <Route path="/admin" element={<Admin />} />
 
-            {/* FIX ROOT REDIRECT */}
-            <Route path="" element={<Navigate to="/" />} />
+            <Route
+              path="/"
+              element={<Home />}
+            />
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
+            <Route
+              path="/register"
+              element={<Register />}
+            />
+
+            <Route
+              path="/payment"
+              element={<Payment />}
+            />
+
+            <Route
+              path="/success"
+              element={<Success />}
+            />
+
+            <Route
+              path="/scanner"
+              element={<Scanner />}
+            />
+
+            {/* ADMIN LOGIN */}
+            <Route
+              path="/admin-login"
+              element={<AdminLogin />}
+            />
+
+            {/* PROTECTED ADMIN */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedAdmin>
+                  <Admin />
+                </ProtectedAdmin>
+              }
+            />
+
+            <Route
+              path=""
+              element={<Navigate to="/" />}
+            />
+
+            <Route
+              path="*"
+              element={<NotFound />}
+            />
+
           </>
+
         )}
 
       </Routes>
+
     </HashRouter>
+
   )
 }
