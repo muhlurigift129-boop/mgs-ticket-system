@@ -6,71 +6,75 @@ dotenv.config()
 
 const app = express()
 
+// Middleware
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
+// Root Route
 app.get("/", (req, res) => {
-  res.send("MGS Backend Running")
+res.json({
+success: true,
+message: "MGS Ticket System Backend Running",
+status: "ONLINE",
+endpoints: [
+"/health"
+]
+})
 })
 
+// Health Check
 app.get("/health", (req, res) => {
-  res.json({
-    success: true,
-    status: "ONLINE"
-  })
+res.json({
+success: true,
+status: "ONLINE",
+service: "MGS Backend"
+})
 })
 
-// ========================================
-// ROOT ROUTE
-// ========================================
+// Server
+const PORT = process.env.PORT || 5000
 
+app.listen(PORT, () => {
+console.log(`MGS SERVER RUNNING ON PORT ${PORT}`)
+})
+const express = require("express")
+const cors = require("cors")
+const dotenv = require("dotenv")
+
+dotenv.config()
+
+const app = express()
+
+// Middleware
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// Root Route
 app.get("/", (req, res) => {
-
-  res.json({
-
-    success: true,
-
-    message: "MGS Ticket System Backend Running",
-
-    status: "ONLINE",
-
-    endpoints: [
-
-      "/health",
-
-      "/verify-payment",
-
-      "/payfast-itn",
-
-      "/validate-ticket",
-
-      "/admin-login",
-
-      "/tickets",
-
-      "/analytics"
-
-    ]
-
-  })
-
+res.json({
+success: true,
+message: "MGS Ticket System Backend Running",
+status: "ONLINE",
+endpoints: [
+"/health"
+]
+})
 })
 
-
-// ========================================
-// HEALTH ROUTE
-// ========================================
-
+// Health Check
 app.get("/health", (req, res) => {
+res.json({
+success: true,
+status: "ONLINE",
+service: "MGS Backend"
+})
+})
 
-  res.json({
+// Server
+const PORT = process.env.PORT || 5000
 
-    success: true,
-
-    status: "ONLINE",
-
-    service: "MGS Backend"
-
-  })
-
+app.listen(PORT, () => {
+console.log(`MGS SERVER RUNNING ON PORT ${PORT}`)
 })
