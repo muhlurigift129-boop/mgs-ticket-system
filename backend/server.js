@@ -1,6 +1,9 @@
 const express = require("express")
 const cors = require("cors")
 const dotenv = require("dotenv")
+const QRCode = require("qrcode")
+const { v4: uuidv4 } = require("uuid")
+const nodemailer = require("nodemailer")
 
 const { db } = require("./firebase")
 
@@ -12,10 +15,7 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// ========================================
 // ROOT
-// ========================================
-
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -24,10 +24,7 @@ app.get("/", (req, res) => {
   })
 })
 
-// ========================================
 // HEALTH
-// ========================================
-
 app.get("/health", (req, res) => {
   res.json({
     success: true,
@@ -36,20 +33,65 @@ app.get("/health", (req, res) => {
   })
 })
 
-// ========================================
-// VALIDATE TICKET
-// ========================================
+// CREATE TICKET
+app.post("/create-ticket", async (req, res) => {
+  try {
 
+    const {
+      fullName,
+      email,
+      phone,
+      ticketType,
+      quantity,
+      total
+    } = req.body
+
+    const ticketId = uuidv4()
+
+    const qr = await QRCode.toDataURL(ticketId)
+
+    const ticket = {
+      id: ticketId,
+      fullName,
+      email,
+      phone,
+      ticketType,
+      quantity,
+      total,
+      used: false,
+      status: "VALID",
+      qr,
+      createdAt: new Date().toISOString()
+    }
+
+    await db
+      .collection("tickets")
+      .doc(ticketId)
+      .set(ticket)
+
+    await sendTicketEmail(ticket)
+
+    res.json({
+      success: true,
+      ticket
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
+// VALIDATE TICKET
 app.post("/validate-ticket", async (req, res) => {
   try {
-    const { ticketId } = req.body
 
-    if (!ticketId) {
-      return res.status(400).json({
-        valid: false,
-        message: "Ticket ID required"
-      })
-    }
+    const { ticketId } = req.body
 
     const ticketRef =
       db.collection("tickets").doc(ticketId)
@@ -80,7 +122,7 @@ app.post("/validate-ticket", async (req, res) => {
       scannedAt: new Date().toISOString()
     })
 
-    return res.json({
+    res.json({
       valid: true,
       message: "VALID TICKET",
       ticket
@@ -88,20 +130,16 @@ app.post("/validate-ticket", async (req, res) => {
 
   } catch (error) {
 
-    console.log(error)
-
-    return res.status(500).json({
+    res.status(500).json({
       valid: false,
       error: error.message
     })
   }
 })
 
-// ========================================
-// GET ALL TICKETS
-// ========================================
-
+// GET TICKETS
 app.get("/tickets", async (req, res) => {
+
   try {
 
     const snapshot =
@@ -123,11 +161,9 @@ app.get("/tickets", async (req, res) => {
   }
 })
 
-// ========================================
 // ANALYTICS
-// ========================================
-
 app.get("/analytics", async (req, res) => {
+
   try {
 
     const snapshot =
@@ -139,26 +175,18 @@ app.get("/analytics", async (req, res) => {
       tickets.push(doc.data())
     })
 
-    const totalTickets = tickets.length
-
-    const usedTickets =
-      tickets.filter(t => t.used).length
-
-    const unusedTickets =
-      tickets.filter(t => !t.used).length
-
-    const revenue =
-      tickets.reduce(
-        (sum, ticket) =>
-          sum + Number(ticket.total || 0),
-        0
-      )
-
     res.json({
-      totalTickets,
-      usedTickets,
-      unusedTickets,
-      revenue
+      totalTickets: tickets.length,
+      usedTickets:
+        tickets.filter(t => t.used).length,
+      unusedTickets:
+        tickets.filter(t => !t.used).length,
+      revenue:
+        tickets.reduce(
+          (sum, t) =>
+            sum + Number(t.total || 0),
+          0
+        )
     })
 
   } catch (error) {
@@ -169,11 +197,52 @@ app.get("/analytics", async (req, res) => {
   }
 })
 
-// ========================================
-// SERVER
-// ========================================
+// EMAIL
+async function sendTicketEmail(ticket) {
 
-const PORT = process.env.PORT || 5000
+  try {
+
+    const transporter =
+      nodemailer.createTransport({
+
+        service: "gmail",
+
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+
+      })
+
+    await transporter.sendMail({
+
+      from: process.env.EMAIL_USER,
+
+      to: ticket.email,
+
+      subject: "MGS Event Ticket",
+
+      html: `
+        <h1>MGS Event Ticket</h1>
+        <p>Name: ${ticket.fullName}</p>
+        <p>Ticket ID: ${ticket.id}</p>
+        <img src="${ticket.qr}" width="250" />
+      `
+    })
+
+    console.log("EMAIL SENT")
+
+  } catch (error) {
+
+    console.log(
+      "EMAIL ERROR:",
+      error.message
+    )
+  }
+}
+
+const PORT =
+  process.env.PORT || 5000
 
 app.listen(PORT, () => {
   console.log(
