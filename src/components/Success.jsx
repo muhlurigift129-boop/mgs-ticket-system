@@ -63,38 +63,16 @@ export default function Success() {
           ] || "VIBE ONLY"
 
         const newTicket = {
-
           id: ticketId,
-
-          name:
-            customer.fullName ||
-            "Guest",
-
-          email:
-            customer.email || "",
-
-          phone:
-            customer.phone || "",
-
-          type:
-            customer.ticketType ||
-            "vibe",
-
+          fullName: customer.fullName,
+          email: customer.email,
+          phone: customer.phone,
+          ticketType: customer.ticketType,
           packageName,
-
-          quantity:
-            Number(customer.quantity) || 1,
-
-          total:
-            Number(customer.total) || 0,
-
+          quantity: Number(customer.quantity),
+          total: Number(customer.total),
           used: false,
-
-          status: "VALID",
-
-          createdAt:
-            new Date().toISOString()
-
+          createdAt: new Date().toISOString()
         }
 
         await setDoc(
