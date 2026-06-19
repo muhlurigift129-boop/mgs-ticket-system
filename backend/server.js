@@ -11,6 +11,7 @@ dotenv.config()
 
 const app = express()
 
+// MIDDLEWARE
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -19,40 +20,7 @@ app.use(express.urlencoded({ extended: true }))
 app.get("/", (req, res) => {
   res.json({
     success: true,
-        ticketType,
-      quantity,
-      total
-    } = req.body
-
-    const ticketId = uuidv4()
-
-    const qr = await QRCode.toDataURL(ticketId)
-
-    const ticket = {
-      id: ticketId,
-      fullName,
-      email,
-      phone,
-      ticketType,
-      quantity,
-      total,
-      used: false,
-      status: "VALID",
-      qr,
-      createdAt: new Date().toISOString()
-    }
-
-    await db
-      .collection("tickets")
-      .doc(ticketId)
-      .set(ticket)
-
-    await sendTicketEmail(ticket)
-
-    res.json({
-      success: true,
-      ticket
-    })  message: "MGS Ticket System Backend Running",
+    message: "MGS Ticket System Backend Running",
     status: "ONLINE"
   })
 })
@@ -66,52 +34,70 @@ app.get("/health", (req, res) => {
   })
 })
 
-// CREATE TICKET
+/* =====================================================
+   CREATE TICKET AFTER PAYMENT (MANUAL OR ITN)
+===================================================== */
 app.post("/verify-payment", async (req, res) => {
-  const customer = req.body
+  try {
+    const customer = req.body
 
-  const ticketId = uuidv4()
+    const ticketId = uuidv4()
 
-  const ticket = {
-    id: ticketId,
-    fullName: customer.fullName,
-    email: customer.email,
-    phone: customer.phone,
-    ticketType: customer.ticketType,
-    packageName: customer.packageName,
-    quantity: customer.quantity,
-    total: customer.total,
-    used: false,
-    createdAt: new Date().toISOString()
+    const qr = await QRCode.toDataURL(
+      JSON.stringify({ id: ticketId })
+    )
+
+    const ticket = {
+      id: ticketId,
+      fullName: customer.fullName,
+      email: customer.email,
+      phone: customer.phone,
+      ticketType: customer.ticketType,
+      packageName: customer.packageName,
+      quantity: customer.quantity,
+      total: customer.total,
+      used: false,
+      status: "VALID",
+      qr,
+      createdAt: new Date().toISOString()
+    }
+
+    await db.collection("tickets").doc(ticketId).set(ticket)
+
+    await sendTicketEmail(ticket)
+
+    res.json({
+      success: true,
+      ticket
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
   }
-
-  await db.collection("tickets").doc(ticketId).set(ticket)
-
-  await sendTicketEmail(ticket)
-
-  res.json({ success: true, ticket })
 })
 
-// VALIDATE TICKET
+/* =====================================================
+   VALIDATE SCANNER
+===================================================== */
 app.post("/validate-ticket", async (req, res) => {
   try {
-
     const { ticketId } = req.body
 
-    const ticketRef =
-      db.collection("tickets").doc(ticketId)
+    const ref = db.collection("tickets").doc(ticketId)
+    const snap = await ref.get()
 
-    const ticketSnap =
-      await ticketRef.get()
-
-    if (!ticketSnap.exists) {
+    if (!snap.exists) {
       return res.json({
         valid: false,
         message: "INVALID TICKET"
       })
     }
 
-    const ticket = ticketSnap.data()
+    const ticket = snap.data()
 
     if (ticket.used) {
       return res.json({
@@ -121,7 +107,7 @@ app.post("/validate-ticket", async (req, res) => {
       })
     }
 
-    await ticketRef.update({
+    await ref.update({
       used: true,
       status: "USED",
       scannedAt: new Date().toISOString()
@@ -134,7 +120,6 @@ app.post("/validate-ticket", async (req, res) => {
     })
 
   } catch (error) {
-
     res.status(500).json({
       valid: false,
       error: error.message
@@ -142,13 +127,12 @@ app.post("/validate-ticket", async (req, res) => {
   }
 })
 
-// GET TICKETS
+/* =====================================================
+   GET ALL TICKETS
+===================================================== */
 app.get("/tickets", async (req, res) => {
-
   try {
-
-    const snapshot =
-      await db.collection("tickets").get()
+    const snapshot = await db.collection("tickets").get()
 
     const tickets = []
 
@@ -159,98 +143,78 @@ app.get("/tickets", async (req, res) => {
     res.json(tickets)
 
   } catch (error) {
-
     res.status(500).json({
       error: error.message
     })
   }
 })
 
-// ANALYTICS
+/* =====================================================
+   ANALYTICS
+===================================================== */
 app.get("/analytics", async (req, res) => {
-
   try {
-
-    const snapshot =
-      await db.collection("tickets").get()
+    const snapshot = await db.collection("tickets").get()
 
     const tickets = []
-
-    snapshot.forEach(doc => {
-      tickets.push(doc.data())
-    })
+    snapshot.forEach(doc => tickets.push(doc.data()))
 
     res.json({
       totalTickets: tickets.length,
-      usedTickets:
-        tickets.filter(t => t.used).length,
-      unusedTickets:
-        tickets.filter(t => !t.used).length,
-      revenue:
-        tickets.reduce(
-          (sum, t) =>
-            sum + Number(t.total || 0),
-          0
-        )
+      usedTickets: tickets.filter(t => t.used).length,
+      unusedTickets: tickets.filter(t => !t.used).length,
+      revenue: tickets.reduce(
+        (sum, t) => sum + Number(t.total || 0),
+        0
+      )
     })
 
   } catch (error) {
-
     res.status(500).json({
       error: error.message
     })
   }
 })
 
-// EMAIL
+/* =====================================================
+   EMAIL FUNCTION
+===================================================== */
 async function sendTicketEmail(ticket) {
-
   try {
-
-    const transporter =
-      nodemailer.createTransport({
-
-        service: "gmail",
-
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
-
-      })
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    })
 
     await transporter.sendMail({
-
       from: process.env.EMAIL_USER,
-
       to: ticket.email,
-
       subject: "MGS Event Ticket",
-
       html: `
-        <h1>MGS Event Ticket</h1>
-        <p>Name: ${ticket.fullName}</p>
-        <p>Ticket ID: ${ticket.id}</p>
-        <img src="${ticket.qr}" width="250" />
+        <div style="font-family:Arial">
+          <h1>MGS EVENT TICKET</h1>
+          <p><b>Name:</b> ${ticket.fullName}</p>
+          <p><b>Ticket ID:</b> ${ticket.id}</p>
+          <p><b>Type:</b> ${ticket.ticketType}</p>
+          <p><b>Total:</b> R${ticket.total}</p>
+          <img src="${ticket.qr}" width="250"/>
+        </div>
       `
     })
 
     console.log("EMAIL SENT")
 
   } catch (error) {
-
-    console.log(
-      "EMAIL ERROR:",
-      error.message
-    )
+    console.log("EMAIL ERROR:", error.message)
   }
 }
 
-const PORT =
-  process.env.PORT || 5000
+// START SERVER
+const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
-  console.log(
-    `MGS SERVER RUNNING ON PORT ${PORT}`
-  )
+  console.log(`MGS SERVER RUNNING ON PORT ${PORT}`)
 })
