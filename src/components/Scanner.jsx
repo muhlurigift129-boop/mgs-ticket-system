@@ -43,19 +43,10 @@ export default function Scanner() {
 
       try {
 
-        const qrData = JSON.parse(result)
-
-        if (!qrData.id) {
-
-          setTicketStatus("INVALID")
-
-          setLoading(false)
-
-          return
-        }
+        const ticketId = result.trim()
 
         const ticketRef =
-          doc(db, "tickets", qrData.id)
+          doc(db, "tickets", ticketId)
 
         const ticketSnap =
           await getDoc(ticketRef)
