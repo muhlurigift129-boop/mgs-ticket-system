@@ -108,9 +108,7 @@ export default function Success() {
 
         const qrCode =
           await QRCode.toDataURL(
-            JSON.stringify({
-              id: ticketId
-            })
+            ticketId
           )
 
         setTicket(newTicket)
