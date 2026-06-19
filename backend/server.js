@@ -19,29 +19,7 @@ app.use(express.urlencoded({ extended: true }))
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "MGS Ticket System Backend Running",
-    status: "ONLINE"
-  })
-})
-
-// HEALTH
-app.get("/health", (req, res) => {
-  res.json({
-    success: true,
-    status: "ONLINE",
-    service: "MGS Backend"
-  })
-})
-
-// CREATE TICKET
-app.post("/create-ticket", async (req, res) => {
-  try {
-
-    const {
-      fullName,
-      email,
-      phone,
-      ticketType,
+        ticketType,
       quantity,
       total
     } = req.body
@@ -74,17 +52,44 @@ app.post("/create-ticket", async (req, res) => {
     res.json({
       success: true,
       ticket
-    })
+    })  message: "MGS Ticket System Backend Running",
+    status: "ONLINE"
+  })
+})
 
-  } catch (error) {
+// HEALTH
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    status: "ONLINE",
+    service: "MGS Backend"
+  })
+})
 
-    console.log(error)
+// CREATE TICKET
+app.post("/verify-payment", async (req, res) => {
+  const customer = req.body
 
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+  const ticketId = uuidv4()
+
+  const ticket = {
+    id: ticketId,
+    fullName: customer.fullName,
+    email: customer.email,
+    phone: customer.phone,
+    ticketType: customer.ticketType,
+    packageName: customer.packageName,
+    quantity: customer.quantity,
+    total: customer.total,
+    used: false,
+    createdAt: new Date().toISOString()
   }
+
+  await db.collection("tickets").doc(ticketId).set(ticket)
+
+  await sendTicketEmail(ticket)
+
+  res.json({ success: true, ticket })
 })
 
 // VALIDATE TICKET
