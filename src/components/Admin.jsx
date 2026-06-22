@@ -359,7 +359,7 @@ export default function Admin() {
               {ticket.id}
             </p>
 
-            {ticket.qr && (
+            {ticket.qrCode && (
 
               <div
                 style={{
@@ -369,28 +369,33 @@ export default function Admin() {
               >
 
                 <img
-                  src={ticket.qr}
+                  src={ticket.qrCode}
                   alt="QR Code"
                   width="200"
+                  style={{
+                    background:"white",
+                    padding:"10px",
+                    borderRadius:"10px"
+                  }}
                 />
 
                 <br />
 
                 <a
-                  href={ticket.qr}
-                  download={`ticket-${ticket.id}.png`}
-                  style={{
-                    color:"red",
-                    display:"inline-block",
-                    marginTop:"10px"
-                  }}
-                >
-                  Download QR Code
-                </a>
+                 href={ticket.qrCode}
+                 download={`ticket-${ticket.id}.png`}
+                 style={{
+                   color:"red",
+                   display:"inline-block",
+                   marginTop:"10px"
+                 }}
+              >
+                 Download QR Code
+               </a>
 
-              </div>
+             </div>
 
-            )}
+           )}
 
           </div>
 
