@@ -8,7 +8,6 @@ import { doc, setDoc } from "firebase/firestore"
 export default function Success() {
 
   const [ticket, setTicket] = useState(null)
-  const [qr, setQr] = useState("")
   const [loading, setLoading] = useState(true)
 
   const ticketNames = {
@@ -18,61 +17,87 @@ export default function Success() {
     vibeFood: "VIBE + FOOD"
   }
 
-  const ticketPrices = {
-    full: "R300",
-    vibe: "R100",
-    vibeDrinks: "R200",
-    vibeFood: "R200"
-  }
-
   useEffect(() => {
 
-    async function generateTicket() {
+    async function createTicket() {
 
       try {
 
-        const existing =
-          sessionStorage.getItem(
-            "mgs_ticket_created"
-          )
+        const existingTicket =
+          sessionStorage.getItem("mgsTicket")
 
-        if (existing) {
+        if (existingTicket) {
+
+          const saved =
+            JSON.parse(existingTicket)
+
+          setTicket(saved)
           setLoading(false)
-          return
-        }
 
-        const raw =
-          localStorage.getItem(
-            "mgsCustomer"
-          )
-
-        if (!raw) {
-          setLoading(false)
           return
         }
 
         const customer =
-          JSON.parse(raw)
+          JSON.parse(
+            localStorage.getItem("mgsCustomer")
+          )
 
-        const ticketId =
-          uuidv4()
+        if (!customer) {
 
-        const packageName =
-          ticketNames[
-            customer.ticketType
-          ] || "VIBE ONLY"
+          setLoading(false)
+          return
+
+        }
+
+        const ticketId = uuidv4()
+
+        const qrValue = JSON.stringify({
+          id: ticketId
+        })
+
+        const qrCode =
+          await QRCode.toDataURL(qrValue)
 
         const newTicket = {
+
           id: ticketId,
-          fullName: customer.fullName,
-          email: customer.email,
-          phone: customer.phone,
-          ticketType: customer.ticketType,
-          packageName,
-          quantity: Number(customer.quantity),
-          total: Number(customer.total),
+
+          fullName:
+            customer.fullName,
+
+          email:
+            customer.email,
+
+          phone:
+            customer.phone,
+
+          ticketType:
+            customer.ticketType,
+
+          packageName:
+            ticketNames[
+              customer.ticketType
+            ],
+
+          quantity:
+            Number(
+              customer.quantity
+            ),
+
+          total:
+            Number(
+              customer.total
+            ),
+
+          qrCode,
+
           used: false,
-          createdAt: new Date().toISOString()
+
+          status: "VALID",
+
+          createdAt:
+            new Date().toISOString()
+
         }
 
         await setDoc(
@@ -84,26 +109,18 @@ export default function Success() {
           newTicket
         )
 
-        const qrCode =
-          await QRCode.toDataURL(
-            ticketId
-          )
+        sessionStorage.setItem(
+          "mgsTicket",
+          JSON.stringify(newTicket)
+        )
 
         setTicket(newTicket)
 
-        setQr(qrCode)
+      }
 
-        sessionStorage.setItem(
-          "mgs_ticket_created",
-          "true"
-        )
+      catch (error) {
 
-      } catch (error) {
-
-        console.log(
-          "Ticket Error:",
-          error
-        )
+        console.log(error)
 
       }
 
@@ -111,11 +128,11 @@ export default function Success() {
 
     }
 
-    generateTicket()
+    createTicket()
 
   }, [])
 
-  if (loading || !ticket) {
+  if (loading) {
 
     return (
 
@@ -123,17 +140,34 @@ export default function Success() {
         style={{
           minHeight: "100vh",
           background: "#000",
+          color: "white",
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
-          color: "white"
+          alignItems: "center"
         }}
       >
+        Generating Ticket...
+      </div>
 
-        <h2>
-          Generating Secure Ticket...
-        </h2>
+    )
 
+  }
+
+  if (!ticket) {
+
+    return (
+
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#000",
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        Ticket Not Found
       </div>
 
     )
@@ -156,10 +190,10 @@ export default function Success() {
 
       <div
         style={{
-          width: "400px",
+          width: "420px",
           background: "#111",
-          borderRadius: "25px",
           padding: "30px",
+          borderRadius: "25px",
           color: "white",
           textAlign: "center",
           boxShadow:
@@ -167,19 +201,11 @@ export default function Success() {
         }}
       >
 
-        <h1
-          style={{
-            color: "red"
-          }}
-        >
+        <h1 style={{ color: "red" }}>
           MGS EVENT
         </h1>
 
-        <p
-          style={{
-            color: "#aaa"
-          }}
-        >
+        <p style={{ color: "#999" }}>
           OFFICIAL ENTRY TICKET
         </p>
 
@@ -189,60 +215,42 @@ export default function Success() {
             padding: "20px",
             borderRadius: "15px",
             textAlign: "left",
-            marginTop: "20px",
-            marginBottom: "20px"
+            marginTop: "20px"
           }}
         >
 
           <p>
-            <b>Name:</b>
-            {" "}
-            {ticket.name}
+            <strong>Name:</strong>{" "}
+            {ticket.fullName}
           </p>
 
           <p>
-            <b>Email:</b>
-            {" "}
+            <strong>Email:</strong>{" "}
             {ticket.email}
           </p>
 
           <p>
-            <b>Phone:</b>
-            {" "}
+            <strong>Phone:</strong>{" "}
             {ticket.phone}
           </p>
 
           <p>
-            <b>Package:</b>
-            {" "}
+            <strong>Package:</strong>{" "}
             {ticket.packageName}
           </p>
 
           <p>
-            <b>Price:</b>
-            {" "}
-            {
-              ticketPrices[
-                ticket.type
-              ]
-            }
-          </p>
-
-          <p>
-            <b>Quantity:</b>
-            {" "}
+            <strong>Quantity:</strong>{" "}
             {ticket.quantity}
           </p>
 
           <p>
-            <b>Total:</b>
-            {" "}
+            <strong>Total:</strong>{" "}
             R{ticket.total}
           </p>
 
           <p>
-            <b>Status:</b>
-            {" "}
+            <strong>Status:</strong>{" "}
             <span
               style={{
                 color: "#00ff66"
@@ -257,15 +265,16 @@ export default function Success() {
         <div
           style={{
             background: "white",
-            padding: "12px",
-            borderRadius: "12px"
+            padding: "15px",
+            borderRadius: "15px",
+            marginTop: "20px"
           }}
         >
 
           <img
-            src={qr}
+            src={ticket.qrCode}
             alt="QR Code"
-            width="220"
+            width="240"
           />
 
         </div>
@@ -282,27 +291,31 @@ export default function Success() {
         <p
           style={{
             fontSize: "12px",
-            color: "#ccc",
-            wordBreak: "break-all"
+            wordBreak: "break-all",
+            color: "#ccc"
           }}
         >
           {ticket.id}
         </p>
 
-        <div
+        <button
+          onClick={() =>
+            window.print()
+          }
           style={{
-            marginTop: "20px",
-            background:
-              "rgba(255,0,0,.15)",
-            padding: "12px",
-            borderRadius: "10px",
-            color: "#ffb3b3"
+            width: "100%",
+            padding: "15px",
+            background: "red",
+            border: "none",
+            borderRadius: "12px",
+            color: "white",
+            fontWeight: "bold",
+            cursor: "pointer",
+            marginTop: "20px"
           }}
         >
-          Scan this QR code at
-          the entrance.
-          Do not share your ticket.
-        </div>
+          DOWNLOAD / PRINT TICKET
+        </button>
 
       </div>
 
