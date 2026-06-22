@@ -21,6 +21,7 @@ export default function Admin() {
 
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
 
   async function loadTickets() {
 
@@ -63,68 +64,83 @@ export default function Admin() {
     loadTickets()
   }, [])
 
+  function logout() {
+
+    localStorage.removeItem(
+      "mgs_admin"
+    )
+
+    window.location.href =
+      "#/admin-login"
+
+  }
+
+  const filteredTickets =
+    tickets.filter(ticket => {
+
+      const name =
+        (
+          ticket.fullName ||
+          ticket.name ||
+          ""
+        ).toLowerCase()
+
+      return name.includes(
+        search.toLowerCase()
+      )
+
+    })
+
   const usedTickets =
-    tickets.filter(ticket => ticket.used)
+    tickets.filter(
+      t => t.used
+    )
 
   const unusedTickets =
-    tickets.filter(ticket => !ticket.used)
+    tickets.filter(
+      t => !t.used
+    )
 
   const totalRevenue =
     tickets.reduce(
+
       (sum, ticket) =>
         sum + Number(ticket.total || 0),
+
       0
+
     )
-
-  const fullEvent =
-    tickets.filter(
-      t => t.type === "full"
-    ).length
-
-  const vibeOnly =
-    tickets.filter(
-      t => t.type === "vibe"
-    ).length
-
-  const vibeDrinks =
-    tickets.filter(
-      t => t.type === "vibeDrinks"
-    ).length
-
-  const vibeFood =
-    tickets.filter(
-      t => t.type === "vibeFood"
-    ).length
 
   function exportExcel() {
 
-    const rows = tickets.map(ticket => ({
+    const rows =
+      tickets.map(ticket => ({
 
-      Name:
-        ticket.name ||
-        ticket.fullName,
+        Name:
+          ticket.fullName ||
+          ticket.name,
 
-      Email:
-        ticket.email,
+        Email:
+          ticket.email,
 
-      Phone:
-        ticket.phone,
+        Phone:
+          ticket.phone,
 
-      Package:
-        ticket.packageName,
+        Package:
+          ticket.packageName,
 
-      Quantity:
-        ticket.quantity,
+        Quantity:
+          ticket.quantity,
 
-      Total:
-        ticket.total,
+        Total:
+          ticket.total,
 
-      Status:
-        ticket.used
-          ? "USED"
-          : "VALID"
+        Status:
+          ticket.used
+            ? "USED"
+            : "VALID"
 
-    }))
+      }))
 
     const worksheet =
       XLSX.utils.json_to_sheet(rows)
@@ -142,16 +158,6 @@ export default function Admin() {
       workbook,
       "MGS_Attendees.xlsx"
     )
-  }
-
-  function logout() {
-
-    localStorage.removeItem(
-      "mgs_admin"
-    )
-
-    window.location.href =
-      "#/admin-login"
 
   }
 
@@ -183,10 +189,6 @@ export default function Admin() {
           MGS ADMIN DASHBOARD
         </h1>
 
-        <p style={{color:"#aaa"}}>
-          LIVE EVENT MANAGEMENT
-        </p>
-
         <button
           onClick={logout}
           style={{
@@ -195,8 +197,7 @@ export default function Admin() {
             border:"none",
             padding:"12px 20px",
             borderRadius:"10px",
-            cursor:"pointer",
-            marginTop:"15px"
+            cursor:"pointer"
           }}
         >
           LOGOUT
@@ -207,10 +208,8 @@ export default function Admin() {
       <div
         style={{
           display:"flex",
-          justifyContent:"center",
-          gap:"15px",
-          flexWrap:"wrap",
-          marginBottom:"30px"
+          gap:"10px",
+          marginBottom:"20px"
         }}
       >
 
@@ -230,13 +229,28 @@ export default function Admin() {
 
       </div>
 
+      <input
+        type="text"
+        placeholder="Search attendee..."
+        value={search}
+        onChange={(e)=>
+          setSearch(e.target.value)
+        }
+        style={{
+          width:"100%",
+          padding:"15px",
+          borderRadius:"10px",
+          marginBottom:"25px"
+        }}
+      />
+
       <div
         style={{
           display:"grid",
           gridTemplateColumns:
             "repeat(auto-fit,minmax(220px,1fr))",
           gap:"20px",
-          marginBottom:"40px"
+          marginBottom:"30px"
         }}
       >
 
@@ -264,13 +278,17 @@ export default function Admin() {
 
       {loading ? (
 
-        <h2 style={{textAlign:"center"}}>
+        <h2
+          style={{
+            textAlign:"center"
+          }}
+        >
           Loading Tickets...
         </h2>
 
       ) : (
 
-        tickets.map(ticket => (
+        filteredTickets.map(ticket => (
 
           <div
             key={ticket.firestoreId}
@@ -284,14 +302,33 @@ export default function Admin() {
           >
 
             <h2 style={{color:"red"}}>
-              {ticket.name || ticket.fullName}
+              {
+                ticket.fullName ||
+                ticket.name
+              }
             </h2>
 
             <p>Email: {ticket.email}</p>
+
             <p>Phone: {ticket.phone}</p>
-            <p>Package: {ticket.packageName}</p>
-            <p>Quantity: {ticket.quantity}</p>
-            <p>Total: R{ticket.total}</p>
+
+            <p>
+              Package:
+              {" "}
+              {ticket.packageName}
+            </p>
+
+            <p>
+              Quantity:
+              {" "}
+              {ticket.quantity}
+            </p>
+
+            <p>
+              Total:
+              {" "}
+              R{ticket.total}
+            </p>
 
             <p>
               Status:
@@ -300,8 +337,8 @@ export default function Admin() {
                 style={{
                   color:
                     ticket.used
-                      ? "orange"
-                      : "lime"
+                    ? "orange"
+                    : "lime"
                 }}
               >
                 {
@@ -311,6 +348,49 @@ export default function Admin() {
                 }
               </span>
             </p>
+
+            <p
+              style={{
+                fontSize:"12px",
+                color:"#999",
+                wordBreak:"break-all"
+              }}
+            >
+              {ticket.id}
+            </p>
+
+            {ticket.qr && (
+
+              <div
+                style={{
+                  marginTop:"20px",
+                  textAlign:"center"
+                }}
+              >
+
+                <img
+                  src={ticket.qr}
+                  alt="QR Code"
+                  width="200"
+                />
+
+                <br />
+
+                <a
+                  href={ticket.qr}
+                  download={`ticket-${ticket.id}.png`}
+                  style={{
+                    color:"red",
+                    display:"inline-block",
+                    marginTop:"10px"
+                  }}
+                >
+                  Download QR Code
+                </a>
+
+              </div>
+
+            )}
 
           </div>
 
