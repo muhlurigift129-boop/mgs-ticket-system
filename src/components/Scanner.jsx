@@ -41,62 +41,94 @@ export default function Scanner() {
 
       setLoading(true)
 
-      try {
+       try {
 
-        const ticketId = result.trim()
+         let ticketId
 
-        const ticketRef =
-          doc(db, "tickets", ticketId)
+          try {
 
-        const ticketSnap =
-          await getDoc(ticketRef)
+            const qrData =
+              JSON.parse(result)
 
-        if (!ticketSnap.exists()) {
+            ticketId = qrData.id
 
-          setTicketStatus("INVALID")
+          } catch {
 
-          setLoading(false)
+             ticketId = result.trim()
 
-          return
-        }
+          }
 
-        const ticket =
-          ticketSnap.data()
+          if (!ticketId) {
 
-        if (ticket.used) {
+            setTicketStatus("INVALID")
+            setLoading(false)
+            return
 
-          setScanResult(ticket)
+          }
 
-          setTicketStatus("USED")
+          const ticketRef =
+            doc(db, "tickets", ticketId)
 
-          setLoading(false)
+          const ticketSnap =
+            await getDoc(ticketRef)
 
-          return
-        }
+          if (!ticketSnap.exists()) {
 
-        await updateDoc(ticketRef, {
-          used: true,
-          scannedAt:
-            new Date().toISOString()
-        })
+            setTicketStatus("INVALID")
+            setLoading(false)
+            return
 
-        setScanResult({
-          ...ticket,
-          used: true
-        })
+           }
 
-        setTicketStatus("VALID")
+           const ticket =
+             ticketSnap.data()
 
-      } catch (error) {
+           if (ticket.used) {
 
-        console.log(error)
+             setScanResult(ticket)
+             setTicketStatus("USED")
+             setLoading(false)
+             return
 
-        setTicketStatus("INVALID")
+            }
 
-      }
+            await updateDoc(ticketRef, {
 
-      setLoading(false)
-    }
+              used: true,
+
+              scannedAt:
+                new Date().toISOString(),
+
+              status: "USED"
+
+            })
+
+            setScanResult({
+
+              ...ticket,
+
+              used: true,
+
+              scannedAt:
+                new Date().toISOString()
+
+              })
+
+              setTicketStatus("VALID")
+
+               }
+
+               catch (error) {
+
+                 console.log(error)
+
+                 setTicketStatus("INVALID")
+
+               }
+
+               setLoading(false)
+
+              }
 
     function onScanError(error) {
       console.log(error)
