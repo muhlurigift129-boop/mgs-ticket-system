@@ -53,10 +53,10 @@ const transporter =
     auth: {
 
       user:
-        process.env.GMAIL_USER,
+        process.env.EMAIL_USER,
 
       pass:
-        process.env.GMAIL_PASS
+        process.env.EMAIL_PASS
 
     }
 
@@ -78,7 +78,7 @@ app.post(
       await transporter.sendMail({
 
         from:
-          process.env.GMAIL_USER,
+          process.env.EMAIL_USER,
 
         to:
           ticket.email,
