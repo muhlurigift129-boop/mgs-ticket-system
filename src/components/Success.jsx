@@ -23,24 +23,20 @@ export default function Success() {
 
       try {
 
-        const existingTicket =
+        const savedTicket =
           sessionStorage.getItem("mgsTicket")
 
-        if (existingTicket) {
+        if (savedTicket) {
 
-          const saved =
-            JSON.parse(existingTicket)
-
-          setTicket(saved)
+          setTicket(JSON.parse(savedTicket))
           setLoading(false)
-
           return
+
         }
 
-        const customer =
-          JSON.parse(
-            localStorage.getItem("mgsCustomer")
-          )
+        const customer = JSON.parse(
+          localStorage.getItem("mgsCustomer")
+        )
 
         if (!customer) {
 
@@ -51,28 +47,28 @@ export default function Success() {
 
         const ticketId = uuidv4()
 
-        const qrValue = JSON.stringify({
+        const qrPayload = JSON.stringify({
           id: ticketId
         })
 
         const qrCode =
-          await QRCode.toDataURL(qrValue)
+          await QRCode.toDataURL(qrPayload)
 
         const newTicket = {
 
           id: ticketId,
 
           fullName:
-            customer.fullName,
+            customer.fullName || "",
 
           email:
-            customer.email,
+            customer.email || "",
 
           phone:
-            customer.phone,
+            customer.phone || "",
 
           ticketType:
-            customer.ticketType,
+            customer.ticketType || "vibe",
 
           packageName:
             ticketNames[
@@ -80,14 +76,10 @@ export default function Success() {
             ],
 
           quantity:
-            Number(
-              customer.quantity
-            ),
+            Number(customer.quantity || 1),
 
           total:
-            Number(
-              customer.total
-            ),
+            Number(customer.total || 0),
 
           qrCode,
 
@@ -101,11 +93,7 @@ export default function Success() {
         }
 
         await setDoc(
-          doc(
-            db,
-            "tickets",
-            ticketId
-          ),
+          doc(db, "tickets", ticketId),
           newTicket
         )
 
@@ -120,7 +108,10 @@ export default function Success() {
 
       catch (error) {
 
-        console.log(error)
+        console.log(
+          "Ticket Creation Error:",
+          error
+        )
 
       }
 
@@ -146,7 +137,7 @@ export default function Success() {
           alignItems: "center"
         }}
       >
-        Generating Ticket...
+        <h2>Generating Ticket...</h2>
       </div>
 
     )
@@ -190,14 +181,14 @@ export default function Success() {
 
       <div
         style={{
-          width: "420px",
+          width: "430px",
           background: "#111",
           padding: "30px",
           borderRadius: "25px",
           color: "white",
           textAlign: "center",
           boxShadow:
-            "0 0 30px rgba(255,0,0,.5)"
+            "0 0 25px rgba(255,0,0,.5)"
         }}
       >
 
@@ -205,7 +196,7 @@ export default function Success() {
           MGS EVENT
         </h1>
 
-        <p style={{ color: "#999" }}>
+        <p style={{ color: "#aaa" }}>
           OFFICIAL ENTRY TICKET
         </p>
 
@@ -220,40 +211,35 @@ export default function Success() {
         >
 
           <p>
-            <strong>Name:</strong>{" "}
-            {ticket.fullName}
+            <b>Name:</b> {ticket.fullName}
           </p>
 
           <p>
-            <strong>Email:</strong>{" "}
-            {ticket.email}
+            <b>Email:</b> {ticket.email}
           </p>
 
           <p>
-            <strong>Phone:</strong>{" "}
-            {ticket.phone}
+            <b>Phone:</b> {ticket.phone}
           </p>
 
           <p>
-            <strong>Package:</strong>{" "}
-            {ticket.packageName}
+            <b>Package:</b> {ticket.packageName}
           </p>
 
           <p>
-            <strong>Quantity:</strong>{" "}
-            {ticket.quantity}
+            <b>Quantity:</b> {ticket.quantity}
           </p>
 
           <p>
-            <strong>Total:</strong>{" "}
-            R{ticket.total}
+            <b>Total:</b> R{ticket.total}
           </p>
 
           <p>
-            <strong>Status:</strong>{" "}
+            <b>Status:</b>
             <span
               style={{
-                color: "#00ff66"
+                color: "#00ff66",
+                marginLeft: "5px"
               }}
             >
               VALID
@@ -274,7 +260,7 @@ export default function Success() {
           <img
             src={ticket.qrCode}
             alt="QR Code"
-            width="240"
+            width="250"
           />
 
         </div>
@@ -290,25 +276,23 @@ export default function Success() {
 
         <p
           style={{
+            color: "#ccc",
             fontSize: "12px",
-            wordBreak: "break-all",
-            color: "#ccc"
+            wordBreak: "break-all"
           }}
         >
           {ticket.id}
         </p>
 
         <button
-          onClick={() =>
-            window.print()
-          }
+          onClick={() => window.print()}
           style={{
             width: "100%",
             padding: "15px",
             background: "red",
+            color: "white",
             border: "none",
             borderRadius: "12px",
-            color: "white",
             fontWeight: "bold",
             cursor: "pointer",
             marginTop: "20px"
