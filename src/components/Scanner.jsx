@@ -206,7 +206,7 @@ export default function Scanner() {
 
           <p>
             <strong>Name:</strong>{" "}
-            {scanResult.name}
+            {scanResult.fullName || scanResult.name}
           </p>
 
           <p>
