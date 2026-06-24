@@ -176,7 +176,7 @@ export default function Login() {
         <button
           onClick={() =>
             navigate(
-              "/register"
+              "/register-account"
             )
           }
           style={registerButton}
