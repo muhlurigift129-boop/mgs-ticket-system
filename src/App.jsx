@@ -17,6 +17,8 @@ import Success from "./components/Success.jsx"
 import Scanner from "./components/Scanner.jsx"
 import Admin from "./components/Admin.jsx"
 import AdminLogin from "./components/AdminLogin.jsx"
+import Login from "./pages/Login"
+import MyAccount from "./pages/MyAccount"
 
 // PROTECTED ADMIN ROUTE
 function ProtectedAdmin({ children }) {
@@ -161,6 +163,16 @@ export default function App() {
             <Route
               path="*"
               element={<NotFound />}
+            />
+
+            <Route
+              path="/login"
+              element={<Login />}
+            />
+
+            <Route
+              path="/my-account"
+              element={<MyAccount />}
             />
 
           </>
