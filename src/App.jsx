@@ -9,7 +9,6 @@ import {
 import { useState } from "react"
 
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
-
 import Home from "./components/Home.jsx"
 import Register from "./components/Register.jsx"
 import Payment from "./components/Payment.jsx"
@@ -17,8 +16,9 @@ import Success from "./components/Success.jsx"
 import Scanner from "./components/Scanner.jsx"
 import Admin from "./components/Admin.jsx"
 import AdminLogin from "./components/AdminLogin.jsx"
-import Login from "./pages/Login"
-import MyAccount from "./pages/MyAccount"
+
+import Login from "./components/Login.jsx"
+import MyAccount from "./components/MyAccount.jsx"
 
 // PROTECTED ADMIN ROUTE
 function ProtectedAdmin({ children }) {
