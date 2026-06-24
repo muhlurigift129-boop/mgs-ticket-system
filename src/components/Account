@@ -1,0 +1,114 @@
+import { useEffect,useState }
+from "react"
+
+import {
+  auth
+}
+from "../firebase/config"
+
+import {
+  collection,
+  getDocs,
+  query,
+  where
+}
+from "firebase/firestore"
+
+import { db }
+from "../firebase/config"
+
+export default function Account(){
+
+  const [tickets,setTickets] =
+    useState([])
+
+  useEffect(()=>{
+
+    async function loadTickets(){
+
+      const q = query(
+
+        collection(
+          db,
+          "tickets"
+        ),
+
+        where(
+          "email",
+          "==",
+          auth.currentUser.email
+        )
+
+      )
+
+      const snap =
+        await getDocs(q)
+
+      const data=[]
+
+      snap.forEach(doc=>{
+
+        data.push({
+          id:doc.id,
+          ...doc.data()
+        })
+
+      })
+
+      setTickets(data)
+
+    }
+
+    loadTickets()
+
+  },[])
+
+  return(
+
+    <div>
+
+      <h1>
+        My Account
+      </h1>
+
+      <p>
+        {auth.currentUser?.email}
+      </p>
+
+      <h2>
+        My Tickets
+      </h2>
+
+      {
+
+        tickets.map(ticket=>(
+
+          <div
+            key={ticket.id}
+          >
+
+            <h3>
+              {ticket.packageName}
+            </h3>
+
+            <p>
+              Ticket ID:
+              {ticket.id}
+            </p>
+
+            <img
+              src={ticket.qrCode}
+              width="200"
+            />
+
+          </div>
+
+        ))
+
+      }
+
+    </div>
+
+  )
+
+}
