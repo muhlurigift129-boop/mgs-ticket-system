@@ -1,9 +1,20 @@
-import { useState } from "react"
+import { useEffect } from "react"
+import { auth } from "../firebase/config"
 import { useNavigate } from "react-router-dom"
 
 export default function Register() {
 
   const navigate = useNavigate()
+
+  useEffect(() => {
+
+    if (!auth.currentUser) {
+
+      navigate("/login")
+
+    }
+
+  }, [])
 
   const selectedTicket =
     JSON.parse(
