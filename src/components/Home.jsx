@@ -61,7 +61,7 @@ export default function Home() {
     if (!user) {
 
       alert(
-        "Please login or register first."
+        "⚠ You must login before buying tickets!"
       )
 
       navigate("/login")
