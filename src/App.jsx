@@ -74,8 +74,14 @@ function ProtectedAccount({ children }) {
 // =========================
 function ProtectedRoute({ children }) {
 
-  const user =
-    localStorage.getItem("mgs_user")
+  const user = auth.currentUser
+
+  if (!user) {
+    return <Navigate to="/login" />
+  }
+
+  return children
+}
 
   if (!user) {
     return <Navigate to="/login" />
@@ -169,11 +175,7 @@ export default function App() {
             {/* REGISTER (PROTECTED BUY FLOW) */}
             <Route
               path="/register"
-              element={
-                <ProtectedRoute>
-                  <RegisterAccount />
-                </ProtectedRoute>
-              }
+              element={<RegisterAccount />}
             />
 
             {/* ACCOUNT */}
