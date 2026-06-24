@@ -8,55 +8,100 @@ import {
 
 import { useState } from "react"
 
+import { auth } from "./firebase/config"
+
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
+
 import Home from "./components/Home.jsx"
 import Register from "./components/Register.jsx"
-import Payment from "./components/Payment.jsx"
-import Success from "./components/Success.jsx"
-import Scanner from "./components/Scanner.jsx"
-import Admin from "./components/Admin.jsx"
-import AdminLogin from "./components/AdminLogin.jsx"
-
 import Login from "./components/Login.jsx"
 import MyAccount from "./components/MyAccount.jsx"
 
-// PROTECTED ADMIN ROUTE
+import Payment from "./components/Payment.jsx"
+import Success from "./components/Success.jsx"
+
+import Scanner from "./components/Scanner.jsx"
+
+import Admin from "./components/Admin.jsx"
+import AdminLogin from "./components/AdminLogin.jsx"
+
+// ========================================
+// ADMIN PROTECTION
+// ========================================
+
 function ProtectedAdmin({ children }) {
 
   const isAdmin =
     localStorage.getItem("mgs_admin")
 
   if (isAdmin !== "true") {
-    return <Navigate to="/admin-login" />
+
+    return (
+      <Navigate
+        to="/admin-login"
+        replace
+      />
+    )
+
   }
 
   return children
+
 }
 
-// 404 PAGE
+// ========================================
+// USER PROTECTION
+// ========================================
+
+function ProtectedAccount({ children }) {
+
+  const user =
+    auth.currentUser
+
+  if (!user) {
+
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    )
+
+  }
+
+  return children
+
+}
+
+// ========================================
+// NOT FOUND PAGE
+// ========================================
+
 function NotFound() {
 
-  const navigate = useNavigate()
+  const navigate =
+    useNavigate()
 
   return (
 
     <div
       style={{
+        minHeight: "100vh",
         background:
           "linear-gradient(to bottom,#000,#111)",
-        color: "red",
-        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
-        textAlign: "center"
+        color: "white"
       }}
     >
 
       <h1
         style={{
-          fontSize: "90px"
+          color: "red",
+          fontSize: "100px",
+          margin: 0
         }}
       >
         404
@@ -70,12 +115,13 @@ function NotFound() {
         onClick={() => navigate("/")}
         style={{
           marginTop: "20px",
-          padding: "15px 40px",
           background: "red",
-          border: "none",
-          borderRadius: "10px",
           color: "white",
-          cursor: "pointer"
+          border: "none",
+          padding: "15px 35px",
+          borderRadius: "12px",
+          cursor: "pointer",
+          fontWeight: "bold"
         }}
       >
         BACK HOME
@@ -84,7 +130,12 @@ function NotFound() {
     </div>
 
   )
+
 }
+
+// ========================================
+// APP
+// ========================================
 
 export default function App() {
 
@@ -114,9 +165,16 @@ export default function App() {
 
           <>
 
+            {/* HOME */}
             <Route
               path="/"
               element={<Home />}
+            />
+
+            {/* AUTH */}
+            <Route
+              path="/login"
+              element={<Login />}
             />
 
             <Route
@@ -124,6 +182,17 @@ export default function App() {
               element={<Register />}
             />
 
+            {/* ACCOUNT */}
+            <Route
+              path="/my-account"
+              element={
+                <ProtectedAccount>
+                  <MyAccount />
+                </ProtectedAccount>
+              }
+            />
+
+            {/* PAYMENT */}
             <Route
               path="/payment"
               element={<Payment />}
@@ -134,6 +203,7 @@ export default function App() {
               element={<Success />}
             />
 
+            {/* QR SCANNER */}
             <Route
               path="/scanner"
               element={<Scanner />}
@@ -145,7 +215,7 @@ export default function App() {
               element={<AdminLogin />}
             />
 
-            {/* PROTECTED ADMIN */}
+            {/* ADMIN */}
             <Route
               path="/admin"
               element={
@@ -155,24 +225,21 @@ export default function App() {
               }
             />
 
+            {/* REDIRECT */}
             <Route
               path=""
-              element={<Navigate to="/" />}
+              element={
+                <Navigate
+                  to="/"
+                  replace
+                />
+              }
             />
 
+            {/* 404 */}
             <Route
               path="*"
               element={<NotFound />}
-            />
-
-            <Route
-              path="/login"
-              element={<Login />}
-            />
-
-            <Route
-              path="/my-account"
-              element={<MyAccount />}
             />
 
           </>
@@ -184,4 +251,5 @@ export default function App() {
     </HashRouter>
 
   )
+
 }
