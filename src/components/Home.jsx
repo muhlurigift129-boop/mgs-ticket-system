@@ -1,23 +1,9 @@
 import { auth } from "../firebase/config"
 import { useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
 
 export default function Home() {
 
   const navigate = useNavigate()
-  const [user, setUser] = useState(null)
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-
-    const unsubscribe =
-      auth.onAuthStateChanged((u) => {
-        setUser(u)
-      })
-
-    return () => unsubscribe()
-
-  }, [])
 
   const tickets = [
     {
@@ -40,8 +26,8 @@ export default function Home() {
       type: "vibe",
       features: [
         "Event Entry",
-        "Live Music",
-        "DJ Experience"
+        "Live Entertainment",
+        "Music & Vibes"
       ]
     },
     {
@@ -50,9 +36,9 @@ export default function Home() {
       description: "Entertainment with drinks included",
       type: "vibeDrinks",
       features: [
-        "Entry",
-        "Drinks",
-        "Entertainment"
+        "Event Entry",
+        "Selected Drinks",
+        "Live Entertainment"
       ]
     },
     {
@@ -61,18 +47,20 @@ export default function Home() {
       description: "Entertainment with food included",
       type: "vibeFood",
       features: [
-        "Entry",
-        "Food Included",
-        "Entertainment"
+        "Event Entry",
+        "Meal Included",
+        "Live Entertainment"
       ]
     }
   ]
 
   function selectTicket(ticket) {
 
+    const user = auth.currentUser
+
     if (!user) {
 
-      alert("⚠ You must login before buying tickets")
+      alert("⚠ You must login before buying tickets!")
 
       navigate("/login")
 
@@ -85,136 +73,69 @@ export default function Home() {
     )
 
     navigate("/register")
-
   }
 
   return (
 
-    <div style={page}>
-
-      {/* TOP BAR */}
-      <div style={topBar}>
-
-        {/* MENU BUTTON */}
-        <div
-          style={menuBtn}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          ☰
-        </div>
-
-        {/* RIGHT LOGIN AREA */}
-        <div style={authArea}>
-
-          {!user ? (
-
-            <>
-              <button
-                onClick={() => navigate("/login")}
-                style={loginBtn}
-              >
-                LOGIN
-              </button>
-
-              <button
-                onClick={() => navigate("/register")}
-                style={registerBtn}
-              >
-                REGISTER
-              </button>
-            </>
-
-          ) : (
-
-            <button
-              onClick={() => navigate("/my-account")}
-              style={accountBtn}
-            >
-              MY ACCOUNT
-            </button>
-
-          )}
-
-        </div>
-
-      </div>
-
-      {/* SIDE MENU */}
-      {menuOpen && (
-
-        <div style={sideMenu}>
-
-          <button
-            onClick={() => navigate("/my-account")}
-            style={menuItem}
-          >
-            My Account
-          </button>
-
-          <button
-            onClick={() => navigate("/my-account")}
-            style={menuItem}
-          >
-            Orders
-          </button>
-
-          <button
-            onClick={() =>
-              window.open(
-                "https://wa.me/0735306246",
-                "_blank"
-              )
-            }
-            style={menuItem}
-          >
-            Contact Us
-          </button>
-
-        </div>
-
-      )}
+    <div style={container}>
 
       {/* HEADER */}
-      <div style={{ textAlign: "center", marginTop: "60px" }}>
+      <div style={header}>
 
-        <h1 style={title}>MGS EVENT</h1>
+        <h1 style={title}>
+          MGS EVENT
+        </h1>
 
-        {!user && (
-          <p style={warning}>
-            ⚠ Login required to purchase tickets
-          </p>
-        )}
+        <h2 style={subtitle}>
+          JULY 31 – AUGUST 01
+        </h2>
+
+        <p style={description}>
+          Choose your ticket package and secure your place at the MGS experience.
+        </p>
 
       </div>
 
       {/* TICKETS */}
       <div style={grid}>
 
-        {tickets.map((ticket) => (
+        {tickets.map(ticket => (
 
-          <div key={ticket.type} style={card(ticket.popular)}>
+          <div key={ticket.type} style={{
+            ...card,
+            border: ticket.popular ? "2px solid red" : "1px solid #333",
+            boxShadow: ticket.popular
+              ? "0 0 25px rgba(255,0,0,.5)"
+              : "0 0 10px rgba(255,255,255,.05)"
+          }}>
 
             {ticket.popular && (
-              <div style={badge}>MOST POPULAR</div>
+              <div style={badge}>
+                MOST POPULAR
+              </div>
             )}
 
-            <h2 style={cardTitle}>{ticket.name}</h2>
+            <h2 style={cardTitle}>
+              {ticket.name}
+            </h2>
 
-            <h1 style={price}>R{ticket.price}</h1>
+            <h1 style={price}>
+              R{ticket.price}
+            </h1>
 
-            <p style={{ color: "#bbb" }}>
+            <p style={cardDesc}>
               {ticket.description}
             </p>
 
             <div style={features}>
-              {ticket.features.map((f) => (
+              {ticket.features.map(f => (
                 <p key={f}>✓ {f}</p>
               ))}
             </div>
 
             <button
               onClick={() => selectTicket(ticket)}
-              style={buyBtn}
+              style={buyButton}
             >
               BUY NOW
             </button>
@@ -230,142 +151,94 @@ export default function Home() {
   )
 }
 
-/* ===== STYLES ===== */
+/* =======================
+   MGS STYLES
+======================= */
 
-const page = {
+const container = {
   minHeight: "100vh",
-  background: "#000",
-  color: "white"
-}
-
-const topBar = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "15px 20px",
-  background: "#0a0a0a",
-  borderBottom: "1px solid red",
-  position: "sticky",
-  top: 0
-}
-
-const menuBtn = {
-  fontSize: "26px",
-  cursor: "pointer",
-  color: "red"
-}
-
-const authArea = {
-  display: "flex",
-  gap: "10px"
-}
-
-const loginBtn = {
-  background: "red",
-  border: "none",
+  background: "linear-gradient(180deg,#000,#111)",
   color: "white",
-  padding: "10px 15px",
-  borderRadius: "8px",
-  cursor: "pointer"
+  padding: "40px 20px"
 }
 
-const registerBtn = {
-  background: "#222",
-  border: "1px solid red",
-  color: "white",
-  padding: "10px 15px",
-  borderRadius: "8px",
-  cursor: "pointer"
-}
-
-const accountBtn = {
-  background: "green",
-  border: "none",
-  color: "white",
-  padding: "10px 15px",
-  borderRadius: "8px",
-  cursor: "pointer"
-}
-
-const sideMenu = {
-  position: "fixed",
-  top: "60px",
-  left: 0,
-  width: "220px",
-  height: "100%",
-  background: "#111",
-  borderRight: "1px solid red",
-  padding: "20px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "10px"
-}
-
-const menuItem = {
-  background: "#222",
-  border: "1px solid red",
-  color: "white",
-  padding: "12px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  textAlign: "left"
+const header = {
+  textAlign: "center",
+  marginBottom: "50px"
 }
 
 const title = {
   color: "red",
-  fontSize: "60px"
+  fontSize: "60px",
+  letterSpacing: "3px",
+  marginBottom: "10px"
 }
 
-const warning = {
-  color: "red",
-  marginTop: "10px"
+const subtitle = {
+  color: "white"
+}
+
+const description = {
+  color: "#aaa",
+  maxWidth: "600px",
+  margin: "20px auto"
 }
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-  gap: "20px",
-  padding: "40px"
+  gap: "25px",
+  maxWidth: "1200px",
+  margin: "0 auto"
 }
 
-const card = (popular) => ({
+const card = {
   background: "#111",
-  border: popular ? "2px solid red" : "1px solid #333",
-  borderRadius: "20px",
-  padding: "25px",
-  textAlign: "center"
-})
+  borderRadius: "25px",
+  padding: "30px",
+  textAlign: "center",
+  position: "relative"
+}
 
 const badge = {
+  position: "absolute",
+  top: "-10px",
+  left: "50%",
+  transform: "translateX(-50%)",
   background: "red",
-  padding: "5px 10px",
+  padding: "6px 15px",
   borderRadius: "20px",
   fontSize: "12px",
-  position: "relative",
-  top: "-10px"
+  fontWeight: "bold"
 }
 
 const cardTitle = {
-  color: "red"
+  color: "red",
+  marginBottom: "10px"
 }
 
 const price = {
-  fontSize: "40px",
-  margin: "10px 0"
+  fontSize: "45px",
+  margin: "15px 0"
+}
+
+const cardDesc = {
+  color: "#bbb",
+  marginBottom: "20px"
 }
 
 const features = {
   textAlign: "left",
-  marginTop: "15px"
+  marginBottom: "20px"
 }
 
-const buyBtn = {
+const buyButton = {
   width: "100%",
-  marginTop: "15px",
-  padding: "14px",
+  padding: "15px",
   background: "red",
   border: "none",
+  borderRadius: "12px",
   color: "white",
-  borderRadius: "10px",
+  fontWeight: "bold",
   cursor: "pointer"
 }
