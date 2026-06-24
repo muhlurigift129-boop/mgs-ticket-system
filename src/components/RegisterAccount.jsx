@@ -31,7 +31,8 @@ export default function RegisterAccount() {
       fullName:"",
       phone:"",
       email:"",
-      password:""
+      password:"",
+      confirmPassword:""
 
     })
 
@@ -40,6 +41,7 @@ export default function RegisterAccount() {
     setFormData({
 
       ...formData,
+
       [e.target.name]:
       e.target.value
 
@@ -51,10 +53,31 @@ export default function RegisterAccount() {
 
     e.preventDefault()
 
-    setLoading(true)
     setError("")
+    setLoading(true)
 
     try{
+
+      if(
+        formData.password.length < 6
+      ){
+
+        throw new Error(
+          "Password must be at least 6 characters."
+        )
+
+      }
+
+      if(
+        formData.password !==
+        formData.confirmPassword
+      ){
+
+        throw new Error(
+          "Passwords do not match."
+        )
+
+      }
 
       const userCredential =
 
@@ -76,6 +99,9 @@ export default function RegisterAccount() {
 
         {
 
+          uid:
+            userCredential.user.uid,
+
           fullName:
             formData.fullName,
 
@@ -93,7 +119,7 @@ export default function RegisterAccount() {
 
       )
 
-      navigate("/")
+      navigate("/my-account")
 
     }
 
@@ -109,48 +135,39 @@ export default function RegisterAccount() {
 
   return(
 
-    <div
-      style={container}
-    >
+    <div style={container}>
 
-      <div
-        style={card}
-      >
+      <div style={card}>
 
-        <h1
-          style={{
-            color:"red",
-            textAlign:"center"
-          }}
-        >
+        <h1 style={title}>
           MGS REGISTER
         </h1>
 
+        <p style={subtitle}>
+          Create your account to
+          buy tickets and track orders.
+        </p>
+
         {error && (
 
-          <div
-            style={{
-              color:"white",
-              background:"red",
-              padding:"12px",
-              borderRadius:"10px",
-              marginBottom:"15px"
-            }}
-          >
+          <div style={errorBox}>
             {error}
           </div>
 
         )}
 
-        <form
-          onSubmit={handleSubmit}
-        >
+        <form onSubmit={handleSubmit}>
 
           <input
             name="fullName"
             placeholder="Full Name"
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
             onChange={handleChange}
           />
 
@@ -158,16 +175,26 @@ export default function RegisterAccount() {
             name="phone"
             placeholder="Phone Number"
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
             onChange={handleChange}
           />
 
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Email Address"
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
             onChange={handleChange}
           />
 
@@ -176,24 +203,53 @@ export default function RegisterAccount() {
             name="password"
             placeholder="Password"
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
+            onChange={handleChange}
+          />
+
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            required
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
             onChange={handleChange}
           />
 
           <button
             type="submit"
+            disabled={loading}
             style={button}
           >
 
             {
               loading
-              ? "CREATING..."
+              ? "CREATING ACCOUNT..."
               : "REGISTER"
             }
 
           </button>
 
         </form>
+
+        <button
+          onClick={() =>
+            navigate("/login")
+          }
+          style={loginButton}
+        >
+          ALREADY HAVE AN ACCOUNT?
+        </button>
 
       </div>
 
@@ -206,46 +262,129 @@ export default function RegisterAccount() {
 const container = {
 
   minHeight:"100vh",
-  background:"#000",
+
+  background:
+    "linear-gradient(to bottom,#000,#111)",
+
   display:"flex",
+
   justifyContent:"center",
-  alignItems:"center"
+
+  alignItems:"center",
+
+  padding:"20px"
 
 }
 
 const card = {
 
-  width:"450px",
+  width:"500px",
+
   background:"#111",
+
   padding:"40px",
+
   borderRadius:"20px",
+
   boxShadow:
     "0 0 30px rgba(255,0,0,.5)"
+
+}
+
+const title = {
+
+  color:"red",
+
+  textAlign:"center",
+
+  marginBottom:"10px"
+
+}
+
+const subtitle = {
+
+  color:"#999",
+
+  textAlign:"center",
+
+  marginBottom:"25px"
+
+}
+
+const errorBox = {
+
+  background:"#4d0000",
+
+  border:"1px solid red",
+
+  color:"white",
+
+  padding:"12px",
+
+  borderRadius:"10px",
+
+  marginBottom:"15px"
 
 }
 
 const input = {
 
   width:"100%",
+
   padding:"15px",
+
   marginBottom:"15px",
+
   background:"#1a1a1a",
+
   color:"white",
-  border:"1px solid #333",
+
   borderRadius:"10px",
-  boxSizing:"border-box"
+
+  boxSizing:"border-box",
+
+  outline:"none"
 
 }
 
 const button = {
 
   width:"100%",
+
   padding:"15px",
+
   background:"red",
+
   color:"white",
+
   border:"none",
+
   borderRadius:"10px",
+
   cursor:"pointer",
+
   fontWeight:"bold"
+
+}
+
+const loginButton = {
+
+  width:"100%",
+
+  padding:"15px",
+
+  background:"#1a1a1a",
+
+  color:"white",
+
+  border:"1px solid red",
+
+  borderRadius:"10px",
+
+  cursor:"pointer",
+
+  fontWeight:"bold",
+
+  marginTop:"15px"
 
 }
