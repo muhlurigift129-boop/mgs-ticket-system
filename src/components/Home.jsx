@@ -93,11 +93,7 @@ export default function Home() {
           MGS EVENT
         </h1>
 
-        <h2
-          style={{
-            color: "white"
-          }}
-        >
+        <h2>
           JULY 31 – AUGUST 01
         </h2>
 
@@ -111,6 +107,51 @@ export default function Home() {
           Choose your preferred ticket package and
           secure your place at the MGS Event.
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "15px",
+            flexWrap: "wrap",
+            marginTop: "30px"
+          }}
+        >
+
+          <button
+            onClick={() => navigate("/login")}
+            style={navButtonRed}
+          >
+            LOGIN
+          </button>
+
+          <button
+            onClick={() => navigate("/my-account")}
+            style={navButtonDark}
+          >
+            MY ACCOUNT
+          </button>
+
+          <button
+            onClick={() => navigate("/register")}
+            style={navButtonDark}
+          >
+            REGISTER
+          </button>
+
+          <button
+            onClick={() =>
+              window.open(
+                "https://wa.me/0735306246",
+                "_blank"
+              )
+            }
+            style={navButtonGreen}
+          >
+            CONTACT US
+          </button>
+
+        </div>
 
       </div>
 
@@ -208,9 +249,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={() =>
-                selectTicket(ticket)
-              }
+              onClick={() => selectTicket(ticket)}
               style={{
                 width: "100%",
                 padding: "16px",
@@ -235,4 +274,34 @@ export default function Home() {
     </div>
 
   )
+}
+
+const navButtonRed = {
+  padding: "15px 30px",
+  background: "red",
+  color: "white",
+  border: "none",
+  borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer"
+}
+
+const navButtonDark = {
+  padding: "15px 30px",
+  background: "#222",
+  color: "white",
+  border: "1px solid red",
+  borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer"
+}
+
+const navButtonGreen = {
+  padding: "15px 30px",
+  background: "green",
+  color: "white",
+  border: "none",
+  borderRadius: "10px",
+  fontWeight: "bold",
+  cursor: "pointer"
 }
