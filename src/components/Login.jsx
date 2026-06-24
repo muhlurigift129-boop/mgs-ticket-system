@@ -45,12 +45,11 @@ export default function Login() {
 
     try{
 
-      await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(auth, email, password)
 
-        auth,
-        email,
-        password
-
+      localStorage.setItem(
+        "mgs_user",
+        JSON.stringify(auth.currentUser)
       )
 
       navigate("/my-account")
