@@ -18,6 +18,7 @@ import {
   onAuthStateChanged
 } from "firebase/auth"
 
+import RegisterAccount from "./components/RegisterAccount.jsx"
 import Navbar from "./components/Navbar.jsx"
 import MgsSidebar from "./components/MgsSidebar.jsx"
 
@@ -170,7 +171,7 @@ export default function App() {
               path="/register"
               element={
                 <ProtectedRoute>
-                  <Register />
+                  <RegisterAccount />
                 </ProtectedRoute>
               }
             />
