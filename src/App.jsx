@@ -147,8 +147,8 @@ export default function App() {
 
       <Routes>
 
-        {/* WELCOME */}
-        {loading && (
+        {/* WELCOME SCREEN CONTROL */}
+        {loading ? (
           <Route
             path="*"
             element={
@@ -161,11 +161,11 @@ export default function App() {
           <>
             {/* HOME */}
             <Route path="/" element={<Home />} />
-
+ 
             {/* AUTH */}
             <Route path="/login" element={<Login />} />
 
-            {/* REGISTER (FORCED LOGIN) */}
+            {/* REGISTER (PROTECTED BUY FLOW) */}
             <Route
               path="/register"
               element={
@@ -201,12 +201,16 @@ export default function App() {
             {/* PAYMENT */}
             <Route path="/payment" element={<Payment />} />
 
+            {/* SUCCESS */}
             <Route path="/success" element={<Success />} />
+
+            {/* SCANNER */}
             <Route path="/scanner" element={<Scanner />} />
 
-            {/* ADMIN */}
+            {/* ADMIN LOGIN */}
             <Route path="/admin-login" element={<AdminLogin />} />
 
+            {/* ADMIN */}
             <Route
               path="/admin"
               element={
@@ -216,6 +220,9 @@ export default function App() {
               }
             />
 
+            {/* DEFAULT REDIRECT */}
+            <Route path="" element={<Navigate to="/" />} />
+  
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </>
