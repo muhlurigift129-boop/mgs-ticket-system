@@ -45,22 +45,12 @@ import AdminLogin from "./components/AdminLogin.jsx"
 // ADMIN PROTECTION
 // ========================================
 
-function ProtectedAdmin({ children }) {
+function ProtectedRoute({ children }) {
 
-  const isAdmin =
-    localStorage.getItem(
-      "mgs_admin"
-    )
+  const user = localStorage.getItem("mgs_user")
 
-  if (isAdmin !== "true") {
-
-    return (
-      <Navigate
-        to="/admin-login"
-        replace
-      />
-    )
-
+  if (!user) {
+    return <Navigate to="/login" />
   }
 
   return children
