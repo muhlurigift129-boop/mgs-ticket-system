@@ -6,16 +6,30 @@ import {
   useNavigate
 } from "react-router-dom"
 
-import { useState } from "react"
+import {
+  useState,
+  useEffect
+} from "react"
 
-import { auth } from "./firebase/config"
+import {
+  auth
+} from "./firebase/config"
+
+import {
+  onAuthStateChanged
+} from "firebase/auth"
+
+import Navbar from "./components/Navbar.jsx"
 
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
 
 import Home from "./components/Home.jsx"
 import Register from "./components/Register.jsx"
 import Login from "./components/Login.jsx"
+
 import MyAccount from "./components/MyAccount.jsx"
+import Orders from "./components/Orders.jsx"
+import Contact from "./components/Contact.jsx"
 
 import Payment from "./components/Payment.jsx"
 import Success from "./components/Success.jsx"
@@ -32,7 +46,9 @@ import AdminLogin from "./components/AdminLogin.jsx"
 function ProtectedAdmin({ children }) {
 
   const isAdmin =
-    localStorage.getItem("mgs_admin")
+    localStorage.getItem(
+      "mgs_admin"
+    )
 
   if (isAdmin !== "true") {
 
@@ -46,14 +62,15 @@ function ProtectedAdmin({ children }) {
   }
 
   return children
-
 }
 
 // ========================================
 // USER PROTECTION
 // ========================================
 
-function ProtectedAccount({ children }) {
+function ProtectedAccount({
+  children
+}) {
 
   const user =
     auth.currentUser
@@ -70,11 +87,10 @@ function ProtectedAccount({ children }) {
   }
 
   return children
-
 }
 
 // ========================================
-// NOT FOUND PAGE
+// NOT FOUND
 // ========================================
 
 function NotFound() {
@@ -112,7 +128,9 @@ function NotFound() {
       </h2>
 
       <button
-        onClick={() => navigate("/")}
+        onClick={() =>
+          navigate("/")
+        }
         style={{
           marginTop: "20px",
           background: "red",
@@ -120,8 +138,7 @@ function NotFound() {
           border: "none",
           padding: "15px 35px",
           borderRadius: "12px",
-          cursor: "pointer",
-          fontWeight: "bold"
+          cursor: "pointer"
         }}
       >
         BACK HOME
@@ -139,12 +156,60 @@ function NotFound() {
 
 export default function App() {
 
-  const [loading, setLoading] =
+  const [loading,
+    setLoading] =
     useState(true)
+
+  const [authLoading,
+    setAuthLoading] =
+    useState(true)
+
+  useEffect(() => {
+
+    const unsubscribe =
+      onAuthStateChanged(
+
+        auth,
+
+        () => {
+
+          setAuthLoading(false)
+
+        }
+
+      )
+
+    return () =>
+      unsubscribe()
+
+  }, [])
+
+  if (authLoading) {
+
+    return (
+
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#000",
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        Loading...
+      </div>
+
+    )
+
+  }
 
   return (
 
     <HashRouter>
+
+      <Navbar />
 
       <Routes>
 
@@ -153,11 +218,13 @@ export default function App() {
           <Route
             path="*"
             element={
+
               <WelcomeScreen
                 onFinish={() =>
                   setLoading(false)
                 }
               />
+
             }
           />
 
@@ -166,12 +233,14 @@ export default function App() {
           <>
 
             {/* HOME */}
+
             <Route
               path="/"
               element={<Home />}
             />
 
             {/* AUTH */}
+
             <Route
               path="/login"
               element={<Login />}
@@ -183,6 +252,7 @@ export default function App() {
             />
 
             {/* ACCOUNT */}
+
             <Route
               path="/my-account"
               element={
@@ -192,7 +262,26 @@ export default function App() {
               }
             />
 
+            {/* ORDERS */}
+
+            <Route
+              path="/orders"
+              element={
+                <ProtectedAccount>
+                  <Orders />
+                </ProtectedAccount>
+              }
+            />
+
+            {/* CONTACT */}
+
+            <Route
+              path="/contact"
+              element={<Contact />}
+            />
+
             {/* PAYMENT */}
+
             <Route
               path="/payment"
               element={<Payment />}
@@ -203,40 +292,35 @@ export default function App() {
               element={<Success />}
             />
 
-            {/* QR SCANNER */}
+            {/* SCANNER */}
+
             <Route
               path="/scanner"
               element={<Scanner />}
             />
 
-            {/* ADMIN LOGIN */}
+            {/* ADMIN */}
+
             <Route
               path="/admin-login"
               element={<AdminLogin />}
             />
 
-            {/* ADMIN */}
             <Route
               path="/admin"
               element={
-                <ProtectedAdmin>
-                  <Admin />
-                </ProtectedAdmin>
-              }
-            />
 
-            {/* REDIRECT */}
-            <Route
-              path=""
-              element={
-                <Navigate
-                  to="/"
-                  replace
-                />
+                <ProtectedAdmin>
+
+                  <Admin />
+
+                </ProtectedAdmin>
+
               }
             />
 
             {/* 404 */}
+
             <Route
               path="*"
               element={<NotFound />}
