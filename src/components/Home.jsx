@@ -1,3 +1,4 @@
+import { auth } from "../firebase/config"
 import { useNavigate } from "react-router-dom"
 
 export default function Home() {
@@ -54,6 +55,19 @@ export default function Home() {
   ]
 
   function selectTicket(ticket) {
+
+    const user = auth.currentUser
+
+    if (!user) {
+
+      alert(
+        "Please login or register first."
+      )
+
+      navigate("/login")
+
+      return
+    }
 
     localStorage.setItem(
       "selectedTicket",
