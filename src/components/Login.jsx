@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 import {
@@ -25,11 +25,22 @@ export default function Login() {
   const [loading,setLoading] =
     useState(false)
 
+  useEffect(() => {
+
+    if(auth.currentUser){
+
+      navigate("/my-account")
+
+    }
+
+  }, [navigate])
+
   async function handleLogin(e){
 
     e.preventDefault()
 
     setLoading(true)
+
     setError("")
 
     try{
@@ -48,9 +59,37 @@ export default function Login() {
 
     catch(error){
 
-      setError(
-        "Invalid email or password"
-      )
+      console.log(error)
+
+      if(
+        error.code ===
+        "auth/user-not-found"
+      ){
+
+        setError(
+          "Account not found."
+        )
+
+      }
+
+      else if(
+        error.code ===
+        "auth/wrong-password"
+      ){
+
+        setError(
+          "Incorrect password."
+        )
+
+      }
+
+      else{
+
+        setError(
+          "Invalid email or password."
+        )
+
+      }
 
     }
 
@@ -64,53 +103,41 @@ export default function Login() {
 
       <div style={card}>
 
-        <h1
-          style={{
-            color:"red",
-            textAlign:"center"
-          }}
-        >
+        <h1 style={title}>
           MGS LOGIN
         </h1>
 
-        <p
-          style={{
-            color:"#999",
-            textAlign:"center"
-          }}
-        >
-          Access your tickets and orders
+        <p style={subtitle}>
+          Access your tickets,
+          orders and account.
         </p>
 
         {error && (
 
-          <div
-            style={{
-              background:"red",
-              color:"white",
-              padding:"12px",
-              borderRadius:"10px",
-              marginBottom:"15px"
-            }}
-          >
+          <div style={errorBox}>
             {error}
           </div>
 
         )}
 
-        <form
-          onSubmit={handleLogin}
-        >
+        <form onSubmit={handleLogin}>
 
           <input
             type="email"
             placeholder="Email Address"
             value={email}
             onChange={(e)=>
-              setEmail(e.target.value)
+              setEmail(
+                e.target.value
+              )
             }
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
           />
 
           <input
@@ -118,13 +145,21 @@ export default function Login() {
             placeholder="Password"
             value={password}
             onChange={(e)=>
-              setPassword(e.target.value)
+              setPassword(
+                e.target.value
+              )
             }
             required
-            style={input}
+            style={{
+              ...input,
+              border:error
+                ? "1px solid red"
+                : "1px solid #333"
+            }}
           />
 
           <button
+            disabled={loading}
             type="submit"
             style={button}
           >
@@ -141,14 +176,11 @@ export default function Login() {
 
         <button
           onClick={() =>
-            navigate("/register-account")
+            navigate(
+              "/register-account"
+            )
           }
-          style={{
-            ...button,
-            marginTop:"15px",
-            background:"#222",
-            border:"1px solid red"
-          }}
+          style={registerButton}
         >
           CREATE ACCOUNT
         </button>
@@ -164,46 +196,123 @@ export default function Login() {
 const container = {
 
   minHeight:"100vh",
-  background:"#000",
-  display:"flex",
-  justifyContent:"center",
-  alignItems:"center"
 
+  background:
+    "linear-gradient(to bottom,#000,#111)",
+
+  display:"flex",
+
+  justifyContent:"center",
+
+  alignItems:"center",
+
+  padding:"20px"
 }
 
 const card = {
 
   width:"450px",
-  background:"#111",
-  padding:"40px",
-  borderRadius:"20px",
-  boxShadow:
-    "0 0 30px rgba(255,0,0,.5)"
 
+  background:"#111",
+
+  padding:"40px",
+
+  borderRadius:"20px",
+
+  boxShadow:
+    "0 0 30px rgba(255,0,0,.4)"
+}
+
+const title = {
+
+  textAlign:"center",
+
+  color:"red",
+
+  marginBottom:"10px"
+}
+
+const subtitle = {
+
+  textAlign:"center",
+
+  color:"#999",
+
+  marginBottom:"25px"
+}
+
+const errorBox = {
+
+  background:"#4d0000",
+
+  border:"1px solid red",
+
+  color:"white",
+
+  padding:"12px",
+
+  borderRadius:"10px",
+
+  marginBottom:"15px"
 }
 
 const input = {
 
   width:"100%",
-  padding:"15px",
-  marginBottom:"15px",
-  background:"#1a1a1a",
-  color:"white",
-  border:"1px solid #333",
-  borderRadius:"10px",
-  boxSizing:"border-box"
 
+  padding:"15px",
+
+  marginBottom:"15px",
+
+  background:"#1a1a1a",
+
+  color:"white",
+
+  borderRadius:"10px",
+
+  boxSizing:"border-box",
+
+  outline:"none"
 }
 
 const button = {
 
   width:"100%",
-  padding:"15px",
-  background:"red",
-  color:"white",
-  border:"none",
-  borderRadius:"10px",
-  cursor:"pointer",
-  fontWeight:"bold"
 
+  padding:"15px",
+
+  background:"red",
+
+  color:"white",
+
+  border:"none",
+
+  borderRadius:"10px",
+
+  cursor:"pointer",
+
+  fontWeight:"bold",
+
+  fontSize:"16px"
+}
+
+const registerButton = {
+
+  width:"100%",
+
+  padding:"15px",
+
+  background:"#1a1a1a",
+
+  color:"white",
+
+  border:"1px solid red",
+
+  borderRadius:"10px",
+
+  cursor:"pointer",
+
+  fontWeight:"bold",
+
+  marginTop:"15px"
 }
