@@ -23,6 +23,8 @@ import Navbar from "./components/Navbar.jsx"
 
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
 
+import MgsSidebar from "./components/MgsSidebar.jsx"
+
 import Home from "./components/Home.jsx"
 import Register from "./components/Register.jsx"
 import Login from "./components/Login.jsx"
@@ -208,7 +210,8 @@ export default function App() {
   return (
 
     <HashRouter>
-
+   
+      <MgsSidebar />
       <Navbar />
 
       <Routes>
@@ -246,9 +249,27 @@ export default function App() {
               element={<Login />}
             />
 
+            function ProtectedRoute({ children }) {
+
+              const user =
+                localStorage.getItem("mgs_user")
+
+              if (!user) {
+
+                return <Navigate to="/login" />
+
+              }
+
+              return children
+            }
+
             <Route
               path="/register"
-              element={<Register />}
+              element={
+                <ProtectedRoute>
+                  <Register />
+                </ProtectedRoute>
+              }
             />
 
             {/* ACCOUNT */}
