@@ -148,7 +148,7 @@ export default function App() {
       <Routes>
 
         {/* WELCOME */}
-        {loading ? (
+        {loading && (
           <Route
             path="*"
             element={
