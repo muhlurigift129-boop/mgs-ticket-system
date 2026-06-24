@@ -2,8 +2,7 @@ import {
   HashRouter,
   Routes,
   Route,
-  Navigate,
-  useNavigate
+  Navigate
 } from "react-router-dom"
 
 import {
@@ -20,10 +19,9 @@ import {
 } from "firebase/auth"
 
 import Navbar from "./components/Navbar.jsx"
+import MgsSidebar from "./components/MgsSidebar.jsx"
 
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
-
-import MgsSidebar from "./components/MgsSidebar.jsx"
 
 import Home from "./components/Home.jsx"
 import Register from "./components/Register.jsx"
@@ -41,13 +39,42 @@ import Scanner from "./components/Scanner.jsx"
 import Admin from "./components/Admin.jsx"
 import AdminLogin from "./components/AdminLogin.jsx"
 
-// ========================================
+// =========================
 // ADMIN PROTECTION
-// ========================================
+// =========================
+function ProtectedAdmin({ children }) {
 
+  const isAdmin =
+    localStorage.getItem("mgs_admin")
+
+  if (isAdmin !== "true") {
+    return <Navigate to="/admin-login" />
+  }
+
+  return children
+}
+
+// =========================
+// USER PROTECTION (Firebase)
+// =========================
+function ProtectedAccount({ children }) {
+
+  const user = auth.currentUser
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
+
+// =========================
+// PROTECTED REGISTER (FORCE LOGIN BEFORE BUY)
+// =========================
 function ProtectedRoute({ children }) {
 
-  const user = localStorage.getItem("mgs_user")
+  const user =
+    localStorage.getItem("mgs_user")
 
   if (!user) {
     return <Navigate to="/login" />
@@ -56,203 +83,89 @@ function ProtectedRoute({ children }) {
   return children
 }
 
-// ========================================
-// USER PROTECTION
-// ========================================
-
-function ProtectedAccount({
-  children
-}) {
-
-  const user =
-    auth.currentUser
-
-  if (!user) {
-
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    )
-
-  }
-
-  return children
-}
-
-// ========================================
-// NOT FOUND
-// ========================================
-
+// =========================
+// 404 PAGE
+// =========================
 function NotFound() {
 
-  const navigate =
-    useNavigate()
-
   return (
-
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(to bottom,#000,#111)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        color: "white"
-      }}
-    >
-
-      <h1
-        style={{
-          color: "red",
-          fontSize: "100px",
-          margin: 0
-        }}
-      >
+    <div style={{
+      minHeight: "100vh",
+      background: "#000",
+      color: "white",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "column"
+    }}>
+      <h1 style={{ color: "red", fontSize: "90px" }}>
         404
       </h1>
-
-      <h2>
-        PAGE NOT FOUND
-      </h2>
-
-      <button
-        onClick={() =>
-          navigate("/")
-        }
-        style={{
-          marginTop: "20px",
-          background: "red",
-          color: "white",
-          border: "none",
-          padding: "15px 35px",
-          borderRadius: "12px",
-          cursor: "pointer"
-        }}
-      >
-        BACK HOME
-      </button>
-
+      <p>Page not found</p>
     </div>
-
   )
-
 }
 
-// ========================================
+// =========================
 // APP
-// ========================================
-
+// =========================
 export default function App() {
 
-  const [loading,
-    setLoading] =
-    useState(true)
-
-  const [authLoading,
-    setAuthLoading] =
-    useState(true)
+  const [loading, setLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
 
-    const unsubscribe =
-      onAuthStateChanged(
+    const unsub = onAuthStateChanged(auth, () => {
+      setAuthLoading(false)
+    })
 
-        auth,
-
-        () => {
-
-          setAuthLoading(false)
-
-        }
-
-      )
-
-    return () =>
-      unsubscribe()
+    return () => unsub()
 
   }, [])
 
   if (authLoading) {
-
     return (
-
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#000",
-          color: "white",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center"
-        }}
-      >
+      <div style={{
+        minHeight: "100vh",
+        background: "#000",
+        color: "white",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
         Loading...
       </div>
-
     )
-
   }
 
   return (
-
     <HashRouter>
-   
+
       <MgsSidebar />
       <Navbar />
 
       <Routes>
 
+        {/* WELCOME */}
         {loading ? (
-
           <Route
             path="*"
             element={
-
               <WelcomeScreen
-                onFinish={() =>
-                  setLoading(false)
-                }
+                onFinish={() => setLoading(false)}
               />
-
             }
           />
-
         ) : (
-
           <>
-
             {/* HOME */}
-
-            <Route
-              path="/"
-              element={<Home />}
-            />
+            <Route path="/" element={<Home />} />
 
             {/* AUTH */}
+            <Route path="/login" element={<Login />} />
 
-            <Route
-              path="/login"
-              element={<Login />}
-            />
-
-            function ProtectedRoute({ children }) {
-
-              const user =
-                localStorage.getItem("mgs_user")
-
-              if (!user) {
-
-                return <Navigate to="/login" />
-
-              }
-
-              return children
-            }
-
+            {/* REGISTER (FORCED LOGIN) */}
             <Route
               path="/register"
               element={
@@ -263,7 +176,6 @@ export default function App() {
             />
 
             {/* ACCOUNT */}
-
             <Route
               path="/my-account"
               element={
@@ -274,7 +186,6 @@ export default function App() {
             />
 
             {/* ORDERS */}
-
             <Route
               path="/orders"
               element={
@@ -285,66 +196,33 @@ export default function App() {
             />
 
             {/* CONTACT */}
-
-            <Route
-              path="/contact"
-              element={<Contact />}
-            />
+            <Route path="/contact" element={<Contact />} />
 
             {/* PAYMENT */}
+            <Route path="/payment" element={<Payment />} />
 
-            <Route
-              path="/payment"
-              element={<Payment />}
-            />
-
-            <Route
-              path="/success"
-              element={<Success />}
-            />
-
-            {/* SCANNER */}
-
-            <Route
-              path="/scanner"
-              element={<Scanner />}
-            />
+            <Route path="/success" element={<Success />} />
+            <Route path="/scanner" element={<Scanner />} />
 
             {/* ADMIN */}
-
-            <Route
-              path="/admin-login"
-              element={<AdminLogin />}
-            />
+            <Route path="/admin-login" element={<AdminLogin />} />
 
             <Route
               path="/admin"
               element={
-
                 <ProtectedAdmin>
-
                   <Admin />
-
                 </ProtectedAdmin>
-
               }
             />
 
             {/* 404 */}
-
-            <Route
-              path="*"
-              element={<NotFound />}
-            />
-
+            <Route path="*" element={<NotFound />} />
           </>
-
         )}
 
       </Routes>
 
     </HashRouter>
-
   )
-
 }
