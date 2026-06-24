@@ -1,38 +1,41 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate }
+from "react-router-dom"
+
+import {
+  loginUser
+}
+from "../firebase/auth"
 
 export default function Login() {
 
-  const navigate = useNavigate()
+  const navigate =
+    useNavigate()
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email,setEmail] =
+    useState("")
 
-  function login(e) {
+  const [password,setPassword] =
+    useState("")
+
+  async function handleLogin(e){
 
     e.preventDefault()
 
-    const user =
-      JSON.parse(
-        localStorage.getItem("mgsUser")
+    try {
+
+      await loginUser(
+        email,
+        password
       )
 
-    if (
-      user &&
-      user.email === email &&
-      user.password === password
-    ) {
+      navigate("/account")
 
-      localStorage.setItem(
-        "mgs_logged_in",
-        "true"
-      )
+    }
 
-      navigate("/my-account")
+    catch(error){
 
-    } else {
-
-      alert("Invalid Login")
+      alert(error.message)
 
     }
 
@@ -40,55 +43,31 @@ export default function Login() {
 
   return (
 
-    <div style={{
-      minHeight:"100vh",
-      background:"#000",
-      display:"flex",
-      justifyContent:"center",
-      alignItems:"center"
-    }}>
+    <div className="page">
 
-      <form
-        onSubmit={login}
-        style={{
-          width:"400px",
-          background:"#111",
-          padding:"30px",
-          borderRadius:"20px",
-          color:"white"
-        }}
-      >
+      <h1>LOGIN</h1>
 
-        <h1 style={{color:"red"}}>
-          CUSTOMER LOGIN
-        </h1>
+      <form onSubmit={handleLogin}>
 
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-          style={inputStyle}
+          onChange={(e)=>
+            setEmail(e.target.value)
+          }
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e)=>setPassword(e.target.value)}
-          style={inputStyle}
+          onChange={(e)=>
+            setPassword(e.target.value)
+          }
         />
 
-        <button
-          type="submit"
-          style={{
-            width:"100%",
-            padding:"15px",
-            background:"red",
-            color:"white",
-            border:"none"
-          }}
-        >
+        <button>
           LOGIN
         </button>
 
@@ -97,10 +76,5 @@ export default function Login() {
     </div>
 
   )
-}
 
-const inputStyle = {
-  width:"100%",
-  padding:"15px",
-  marginBottom:"15px"
 }
