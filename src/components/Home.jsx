@@ -1,9 +1,13 @@
 import { auth } from "../firebase/config"
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 export default function Home() {
 
   const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const user = auth.currentUser
 
   const tickets = [
     {
@@ -56,14 +60,9 @@ export default function Home() {
 
   function selectTicket(ticket) {
 
-    const user = auth.currentUser
-
     if (!user) {
-
       alert("⚠ You must login before buying tickets!")
-
       navigate("/login")
-
       return
     }
 
@@ -77,21 +76,92 @@ export default function Home() {
 
   return (
 
-    <div style={container}>
+    <div style={page}>
+
+      {/* TOP BAR */}
+      <div style={topBar}>
+
+        {/* MENU BUTTON */}
+        <div>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={menuBtn}
+          >
+            ☰
+          </button>
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div style={{ display: "flex", gap: "10px" }}>
+
+          {user ? (
+            <button
+              onClick={() => navigate("/my-account")}
+              style={topBtn}
+            >
+              MY ACCOUNT
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/login")}
+                style={topBtn}
+              >
+                LOGIN
+              </button>
+
+              <button
+                onClick={() => navigate("/register")}
+                style={topBtnRed}
+              >
+                REGISTER
+              </button>
+            </>
+          )}
+
+        </div>
+
+      </div>
+
+      {/* SIDE MENU */}
+      {menuOpen && (
+        <div style={sideMenu}>
+
+          <button
+            onClick={() => navigate("/my-account")}
+            style={menuItem}
+          >
+            My Account
+          </button>
+
+          <button
+            onClick={() => navigate("/orders")}
+            style={menuItem}
+          >
+            Orders
+          </button>
+
+          <button
+            onClick={() => window.open("https://wa.me/0735306246")}
+            style={menuItem}
+          >
+            Contact Us
+          </button>
+
+        </div>
+      )}
 
       {/* HEADER */}
-      <div style={header}>
+      <div style={{ textAlign: "center", marginTop: "80px" }}>
 
-        <h1 style={title}>
+        <h1 style={{ color: "red", fontSize: "70px" }}>
           MGS EVENT
         </h1>
 
-        <h2 style={subtitle}>
-          JULY 31 – AUGUST 01
-        </h2>
+        <h3>JULY 31 – AUGUST 01</h3>
 
-        <p style={description}>
-          Choose your ticket package and secure your place at the MGS experience.
+        <p style={{ color: "#aaa", maxWidth: "600px", margin: "auto" }}>
+          Choose your ticket and secure your place.
         </p>
 
       </div>
@@ -101,33 +171,17 @@ export default function Home() {
 
         {tickets.map(ticket => (
 
-          <div key={ticket.type} style={{
-            ...card,
-            border: ticket.popular ? "2px solid red" : "1px solid #333",
-            boxShadow: ticket.popular
-              ? "0 0 25px rgba(255,0,0,.5)"
-              : "0 0 10px rgba(255,255,255,.05)"
-          }}>
+          <div key={ticket.type} style={card(ticket.popular)}>
 
-            {ticket.popular && (
-              <div style={badge}>
-                MOST POPULAR
-              </div>
-            )}
-
-            <h2 style={cardTitle}>
+            <h2 style={{ color: "red" }}>
               {ticket.name}
             </h2>
 
-            <h1 style={price}>
-              R{ticket.price}
-            </h1>
+            <h1>R{ticket.price}</h1>
 
-            <p style={cardDesc}>
-              {ticket.description}
-            </p>
+            <p>{ticket.description}</p>
 
-            <div style={features}>
+            <div style={{ textAlign: "left" }}>
               {ticket.features.map(f => (
                 <p key={f}>✓ {f}</p>
               ))}
@@ -135,7 +189,7 @@ export default function Home() {
 
             <button
               onClick={() => selectTicket(ticket)}
-              style={buyButton}
+              style={buyBtn}
             >
               BUY NOW
             </button>
@@ -151,94 +205,97 @@ export default function Home() {
   )
 }
 
-/* =======================
-   MGS STYLES
-======================= */
+/* STYLES */
 
-const container = {
+const page = {
   minHeight: "100vh",
-  background: "linear-gradient(180deg,#000,#111)",
+  background: "#000",
   color: "white",
-  padding: "40px 20px"
+  padding: "20px"
 }
 
-const header = {
-  textAlign: "center",
-  marginBottom: "50px"
+const topBar = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  display: "flex",
+  justifyContent: "space-between",
+  padding: "15px",
+  background: "#111",
+  zIndex: 1000
 }
 
-const title = {
-  color: "red",
-  fontSize: "60px",
-  letterSpacing: "3px",
-  marginBottom: "10px"
+const menuBtn = {
+  fontSize: "25px",
+  background: "none",
+  color: "white",
+  border: "none",
+  cursor: "pointer"
 }
 
-const subtitle = {
-  color: "white"
+const topBtn = {
+  background: "#222",
+  color: "white",
+  border: "1px solid red",
+  padding: "10px 15px",
+  borderRadius: "8px",
+  cursor: "pointer"
 }
 
-const description = {
-  color: "#aaa",
-  maxWidth: "600px",
-  margin: "20px auto"
+const topBtnRed = {
+  background: "red",
+  color: "white",
+  border: "none",
+  padding: "10px 15px",
+  borderRadius: "8px",
+  cursor: "pointer"
+}
+
+const sideMenu = {
+  position: "fixed",
+  top: "60px",
+  left: 0,
+  width: "200px",
+  background: "#111",
+  height: "100%",
+  padding: "20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px"
+}
+
+const menuItem = {
+  background: "none",
+  color: "white",
+  border: "1px solid red",
+  padding: "10px",
+  cursor: "pointer",
+  borderRadius: "8px"
 }
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-  gap: "25px",
-  maxWidth: "1200px",
-  margin: "0 auto"
+  gap: "20px",
+  marginTop: "120px"
 }
 
-const card = {
+const card = (popular) => ({
   background: "#111",
-  borderRadius: "25px",
-  padding: "30px",
-  textAlign: "center",
-  position: "relative"
-}
-
-const badge = {
-  position: "absolute",
-  top: "-10px",
-  left: "50%",
-  transform: "translateX(-50%)",
-  background: "red",
-  padding: "6px 15px",
+  border: popular ? "2px solid red" : "1px solid #333",
+  padding: "25px",
   borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: "bold"
-}
+  textAlign: "center"
+})
 
-const cardTitle = {
-  color: "red",
-  marginBottom: "10px"
-}
-
-const price = {
-  fontSize: "45px",
-  margin: "15px 0"
-}
-
-const cardDesc = {
-  color: "#bbb",
-  marginBottom: "20px"
-}
-
-const features = {
-  textAlign: "left",
-  marginBottom: "20px"
-}
-
-const buyButton = {
+const buyBtn = {
+  marginTop: "15px",
   width: "100%",
   padding: "15px",
   background: "red",
-  border: "none",
-  borderRadius: "12px",
   color: "white",
-  fontWeight: "bold",
+  border: "none",
+  borderRadius: "10px",
   cursor: "pointer"
 }
