@@ -30,6 +30,8 @@ export default function Register() {
     fullName: "",
     email: "",
     phone: "",
+    password: "",
+    confirmPassword: "",
     delivery: "email",
     ticketType: selectedTicket.type,
     quantity: 1
@@ -47,7 +49,30 @@ export default function Register() {
   }
 
   function handleSubmit(e) {
+
     e.preventDefault()
+
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+      alert("Passwords Do Not Match")
+      return
+    }
+
+    const user = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+      registeredAt:
+        new Date().toISOString()
+    }
+
+    localStorage.setItem(
+      "mgsUser",
+      JSON.stringify(user)
+    )
 
     const order = {
       fullName: formData.fullName,
@@ -57,7 +82,9 @@ export default function Register() {
       ticketType: formData.ticketType,
       ticketName:
         ticketNames[formData.ticketType],
-      quantity: Number(formData.quantity),
+      quantity: Number(
+        formData.quantity
+      ),
       total
     }
 
@@ -66,12 +93,13 @@ export default function Register() {
       JSON.stringify(order)
     )
 
-    console.log("Order Saved:", order)
+    alert("Account Created Successfully")
 
     navigate("/payment")
   }
 
   return (
+
     <div
       style={{
         minHeight: "100vh",
@@ -83,22 +111,23 @@ export default function Register() {
         padding: "30px"
       }}
     >
+
       <div
         style={{
-          width: "500px",
+          width: "550px",
           background: "#111",
           padding: "40px",
           borderRadius: "25px",
           boxShadow:
-            "0 0 35px rgba(255,0,0,0.5)",
+            "0 0 35px rgba(255,0,0,.5)",
           color: "white"
         }}
       >
+
         <h1
           style={{
             textAlign: "center",
-            color: "red",
-            marginBottom: "10px"
+            color: "red"
           }}
         >
           MGS REGISTRATION
@@ -111,7 +140,7 @@ export default function Register() {
             marginBottom: "30px"
           }}
         >
-          Complete your details below
+          Create Your Account
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -142,6 +171,26 @@ export default function Register() {
             placeholder="WhatsApp Number"
             required
             value={formData.phone}
+            onChange={handleChange}
+            style={inputStyle}
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            style={inputStyle}
+          />
+
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            required
+            value={formData.confirmPassword}
             onChange={handleChange}
             style={inputStyle}
           />
@@ -195,32 +244,23 @@ export default function Register() {
 
           <div
             style={{
-              background: "#1a1a1a",
-              padding: "20px",
-              borderRadius: "15px",
-              marginBottom: "20px",
-              border: "1px solid #222"
+              background:"#1a1a1a",
+              padding:"20px",
+              borderRadius:"15px",
+              marginBottom:"20px"
             }}
           >
-            <h3
-              style={{
-                color: "red",
-                marginBottom: "15px"
-              }}
-            >
+
+            <h3 style={{color:"red"}}>
               ORDER SUMMARY
             </h3>
 
             <p>
               Ticket:
               {" "}
-              {ticketNames[formData.ticketType]}
-            </p>
-
-            <p>
-              Price Per Ticket:
-              {" "}
-              R{prices[formData.ticketType]}
+              {ticketNames[
+                formData.ticketType
+              ]}
             </p>
 
             <p>
@@ -229,46 +269,47 @@ export default function Register() {
               {formData.quantity}
             </p>
 
-            <h2
-              style={{
-                color: "red"
-              }}
-            >
+            <h2 style={{color:"red"}}>
               TOTAL: R{total}
             </h2>
+
           </div>
 
           <button
             type="submit"
             style={{
-              width: "100%",
-              padding: "18px",
-              background: "red",
-              border: "none",
-              borderRadius: "12px",
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "bold",
-              cursor: "pointer"
+              width:"100%",
+              padding:"18px",
+              background:"red",
+              border:"none",
+              borderRadius:"12px",
+              color:"white",
+              fontSize:"18px",
+              fontWeight:"bold",
+              cursor:"pointer"
             }}
           >
-            CONTINUE TO PAYMENT
+            CREATE ACCOUNT & PAY
           </button>
 
         </form>
+
       </div>
+
     </div>
+
   )
+
 }
 
 const inputStyle = {
-  width: "100%",
-  padding: "15px",
-  marginBottom: "15px",
-  borderRadius: "10px",
-  border: "1px solid #333",
-  background: "#1a1a1a",
-  color: "white",
-  fontSize: "16px",
-  boxSizing: "border-box"
+  width:"100%",
+  padding:"15px",
+  marginBottom:"15px",
+  borderRadius:"10px",
+  border:"1px solid #333",
+  background:"#1a1a1a",
+  color:"white",
+  fontSize:"16px",
+  boxSizing:"border-box"
 }
