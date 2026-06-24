@@ -1,114 +1,314 @@
-import { useEffect,useState }
-from "react"
-
-import {
-  auth
-}
-from "../firebase/config"
+import { useEffect, useState } from "react"
+import { Navigate } from "react-router-dom"
 
 import {
   collection,
   getDocs,
   query,
   where
-}
-from "firebase/firestore"
+} from "firebase/firestore"
 
-import { db }
-from "../firebase/config"
+import {
+  signOut
+} from "firebase/auth"
 
-export default function Account(){
+import {
+  db,
+  auth
+} from "../firebase/config"
 
-  const [tickets,setTickets] =
-    useState([])
+export default function Account() {
 
-  useEffect(()=>{
+  const [tickets, setTickets] = useState([])
+  const [loading, setLoading] = useState(true)
 
-    async function loadTickets(){
+  const user = auth.currentUser
 
-      const q = query(
+  useEffect(() => {
 
-        collection(
-          db,
-          "tickets"
-        ),
+    async function loadTickets() {
 
-        where(
-          "email",
-          "==",
-          auth.currentUser.email
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+
+        const q = query(
+          collection(db, "tickets"),
+          where(
+            "email",
+            "==",
+            user.email
+          )
         )
 
-      )
+        const snapshot =
+          await getDocs(q)
 
-      const snap =
-        await getDocs(q)
+        const data = []
 
-      const data=[]
+        snapshot.forEach(doc => {
 
-      snap.forEach(doc=>{
+          data.push({
+            id: doc.id,
+            ...doc.data()
+          })
 
-        data.push({
-          id:doc.id,
-          ...doc.data()
         })
 
-      })
+        setTickets(data)
 
-      setTickets(data)
+      } catch (error) {
+
+        console.log(error)
+
+      }
+
+      setLoading(false)
 
     }
 
     loadTickets()
 
-  },[])
+  }, [user])
 
-  return(
+  async function logout() {
 
-    <div>
+    await signOut(auth)
 
-      <h1>
-        My Account
-      </h1>
+    window.location.href = "/login"
 
-      <p>
-        {auth.currentUser?.email}
-      </p>
+  }
 
-      <h2>
-        My Tickets
-      </h2>
+  if (!user) {
 
-      {
+    return (
+      <Navigate to="/login" />
+    )
 
-        tickets.map(ticket=>(
+  }
+
+  return (
+
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(to bottom,#000,#111)",
+        color: "white",
+        padding: "30px"
+      }}
+    >
+
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto"
+        }}
+      >
+
+        <div
+          style={{
+            background: "#111",
+            padding: "25px",
+            borderRadius: "20px",
+            border: "1px solid red",
+            marginBottom: "30px"
+          }}
+        >
+
+          <h1
+            style={{
+              color: "red"
+            }}
+          >
+            MY ACCOUNT
+          </h1>
+
+          <p>
+            Logged in as:
+          </p>
+
+          <h3>
+            {user.email}
+          </h3>
+
+          <p>
+            Total Tickets:
+            {" "}
+            {tickets.length}
+          </p>
 
           <div
-            key={ticket.id}
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              marginTop: "20px"
+            }}
           >
 
-            <h3>
-              {ticket.packageName}
-            </h3>
+            <a
+              href="mailto:muhlurigift129@gmail.com"
+              style={buttonStyle}
+            >
+              CONTACT MGS
+            </a>
 
-            <p>
-              Ticket ID:
-              {ticket.id}
-            </p>
-
-            <img
-              src={ticket.qrCode}
-              width="200"
-            />
+            <button
+              onClick={logout}
+              style={buttonStyle}
+            >
+              LOGOUT
+            </button>
 
           </div>
 
-        ))
+        </div>
 
-      }
+        <h2
+          style={{
+            color: "red",
+            marginBottom: "20px"
+          }}
+        >
+          MY TICKETS
+        </h2>
+
+        {loading ? (
+
+          <h3>
+            Loading Tickets...
+          </h3>
+
+        ) : tickets.length === 0 ? (
+
+          <div
+            style={{
+              background: "#111",
+              padding: "25px",
+              borderRadius: "15px"
+            }}
+          >
+            No tickets found.
+          </div>
+
+        ) : (
+
+          tickets.map(ticket => (
+
+            <div
+              key={ticket.id}
+              style={{
+                background: "#111",
+                border: "1px solid red",
+                borderRadius: "20px",
+                padding: "25px",
+                marginBottom: "25px"
+              }}
+            >
+
+              <h2
+                style={{
+                  color: "red"
+                }}
+              >
+                {ticket.packageName}
+              </h2>
+
+              <p>
+                Ticket ID:
+                {" "}
+                {ticket.id}
+              </p>
+
+              <p>
+                Quantity:
+                {" "}
+                {ticket.quantity}
+              </p>
+
+              <p>
+                Total:
+                {" "}
+                R{ticket.total}
+              </p>
+
+              <p>
+                Status:
+                {" "}
+                <span
+                  style={{
+                    color:
+                      ticket.used
+                        ? "orange"
+                        : "lime"
+                  }}
+                >
+                  {ticket.used
+                    ? "USED"
+                    : "VALID"}
+                </span>
+              </p>
+
+              {ticket.qrCode && (
+
+                <div
+                  style={{
+                    marginTop: "20px",
+                    textAlign: "center"
+                  }}
+                >
+
+                  <img
+                    src={ticket.qrCode}
+                    alt="QR Code"
+                    width="220"
+                  />
+
+                  <br />
+
+                  <a
+                    href={ticket.qrCode}
+                    download={`ticket-${ticket.id}.png`}
+                    style={{
+                      color: "red",
+                      display: "inline-block",
+                      marginTop: "15px"
+                    }}
+                  >
+                    Download QR Code
+                  </a>
+
+                </div>
+
+              )}
+
+            </div>
+
+          ))
+
+        )}
+
+      </div>
 
     </div>
 
   )
+
+}
+
+const buttonStyle = {
+
+  background: "red",
+  color: "white",
+  border: "none",
+  padding: "12px 20px",
+  borderRadius: "10px",
+  textDecoration: "none",
+  cursor: "pointer",
+  fontWeight: "bold"
 
 }
