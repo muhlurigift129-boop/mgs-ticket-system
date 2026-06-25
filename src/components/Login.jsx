@@ -47,11 +47,6 @@ export default function Login() {
 
       await signInWithEmailAndPassword(auth, email, password)
 
-      localStorage.setItem(
-        "mgs_user",
-        JSON.stringify(auth.currentUser)
-      )
-
       navigate("/my-account")
 
     }
