@@ -1,110 +1,101 @@
 import { useEffect, useState } from "react"
 
-import { auth, db }
-from "../firebase/config"
+import {
+  auth,
+  db
+} from "../firebase/config"
 
 import {
   doc,
   getDoc,
   collection,
+  getDocs,
   query,
-  where,
-  getDocs
+  where
 } from "firebase/firestore"
 
 import {
   signOut
 } from "firebase/auth"
 
-import { useNavigate }
-from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export default function MyAccount() {
 
-  const navigate =
-    useNavigate()
+  const navigate = useNavigate()
 
-  const [userData,setUserData] =
+  const [userData, setUserData] =
     useState(null)
 
-  const [tickets,setTickets] =
+  const [tickets, setTickets] =
     useState([])
 
-  const [loading,setLoading] =
+  const [loading, setLoading] =
     useState(true)
 
   useEffect(() => {
 
-    async function loadData() {
+    async function loadAccount() {
 
       try {
 
-        const user =
-          auth.currentUser
-
-        if (!user) {
+        if (!auth.currentUser) {
 
           navigate("/login")
           return
 
         }
 
-        const userDoc =
-          await getDoc(
-            doc(
-              db,
-              "users",
-              user.uid
-            )
-          )
+        const userRef = doc(
+          db,
+          "users",
+          auth.currentUser.uid
+        )
 
-        if (
-          userDoc.exists()
-        ) {
+        const userSnap =
+          await getDoc(userRef)
+
+        if (userSnap.exists()) {
 
           setUserData(
-            userDoc.data()
+            userSnap.data()
           )
 
         }
 
-        const ticketQuery =
-          query(
+        const q = query(
 
-            collection(
-              db,
-              "tickets"
-            ),
+          collection(
+            db,
+            "tickets"
+          ),
 
-            where(
-              "email",
-              "==",
-              user.email
-            )
-
+          where(
+            "email",
+            "==",
+            auth.currentUser.email
           )
 
-        const snapshot =
-          await getDocs(
-            ticketQuery
-          )
+        )
 
-        const userTickets = []
+        const ticketSnap =
+          await getDocs(q)
 
-        snapshot.forEach(doc => {
+        const ticketData = []
 
-          userTickets.push({
+        ticketSnap.forEach(doc => {
+
+          ticketData.push({
 
             id: doc.id,
+
             ...doc.data()
 
           })
 
         })
 
-        setTickets(
-          userTickets
-        )
+        setTickets(ticketData)
 
       }
 
@@ -118,9 +109,9 @@ export default function MyAccount() {
 
     }
 
-    loadData()
+    loadAccount()
 
-  }, [navigate])
+  }, [])
 
   async function logout() {
 
@@ -136,9 +127,9 @@ export default function MyAccount() {
 
       <div
         style={{
+          minHeight:"100vh",
           background:"#000",
           color:"white",
-          minHeight:"100vh",
           display:"flex",
           justifyContent:"center",
           alignItems:"center"
@@ -158,14 +149,14 @@ export default function MyAccount() {
         minHeight:"100vh",
         background:"#000",
         color:"white",
-        padding:"30px"
+        padding:"100px 20px"
       }}
     >
 
       <div
         style={{
-          maxWidth:"1000px",
-          margin:"0 auto"
+          maxWidth:"1200px",
+          margin:"auto"
         }}
       >
 
@@ -182,7 +173,7 @@ export default function MyAccount() {
             background:"#111",
             padding:"25px",
             borderRadius:"20px",
-            marginBottom:"30px"
+            marginTop:"20px"
           }}
         >
 
@@ -198,37 +189,50 @@ export default function MyAccount() {
             {userData?.phone}
           </p>
 
-          <button
-            onClick={logout}
-            style={{
-              background:"red",
-              color:"white",
-              border:"none",
-              padding:"12px 25px",
-              borderRadius:"10px",
-              cursor:"pointer"
-            }}
-          >
-            LOGOUT
-          </button>
+        </div>
+
+        <div
+          style={{
+            display:"grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(250px,1fr))",
+            gap:"20px",
+            marginTop:"25px"
+          }}
+        >
+
+          <div style={card}>
+            <h3>Total Tickets</h3>
+            <h1>{tickets.length}</h1>
+          </div>
+
+          <div style={card}>
+            <h3>Status</h3>
+            <h1>ACTIVE</h1>
+          </div>
 
         </div>
 
         <h2
           style={{
+            marginTop:"40px",
             color:"red"
           }}
         >
           MY TICKETS
         </h2>
 
-        {tickets.length === 0 ? (
+        {
+
+          tickets.length === 0
+
+          ?
 
           <p>
-            No Tickets Found
+            No tickets found.
           </p>
 
-        ) : (
+          :
 
           tickets.map(ticket => (
 
@@ -236,9 +240,9 @@ export default function MyAccount() {
               key={ticket.id}
               style={{
                 background:"#111",
-                padding:"20px",
-                borderRadius:"15px",
-                marginBottom:"20px"
+                padding:"25px",
+                borderRadius:"20px",
+                marginTop:"20px"
               }}
             >
 
@@ -252,10 +256,8 @@ export default function MyAccount() {
               </p>
 
               <p>
-                Status:
-                {ticket.used
-                  ? "USED"
-                  : "VALID"}
+                Quantity:
+                {ticket.quantity}
               </p>
 
               <p>
@@ -263,26 +265,72 @@ export default function MyAccount() {
                 R{ticket.total}
               </p>
 
-              {ticket.qrCode && (
+              <p>
+                Status:
+                {ticket.status}
+              </p>
 
-                <img
-                  src={ticket.qrCode}
-                  alt="QR Code"
-                  width="180"
-                />
+              {
 
-              )}
+                ticket.qrCode && (
+
+                  <img
+                    src={ticket.qrCode}
+                    alt="QR"
+                    width="220"
+                    style={{
+                      marginTop:"15px",
+                      borderRadius:"10px",
+                      background:"white",
+                      padding:"10px"
+                    }}
+                  />
+
+                )
+
+              }
 
             </div>
 
           ))
 
-        )}
+        }
+
+        <button
+          onClick={logout}
+          style={{
+            marginTop:"30px",
+            background:"red",
+            color:"white",
+            border:"none",
+            padding:"15px 30px",
+            borderRadius:"12px",
+            cursor:"pointer",
+            fontWeight:"bold"
+          }}
+        >
+          LOGOUT
+        </button>
 
       </div>
 
     </div>
 
   )
+
+}
+
+const card = {
+
+  background:"#111",
+
+  padding:"25px",
+
+  borderRadius:"20px",
+
+  textAlign:"center",
+
+  boxShadow:
+    "0 0 20px rgba(255,0,0,.3)"
 
 }
