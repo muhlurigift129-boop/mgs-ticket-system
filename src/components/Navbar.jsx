@@ -1,105 +1,125 @@
-import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth } from "../firebase/config"
+import { signOut } from "firebase/auth"
+import { useEffect, useState } from "react"
 
 export default function Navbar() {
 
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
 
-  const user = auth.currentUser
+  const [user, setUser] = useState(null)
 
-  function logout() {
-    auth.signOut()
-    localStorage.clear()
+  useEffect(() => {
+
+    const unsubscribe =
+      auth.onAuthStateChanged((currentUser) => {
+
+        setUser(currentUser)
+
+      })
+
+    return () => unsubscribe()
+
+  }, [])
+
+  async function logout() {
+
+    await signOut(auth)
+
     navigate("/")
+
   }
 
   return (
 
-    <div style={navStyle}>
+    <div
+      style={{
+        background: "#000",
+        borderBottom: "2px solid red",
+        padding: "15px 25px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        position: "sticky",
+        top: 0,
+        zIndex: 999
+      }}
+    >
 
-      {/* LEFT MENU */}
-      <div style={{ position: "relative" }}>
+      {/* LEFT */}
 
-        <button
-          onClick={() => setOpen(!open)}
-          style={menuBtn}
-        >
-          ☰ MENU
-        </button>
+      <button
+        onClick={() => navigate("/")}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "red",
+          fontSize: "28px",
+          cursor: "pointer",
+          fontWeight: "bold"
+        }}
+      >
+        ☰ MGS
+      </button>
 
-        {open && (
-          <div style={dropdown}>
+      {/* RIGHT */}
 
-            <button
-              onClick={() => navigate("/my-account")}
-              style={dropItem}
-            >
-              My Account
-            </button>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px"
+        }}
+      >
 
-            <button
-              onClick={() => navigate("/orders")}
-              style={dropItem}
-            >
-              Orders
-            </button>
+        {!user ? (
 
-            <button
-              onClick={() => navigate("/contact")}
-              style={dropItem}
-            >
-              Contact Us
-            </button>
-
-          </div>
-        )}
-
-      </div>
-
-      {/* RIGHT AUTH */}
-      <div>
-
-        {user ? (
-
-          <div style={{ display: "flex", gap: "10px" }}>
-
-            <button
-              onClick={() => navigate("/my-account")}
-              style={authBtn}
-            >
-              PROFILE
-            </button>
-
-            <button
-              onClick={logout}
-              style={logoutBtn}
-            >
-              LOGOUT
-            </button>
-
-          </div>
-
-        ) : (
-
-          <div style={{ display: "flex", gap: "10px" }}>
+          <>
 
             <button
               onClick={() => navigate("/login")}
-              style={authBtn}
+              style={buttonStyle}
             >
               LOGIN
             </button>
 
             <button
-              onClick={() => navigate("/register-account")}
-              style={authBtn}
+              onClick={() => navigate("/register")}
+              style={buttonStyle}
             >
               REGISTER
             </button>
 
-          </div>
+          </>
+
+        ) : (
+
+          <>
+
+            <button
+              onClick={() => navigate("/my-account")}
+              style={buttonStyle}
+            >
+              MY ACCOUNT
+            </button>
+
+            <button
+              onClick={() => navigate("/orders")}
+              style={buttonStyle}
+            >
+              ORDERS
+            </button>
+
+            <button
+              onClick={logout}
+              style={{
+                ...buttonStyle,
+                background: "#222"
+              }}
+            >
+              LOGOUT
+            </button>
+
+          </>
 
         )}
 
@@ -108,80 +128,23 @@ export default function Navbar() {
     </div>
 
   )
-}
-
-const navStyle = {
-
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: "70px",
-  background: "#000",
-  borderBottom: "2px solid red",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0 20px",
-  zIndex: 1000
-}
-
-const menuBtn = {
-
-  background: "transparent",
-  color: "red",
-  border: "1px solid red",
-  padding: "10px 15px",
-  borderRadius: "10px",
-  cursor: "pointer",
-  fontWeight: "bold"
 
 }
 
-const dropdown = {
-
-  position: "absolute",
-  top: "50px",
-  left: 0,
-  background: "#111",
-  border: "1px solid red",
-  borderRadius: "10px",
-  width: "180px",
-  display: "flex",
-  flexDirection: "column"
-
-}
-
-const dropItem = {
-
-  padding: "12px",
-  background: "transparent",
-  color: "white",
-  border: "none",
-  cursor: "pointer",
-  textAlign: "left"
-
-}
-
-const authBtn = {
+const buttonStyle = {
 
   background: "red",
+
   color: "white",
+
   border: "none",
-  padding: "10px 15px",
+
+  padding: "10px 18px",
+
   borderRadius: "10px",
+
   cursor: "pointer",
+
   fontWeight: "bold"
-
-}
-
-const logoutBtn = {
-
-  background: "black",
-  color: "red",
-  border: "1px solid red",
-  padding: "10px 15px",
-  borderRadius: "10px",
-  cursor: "pointer"
 
 }
