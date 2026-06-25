@@ -32,102 +32,72 @@ export default function Navbar() {
 
   return (
 
-    <div
-      style={{
-        background: "#000",
-        borderBottom: "2px solid red",
-        padding: "15px 25px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "sticky",
-        top: 0,
-        zIndex: 999
-      }}
-    >
+   <div
+     style={{
+       background: "#000",
+       borderBottom: "2px solid red",
+       padding: "15px 25px",
+       display: "flex",
+       justifyContent: "space-between",
+       alignItems: "center",
+       position: "sticky",
+       top: 0,
+       zIndex: 999
+     }}
+   >
 
-      {/* LEFT */}
+     {/* LOGO */}
 
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "red",
-          fontSize: "28px",
-          cursor: "pointer",
-          fontWeight: "bold"
-        }}
-      >
-        ☰ MGS
-      </button>
+     <button
+       onClick={() => navigate("/")}
+       style={{
+         background: "transparent",
+         border: "none",
+         color: "red",
+         fontSize: "28px",
+         cursor: "pointer",
+         fontWeight: "bold"
+       }}
+     >
+       MGS
+     </button>
 
-      {/* RIGHT */}
+     {/* LOGIN / REGISTER ONLY WHEN LOGGED OUT */}
 
-      <div
-        style={{
-          display: "flex",
-          gap: "10px"
-        }}
-      >
+     {!user && (
 
-        {!user ? (
+       <div
+         style={{
+           display: "flex",
+           gap: "10px"
+         }}
+       >
 
-          <>
+         <button
+           onClick={() => navigate("/login")}
+           style={buttonStyle}
+         >
+           LOGIN
+         </button>
 
-            <button
-              onClick={() => navigate("/login")}
-              style={buttonStyle}
-            >
-              LOGIN
-            </button>
+         <button
+           onClick={() => navigate("/register-account")}
+           style={{
+             ...buttonStyle,
+             background: "#111",
+             border: "1px solid red"
+           }}
+         >
+           REGISTER
+         </button>
 
-            <button
-              onClick={() => navigate("/register")}
-              style={buttonStyle}
-            >
-              REGISTER
-            </button>
+       </div>
 
-          </>
+     )}
 
-        ) : (
+   </div>
 
-          <>
-
-            <button
-              onClick={() => navigate("/my-account")}
-              style={buttonStyle}
-            >
-              MY ACCOUNT
-            </button>
-
-            <button
-              onClick={() => navigate("/orders")}
-              style={buttonStyle}
-            >
-              ORDERS
-            </button>
-
-            <button
-              onClick={logout}
-              style={{
-                ...buttonStyle,
-                background: "#222"
-              }}
-            >
-              LOGOUT
-            </button>
-
-          </>
-
-        )}
-
-      </div>
-
-    </div>
-
-  )
+ )
 
 }
 
