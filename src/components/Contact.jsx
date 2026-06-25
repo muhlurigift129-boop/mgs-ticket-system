@@ -26,7 +26,7 @@ export default function Contact() {
 
       <p>
         WhatsApp:
-        +27 XXX XXX XXXX
+        +2773 530 6246
       </p>
 
       <p>
