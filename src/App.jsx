@@ -167,7 +167,7 @@ export default function App() {
 
             {/* REGISTER (PROTECTED BUY FLOW) */}
             <Route
-              path="/register"
+              path="/register-account"
               element={<RegisterAccount />}
             />
 
