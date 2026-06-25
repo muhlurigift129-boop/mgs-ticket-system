@@ -2,74 +2,74 @@ import { useEffect, useState } from "react"
 
 import {
   collection,
+  getDocs,
   query,
-  where,
-  getDocs
+  where
 } from "firebase/firestore"
 
 import {
-  auth,
-  db
+  db,
+  auth
 } from "../firebase/config"
 
 export default function Orders() {
 
-  const [orders,setOrders] =
+  const [orders, setOrders] =
     useState([])
 
   useEffect(() => {
+
+    async function loadOrders() {
+
+      if (!auth.currentUser) return
+
+      const q = query(
+
+        collection(
+          db,
+          "tickets"
+        ),
+
+        where(
+          "email",
+          "==",
+          auth.currentUser.email
+        )
+
+      )
+
+      const snapshot =
+        await getDocs(q)
+
+      const data = []
+
+      snapshot.forEach(doc => {
+
+        data.push({
+
+          id: doc.id,
+
+          ...doc.data()
+
+        })
+
+      })
+
+      setOrders(data)
+
+    }
 
     loadOrders()
 
   }, [])
 
-  async function loadOrders() {
-
-    if (!auth.currentUser)
-      return
-
-    const q = query(
-
-      collection(
-        db,
-        "tickets"
-      ),
-
-      where(
-        "email",
-        "==",
-        auth.currentUser.email
-      )
-
-    )
-
-    const snap =
-      await getDocs(q)
-
-    const data = []
-
-    snap.forEach(doc => {
-
-      data.push({
-
-        id: doc.id,
-
-        ...doc.data()
-
-      })
-
-    })
-
-    setOrders(data)
-  }
-
   return (
 
     <div
       style={{
+        minHeight:"100vh",
         background:"#000",
         color:"white",
-        minHeight:"100vh",
         padding:"100px 20px"
       }}
     >
@@ -84,6 +84,14 @@ export default function Orders() {
 
       {
 
+        orders.length === 0
+
+        ?
+
+        <p>No orders found.</p>
+
+        :
+
         orders.map(order => (
 
           <div
@@ -91,9 +99,8 @@ export default function Orders() {
             style={{
               background:"#111",
               padding:"20px",
-              marginTop:"20px",
               borderRadius:"15px",
-              border:"1px solid red"
+              marginTop:"15px"
             }}
           >
 
@@ -112,8 +119,8 @@ export default function Orders() {
             </p>
 
             <p>
-              Ticket ID:
-              {order.id}
+              Status:
+              {order.status}
             </p>
 
           </div>
@@ -125,4 +132,5 @@ export default function Orders() {
     </div>
 
   )
+
 }
