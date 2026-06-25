@@ -27,20 +27,22 @@ export default function Login() {
 
   useEffect(() => {
 
-    if(auth.currentUser){
+    if (auth.currentUser) {
 
       const selectedTicket =
         localStorage.getItem("selectedTicket")
 
-      if(selectedTicket){
+      if (selectedTicket) {
 
         navigate("/register")
 
-      }else{
+      } else {
 
         navigate("/my-account")
 
       }
+
+    }
 
   }, [navigate])
 
@@ -180,7 +182,7 @@ export default function Login() {
         <button
           onClick={() =>
             navigate(
-              "/register"
+              "/register-account"
             )
           }
           style={registerButton}
