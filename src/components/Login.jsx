@@ -29,9 +29,18 @@ export default function Login() {
 
     if(auth.currentUser){
 
-      navigate("/my-account")
+      const selectedTicket =
+        localStorage.getItem("selectedTicket")
 
-    }
+      if(selectedTicket){
+
+        navigate("/register")
+
+      }else{
+
+        navigate("/my-account")
+
+      }
 
   }, [navigate])
 
