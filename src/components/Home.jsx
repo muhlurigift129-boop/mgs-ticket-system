@@ -1,19 +1,63 @@
 import { auth } from "../firebase/config"
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import {
+  signOut,
+  onAuthStateChanged
+} from "firebase/auth"
+
+import {
+  useNavigate
+} from "react-router-dom"
+
+import {
+  useState,
+  useEffect
+} from "react"
 
 export default function Home() {
 
   const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
 
-  const user = auth.currentUser
+  const [menuOpen, setMenuOpen] =
+    useState(false)
+
+  const [user, setUser] =
+    useState(null)
+
+  useEffect(() => {
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        (currentUser) => {
+
+          setUser(currentUser)
+
+        }
+      )
+
+    return () => unsubscribe()
+
+  }, [])
+
+  async function logout() {
+
+    await signOut(auth)
+
+    localStorage.removeItem(
+      "mgs_user"
+    )
+
+    navigate("/")
+
+  }
 
   const tickets = [
+
     {
       name: "FULL EVENT",
       price: 300,
-      description: "Full access to the entire MGS experience",
+      description:
+        "Full access to the entire MGS experience",
       type: "full",
       popular: true,
       features: [
@@ -23,10 +67,12 @@ export default function Home() {
         "All Activities"
       ]
     },
+
     {
       name: "VIBE ONLY",
       price: 100,
-      description: "Enjoy the atmosphere and entertainment",
+      description:
+        "Enjoy the atmosphere and entertainment",
       type: "vibe",
       features: [
         "Event Entry",
@@ -34,10 +80,12 @@ export default function Home() {
         "Music & Vibes"
       ]
     },
+
     {
       name: "VIBE + DRINKS",
       price: 200,
-      description: "Entertainment with drinks included",
+      description:
+        "Entertainment with drinks included",
       type: "vibeDrinks",
       features: [
         "Event Entry",
@@ -45,10 +93,12 @@ export default function Home() {
         "Live Entertainment"
       ]
     },
+
     {
       name: "VIBE + FOOD",
       price: 200,
-      description: "Entertainment with food included",
+      description:
+        "Entertainment with food included",
       type: "vibeFood",
       features: [
         "Event Entry",
@@ -56,37 +106,75 @@ export default function Home() {
         "Live Entertainment"
       ]
     }
+
   ]
 
   function selectTicket(ticket) {
-
-    if (!user) {
-      alert("⚠ Please login before buying tickets")
-      navigate("/login")
-      return
-    }
 
     localStorage.setItem(
       "selectedTicket",
       JSON.stringify(ticket)
     )
 
+    if (!user) {
+
+      alert(
+        "Please login before purchasing tickets."
+      )
+
+      navigate("/login")
+
+      return
+
+    }
+
     navigate("/register")
+
+  }
+
+  function openAccount() {
+
+    if (!user) {
+
+      navigate("/login")
+
+      return
+
+    }
+
+    navigate("/my-account")
+
+  }
+
+  function openOrders() {
+
+    if (!user) {
+
+      navigate("/login")
+
+      return
+
+    }
+
+    navigate("/orders")
+
   }
 
   return (
 
     <div style={page}>
 
-      {/* TOP NAV BAR */}
+      {/* NAVBAR */}
+
       <div style={navBar}>
 
-        {/* MENU LEFT */}
         <div>
 
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
             style={menuBtn}
+            onClick={() =>
+              setMenuOpen(!menuOpen)
+            }
           >
             ☰ MENU
           </button>
@@ -96,30 +184,38 @@ export default function Home() {
             <div style={menuDropdown}>
 
               <button
-                onClick={() => navigate("/my-account")}
                 style={menuItem}
+                onClick={openAccount}
               >
-                My Account
+                👤 My Account
               </button>
 
               <button
-                onClick={() => navigate("/orders")}
                 style={menuItem}
+                onClick={openOrders}
               >
-                Orders
+                🎫 Orders
               </button>
 
               <button
+                style={menuItem}
                 onClick={() =>
-                  window.open(
-                    "https://wa.me/0735306246",
-                    "_blank"
-                  )
+                  navigate("/contact")
                 }
-                style={menuItem}
               >
-                Contact Us
+                📞 Contact Us
               </button>
+
+              {user && (
+
+                <button
+                  style={menuItem}
+                  onClick={logout}
+                >
+                  🚪 Logout
+                </button>
+
+              )}
 
             </div>
 
@@ -127,35 +223,60 @@ export default function Home() {
 
         </div>
 
-        {/* RIGHT AUTH BUTTONS */}
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px"
+          }}
+        >
 
           {!user ? (
 
             <>
+
               <button
-                onClick={() => navigate("/login")}
+                onClick={() =>
+                  navigate("/login")
+                }
                 style={authBtnRed}
               >
                 LOGIN
               </button>
 
               <button
-                onClick={() => navigate("/register")}
+                onClick={() =>
+                  navigate(
+                    "/register-account"
+                  )
+                }
                 style={authBtnDark}
               >
                 REGISTER
               </button>
+
             </>
 
           ) : (
 
-            <button
-              onClick={() => navigate("/my-account")}
-              style={authBtnRed}
-            >
-              MY ACCOUNT
-            </button>
+            <>
+
+              <button
+                onClick={() =>
+                  navigate("/my-account")
+                }
+                style={authBtnRed}
+              >
+                MY ACCOUNT
+              </button>
+
+              <button
+                onClick={logout}
+                style={authBtnDark}
+              >
+                LOGOUT
+              </button>
+
+            </>
 
           )}
 
@@ -164,49 +285,85 @@ export default function Home() {
       </div>
 
       {/* HEADER */}
+
       <div style={header}>
 
-        <h1 style={title}>MGS EVENT</h1>
+        <h1 style={title}>
+          MGS EVENT
+        </h1>
 
-        <h2>JULY 31 – AUGUST 01</h2>
+        <h2>
+          JULY 31 – AUGUST 01
+        </h2>
 
         <p style={desc}>
-          Choose your preferred ticket package and secure your place.
+          Choose your preferred ticket
+          package and secure your place.
         </p>
 
       </div>
 
       {/* TICKETS */}
+
       <div style={grid}>
 
-        {tickets.map((ticket) => (
+        {tickets.map(ticket => (
 
-          <div key={ticket.type} style={card}>
+          <div
+            key={ticket.type}
+            style={card}
+          >
 
             {ticket.popular && (
+
               <div style={badge}>
                 MOST POPULAR
               </div>
+
             )}
 
-            <h2 style={{ color: "red" }}>
+            <h2
+              style={{
+                color: "red"
+              }}
+            >
               {ticket.name}
             </h2>
 
-            <h1>R{ticket.price}</h1>
+            <h1>
+              R{ticket.price}
+            </h1>
 
-            <p style={{ color: "#bbb" }}>
+            <p
+              style={{
+                color: "#bbb"
+              }}
+            >
               {ticket.description}
             </p>
 
-            <div style={{ textAlign: "left" }}>
-              {ticket.features.map(f => (
-                <p key={f}>✓ {f}</p>
-              ))}
+            <div
+              style={{
+                textAlign: "left"
+              }}
+            >
+
+              {ticket.features.map(
+                feature => (
+
+                  <p key={feature}>
+                    ✓ {feature}
+                  </p>
+
+                )
+              )}
+
             </div>
 
             <button
-              onClick={() => selectTicket(ticket)}
+              onClick={() =>
+                selectTicket(ticket)
+              }
               style={buyBtn}
             >
               BUY NOW
@@ -221,124 +378,229 @@ export default function Home() {
     </div>
 
   )
+
 }
 
-/* ================= STYLES ================= */
-
 const page = {
+
   minHeight: "100vh",
-  background: "linear-gradient(180deg,#000,#111)",
+
+  background:
+    "linear-gradient(180deg,#000,#111)",
+
   color: "white"
+
 }
 
 const navBar = {
+
   display: "flex",
-  justifyContent: "space-between",
+
+  justifyContent:
+    "space-between",
+
   alignItems: "center",
+
   padding: "15px 20px",
-  borderBottom: "1px solid #222",
-  position: "sticky",
-  top: 0,
+
+  borderBottom:
+    "1px solid #222",
+
   background: "#000",
-  zIndex: 10
+
+  position: "sticky",
+
+  top: 0,
+
+  zIndex: 999
+
 }
 
 const menuBtn = {
+
   background: "red",
+
   color: "white",
+
   border: "none",
-  padding: "10px 15px",
+
+  padding: "12px 15px",
+
   borderRadius: "10px",
-  fontWeight: "bold",
-  cursor: "pointer"
+
+  cursor: "pointer",
+
+  fontWeight: "bold"
+
 }
 
 const menuDropdown = {
+
   position: "absolute",
-  background: "#111",
-  border: "1px solid red",
-  padding: "10px",
+
   marginTop: "10px",
-  borderRadius: "10px",
+
+  background: "#111",
+
+  border: "1px solid red",
+
+  borderRadius: "12px",
+
+  padding: "10px",
+
   display: "flex",
+
   flexDirection: "column",
-  gap: "10px"
+
+  gap: "10px",
+
+  minWidth: "180px"
+
 }
 
 const menuItem = {
+
   background: "transparent",
+
   color: "white",
+
   border: "none",
+
   cursor: "pointer",
-  textAlign: "left"
+
+  textAlign: "left",
+
+  padding: "10px"
+
 }
 
 const authBtnRed = {
+
   background: "red",
+
   color: "white",
+
   border: "none",
+
   padding: "10px 15px",
+
   borderRadius: "10px",
-  fontWeight: "bold",
-  cursor: "pointer"
+
+  cursor: "pointer",
+
+  fontWeight: "bold"
+
 }
 
 const authBtnDark = {
-  background: "#222",
+
+  background: "#111",
+
   color: "white",
+
   border: "1px solid red",
+
   padding: "10px 15px",
+
   borderRadius: "10px",
+
   cursor: "pointer"
+
 }
 
 const header = {
+
   textAlign: "center",
-  padding: "40px 20px"
+
+  padding: "50px 20px"
+
 }
 
 const title = {
-  fontSize: "60px",
-  color: "red"
+
+  color: "red",
+
+  fontSize: "70px",
+
+  marginBottom: "10px"
+
 }
 
 const desc = {
+
   color: "#aaa",
-  maxWidth: "600px",
+
+  maxWidth: "700px",
+
   margin: "0 auto"
+
 }
 
 const grid = {
+
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-  gap: "20px",
+
+  gridTemplateColumns:
+    "repeat(auto-fit,minmax(280px,1fr))",
+
+  gap: "25px",
+
   padding: "40px"
+
 }
 
 const card = {
+
   background: "#111",
-  padding: "25px",
-  borderRadius: "20px",
+
   border: "1px solid #333",
+
+  borderRadius: "20px",
+
+  padding: "25px",
+
   textAlign: "center"
+
 }
 
 const badge = {
+
   background: "red",
-  padding: "5px 10px",
+
+  color: "white",
+
+  padding: "6px 12px",
+
   borderRadius: "20px",
+
+  display: "inline-block",
+
+  marginBottom: "10px",
+
   fontSize: "12px",
-  marginBottom: "10px"
+
+  fontWeight: "bold"
+
 }
 
 const buyBtn = {
-  marginTop: "15px",
+
   width: "100%",
+
   padding: "15px",
+
+  marginTop: "15px",
+
   background: "red",
-  border: "none",
-  borderRadius: "10px",
+
   color: "white",
-  fontWeight: "bold",
-  cursor: "pointer"
+
+  border: "none",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontWeight: "bold"
+
 }
