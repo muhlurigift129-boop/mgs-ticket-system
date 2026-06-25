@@ -81,15 +81,8 @@ function ProtectedRoute({ children }) {
   }
 
   return children
+
 }
-
-  if (!user) {
-    return <Navigate to="/login" />
-  }
-
-  return children
-}
-
 // =========================
 // 404 PAGE
 // =========================
