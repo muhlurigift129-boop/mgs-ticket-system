@@ -57,9 +57,18 @@ export default function Login() {
 
       await signInWithEmailAndPassword(auth, email, password)
 
-      navigate("/my-account")
+      const selectedTicket =
+        localStorage.getItem("selectedTicket")
 
-    }
+      if (selectedTicket) {
+
+        navigate("/register")
+
+      } else {
+
+        navigate("/my-account")
+
+      }
 
     catch(error){
 
