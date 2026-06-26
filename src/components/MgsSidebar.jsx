@@ -1,146 +1,239 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+
+import {
+  auth
+} from "../firebase/config"
+
+import {
+  signOut,
+  onAuthStateChanged
+} from "firebase/auth"
 
 export default function MgsSidebar() {
 
   const navigate = useNavigate()
+
   const [open, setOpen] = useState(false)
 
-  const user =
-    localStorage.getItem("mgs_user")
+  const [user, setUser] = useState(null)
 
-  const isLoggedIn = !!user
+  useEffect(() => {
 
-  function logout() {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (currentUser) => {
 
-    localStorage.removeItem("mgs_user")
+        setUser(currentUser)
+
+      }
+    )
+
+    return () => unsubscribe()
+
+  }, [])
+
+  async function logout() {
+
+    await signOut(auth)
 
     setOpen(false)
 
-    navigate("/login")
+    navigate("/")
 
   }
 
   return (
 
     <>
+
       {/* TOP BAR */}
+
       <div style={topBar}>
 
-        {/* MENU BUTTON */}
+        {/* LEFT */}
+
         <button
+
           onClick={() => setOpen(!open)}
+
           style={menuBtn}
+
         >
-          ☰ Menu
+
+          ☰ MENU
+
         </button>
 
-        {/* RIGHT SIDE AUTH */}
-        <div style={rightSide}>
+        {/* RIGHT */}
 
-          {!isLoggedIn ? (
+        {!user && (
 
-            <>
-              <button
-                onClick={() =>
-                  navigate("/login")
-                }
-                style={authBtn}
-              >
-                Login
-              </button>
-
-              <button
-                onClick={() =>
-                  navigate("/register-account")
-                }
-                style={authBtn}
-              >
-                Register
-              </button>
-            </>
-
-          ) : (
+          <div style={rightSide}>
 
             <button
-              onClick={() =>
-                navigate("/my-account")
-              }
+
               style={authBtn}
+
+              onClick={() => navigate("/login")}
+
             >
-              My Account
+
+              LOGIN
+
             </button>
 
-          )}
+            <button
 
-        </div>
+              style={authBtnOutline}
+
+              onClick={() => navigate("/register-account")}
+
+            >
+
+              REGISTER
+
+            </button>
+
+          </div>
+
+        )}
 
       </div>
 
       {/* SIDEBAR */}
+
+      <div
+
+        style={{
+
+          ...sidebar,
+
+          left: open ? "0" : "-260px"
+
+        }}
+
+      >
+
+        <button
+
+          style={closeBtn}
+
+          onClick={() => setOpen(false)}
+
+        >
+
+          ✕
+
+        </button>
+
+        <button
+
+          style={linkBtn}
+
+          onClick={() => {
+
+            navigate("/")
+
+            setOpen(false)
+
+          }}
+
+        >
+
+          🏠 Home
+
+        </button>
+
+        {user && (
+
+          <>
+
+            <button
+
+              style={linkBtn}
+
+              onClick={() => {
+
+                navigate("/my-account")
+
+                setOpen(false)
+
+              }}
+
+            >
+
+              👤 My Account
+
+            </button>
+
+            <button
+
+              style={linkBtn}
+
+              onClick={() => {
+
+                navigate("/orders")
+
+                setOpen(false)
+
+              }}
+
+            >
+
+              🎟 Orders
+
+            </button>
+
+          </>
+
+        )}
+
+        <button
+
+          style={linkBtn}
+
+          onClick={() => {
+
+            navigate("/contact")
+
+            setOpen(false)
+
+          }}
+
+        >
+
+          📞 Contact Us
+
+        </button>
+
+        {user && (
+
+          <button
+
+            style={logoutBtn}
+
+            onClick={logout}
+
+          >
+
+            🚪 Logout
+
+          </button>
+
+        )}
+
+      </div>
+
       {open && (
 
-        <div style={sidebar}>
+        <div
 
-          <button
-            onClick={() => {
-              navigate("/")
-              setOpen(false)
-            }}
-            style={linkBtn}
-          >
-            Home
-          </button>
+          style={overlay}
 
-          {isLoggedIn && (
+          onClick={() => setOpen(false)}
 
-            <button
-              onClick={() => {
-                navigate("/my-account")
-                setOpen(false)
-              }}
-              style={linkBtn}
-            >
-              My Account
-            </button>
-
-          )}
-
-          <button
-            onClick={() => {
-              navigate("/orders")
-              setOpen(false)
-            }}
-            style={linkBtn}
-          >
-            Orders
-          </button>
-
-          <button
-            onClick={() => {
-              navigate("/contact")
-              setOpen(false)
-            }}
-            style={linkBtn}
-          >
-            Contact Us
-          </button>
-
-          {isLoggedIn && (
-
-            <button
-              onClick={logout}
-              style={{
-                ...linkBtn,
-                color: "red"
-              }}
-            >
-              Logout
-            </button>
-
-          )}
-
-        </div>
+        />
 
       )}
 
@@ -150,81 +243,204 @@ export default function MgsSidebar() {
 
 }
 
-/* ===== STYLES ===== */
+/* ========================= */
 
 const topBar = {
 
   position: "fixed",
+
   top: 0,
+
   left: 0,
+
   right: 0,
 
+  height: "65px",
+
+  background: "#000",
+
+  borderBottom: "2px solid red",
+
   display: "flex",
+
   justifyContent: "space-between",
+
   alignItems: "center",
 
-  padding: "12px 15px",
-
-  background: "rgba(0,0,0,0.9)",
-  borderBottom: "1px solid red",
+  padding: "0 20px",
 
   zIndex: 9999
+
 }
 
 const menuBtn = {
 
   background: "red",
+
   color: "white",
+
   border: "none",
-  padding: "10px 15px",
-  borderRadius: "8px",
+
+  padding: "12px 18px",
+
+  borderRadius: "10px",
+
   cursor: "pointer",
-  fontWeight: "bold"
+
+  fontWeight: "bold",
+
+  fontSize: "15px"
+
 }
 
 const rightSide = {
 
   display: "flex",
+
   gap: "10px"
+
 }
 
 const authBtn = {
 
-  background: "#111",
+  background: "red",
+
   color: "white",
+
+  border: "none",
+
+  padding: "10px 18px",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontWeight: "bold"
+
+}
+
+const authBtnOutline = {
+
+  background: "transparent",
+
+  color: "white",
+
   border: "1px solid red",
-  padding: "8px 12px",
-  borderRadius: "8px",
-  cursor: "pointer"
+
+  padding: "10px 18px",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontWeight: "bold"
+
 }
 
 const sidebar = {
 
   position: "fixed",
-  top: "60px",
-  left: 0,
 
-  width: "220px",
+  top: "65px",
+
+  left: "-260px",
+
+  width: "250px",
+
   height: "100vh",
 
-  background: "#0a0a0a",
-  borderRight: "1px solid red",
+  background: "#111",
+
+  borderRight: "2px solid red",
+
+  transition: ".3s",
 
   display: "flex",
-  flexDirection: "column",
-  padding: "15px",
-  gap: "10px",
 
-  zIndex: 9998
+  flexDirection: "column",
+
+  padding: "20px",
+
+  gap: "12px",
+
+  zIndex: 9999
+
+}
+
+const closeBtn = {
+
+  background: "transparent",
+
+  border: "none",
+
+  color: "red",
+
+  fontSize: "24px",
+
+  cursor: "pointer",
+
+  alignSelf: "flex-end"
+
 }
 
 const linkBtn = {
 
-  background: "transparent",
-  border: "1px solid #222",
+  background: "#1a1a1a",
+
+  border: "1px solid #333",
+
   color: "white",
-  padding: "12px",
-  borderRadius: "8px",
+
+  padding: "15px",
+
+  borderRadius: "10px",
+
   cursor: "pointer",
-  textAlign: "left"
+
+  textAlign: "left",
+
+  fontWeight: "bold",
+
+  fontSize: "15px"
+
+}
+
+const logoutBtn = {
+
+  background: "#2b0000",
+
+  border: "1px solid red",
+
+  color: "red",
+
+  padding: "15px",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  textAlign: "left",
+
+  fontWeight: "bold",
+
+  marginTop: "auto"
+
+}
+
+const overlay = {
+
+  position: "fixed",
+
+  top: 0,
+
+  left: 0,
+
+  right: 0,
+
+  bottom: 0,
+
+  background: "rgba(0,0,0,.55)",
+
+  zIndex: 9998
+
 }
