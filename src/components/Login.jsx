@@ -34,7 +34,7 @@ export default function Login() {
 
       if (selectedTicket) {
 
-        navigate("/register")
+        navigate("/register-account")
 
       } else {
 
