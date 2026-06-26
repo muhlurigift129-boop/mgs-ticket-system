@@ -11,6 +11,7 @@ import {
 } from "react"
 
 import { auth } from "./firebase/config"
+import MgsAI from "./ai/MgsAI"
 import { onAuthStateChanged } from "firebase/auth"
 
 import MgsSidebar from "./components/MgsSidebar.jsx"
@@ -162,7 +163,9 @@ export default function App() {
     <HashRouter>
 
       <MgsSidebar />
-
+      
+      <MgsAI />
+      
       <Routes>
 
         {showWelcome ? (
