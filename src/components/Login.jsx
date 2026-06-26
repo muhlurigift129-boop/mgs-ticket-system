@@ -1,28 +1,16 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-
-import {
-  signInWithEmailAndPassword
-} from "firebase/auth"
-
+import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../firebase/config"
 
 export default function Login() {
 
-  const navigate =
-    useNavigate()
+  const navigate = useNavigate()
 
-  const [email,setEmail] =
-    useState("")
-
-  const [password,setPassword] =
-    useState("")
-
-  const [error,setError] =
-    useState("")
-
-  const [loading,setLoading] =
-    useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
 
@@ -33,7 +21,7 @@ export default function Login() {
 
       if (selectedTicket) {
 
-        navigate("/register-account")
+        navigate("/payment")
 
       } else {
 
@@ -45,24 +33,27 @@ export default function Login() {
 
   }, [navigate])
 
-  async function handleLogin(e){
+  async function handleLogin(e) {
 
     e.preventDefault()
 
     setLoading(true)
-
     setError("")
 
-    try{
+    try {
 
-      await signInWithEmailAndPassword(auth, email, password)
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
 
       const selectedTicket =
         localStorage.getItem("selectedTicket")
 
       if (selectedTicket) {
 
-        navigate("/register")
+        navigate("/payment")
 
       } else {
 
@@ -70,47 +61,41 @@ export default function Login() {
 
       }
 
-    catch(error){
+    } catch (error) {
 
       console.log(error)
 
-      if(
-        error.code ===
-        "auth/user-not-found"
-      ){
+      switch (error.code) {
 
-        setError(
-          "Account not found."
-        )
+        case "auth/user-not-found":
+          setError("Account not found.")
+          break
 
+        case "auth/wrong-password":
+          setError("Incorrect password.")
+          break
+
+        case "auth/invalid-credential":
+          setError("Incorrect email or password.")
+          break
+
+        case "auth/invalid-email":
+          setError("Invalid email address.")
+          break
+
+        default:
+          setError(error.message)
       }
 
-      else if(
-        error.code ===
-        "auth/wrong-password"
-      ){
+    } finally {
 
-        setError(
-          "Incorrect password."
-        )
-
-      }
-
-      else{
-
-        setError(
-          "Invalid email or password."
-        )
-
-      }
+      setLoading(false)
 
     }
 
-    setLoading(false)
-
   }
 
-  return(
+  return (
 
     <div style={container}>
 
@@ -121,16 +106,13 @@ export default function Login() {
         </h1>
 
         <p style={subtitle}>
-          Access your tickets,
-          orders and account.
+          Access your tickets, orders and account.
         </p>
 
         {error && (
-
           <div style={errorBox}>
             {error}
           </div>
-
         )}
 
         <form onSubmit={handleLogin}>
@@ -139,15 +121,11 @@ export default function Login() {
             type="email"
             placeholder="Email Address"
             value={email}
-            onChange={(e)=>
-              setEmail(
-                e.target.value
-              )
-            }
+            onChange={(e) => setEmail(e.target.value)}
             required
             style={{
               ...input,
-              border:error
+              border: error
                 ? "1px solid red"
                 : "1px solid #333"
             }}
@@ -157,42 +135,28 @@ export default function Login() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e)=>
-              setPassword(
-                e.target.value
-              )
-            }
+            onChange={(e) => setPassword(e.target.value)}
             required
             style={{
               ...input,
-              border:error
+              border: error
                 ? "1px solid red"
                 : "1px solid #333"
             }}
           />
 
           <button
-            disabled={loading}
             type="submit"
+            disabled={loading}
             style={button}
           >
-
-            {
-              loading
-              ? "LOGGING IN..."
-              : "LOGIN"
-            }
-
+            {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
 
         </form>
 
         <button
-          onClick={() =>
-            navigate(
-              "/register-account"
-            )
-          }
+          onClick={() => navigate("/register-account")}
           style={registerButton}
         >
           CREATE ACCOUNT
@@ -207,125 +171,74 @@ export default function Login() {
 }
 
 const container = {
-
-  minHeight:"100vh",
-
-  background:
-    "linear-gradient(to bottom,#000,#111)",
-
-  display:"flex",
-
-  justifyContent:"center",
-
-  alignItems:"center",
-
-  padding:"20px"
+  minHeight: "100vh",
+  background: "linear-gradient(to bottom,#000,#111)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "20px"
 }
 
 const card = {
-
-  width:"450px",
-
-  background:"#111",
-
-  padding:"40px",
-
-  borderRadius:"20px",
-
-  boxShadow:
-    "0 0 30px rgba(255,0,0,.4)"
+  width: "450px",
+  background: "#111",
+  padding: "40px",
+  borderRadius: "20px",
+  boxShadow: "0 0 30px rgba(255,0,0,.4)"
 }
 
 const title = {
-
-  textAlign:"center",
-
-  color:"red",
-
-  marginBottom:"10px"
+  textAlign: "center",
+  color: "red",
+  marginBottom: "10px"
 }
 
 const subtitle = {
-
-  textAlign:"center",
-
-  color:"#999",
-
-  marginBottom:"25px"
+  textAlign: "center",
+  color: "#999",
+  marginBottom: "25px"
 }
 
 const errorBox = {
-
-  background:"#4d0000",
-
-  border:"1px solid red",
-
-  color:"white",
-
-  padding:"12px",
-
-  borderRadius:"10px",
-
-  marginBottom:"15px"
+  background: "#4d0000",
+  border: "1px solid red",
+  color: "white",
+  padding: "12px",
+  borderRadius: "10px",
+  marginBottom: "15px"
 }
 
 const input = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  marginBottom:"15px",
-
-  background:"#1a1a1a",
-
-  color:"white",
-
-  borderRadius:"10px",
-
-  boxSizing:"border-box",
-
-  outline:"none"
+  width: "100%",
+  padding: "15px",
+  marginBottom: "15px",
+  background: "#1a1a1a",
+  color: "white",
+  borderRadius: "10px",
+  boxSizing: "border-box",
+  outline: "none"
 }
 
 const button = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  background:"red",
-
-  color:"white",
-
-  border:"none",
-
-  borderRadius:"10px",
-
-  cursor:"pointer",
-
-  fontWeight:"bold",
-
-  fontSize:"16px"
+  width: "100%",
+  padding: "15px",
+  background: "red",
+  color: "white",
+  border: "none",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "16px"
 }
 
 const registerButton = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  background:"#1a1a1a",
-
-  color:"white",
-
-  border:"1px solid red",
-
-  borderRadius:"10px",
-
-  cursor:"pointer",
-
-  fontWeight:"bold",
-
-  marginTop:"15px"
+  width: "100%",
+  padding: "15px",
+  background: "#1a1a1a",
+  color: "white",
+  border: "1px solid red",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  marginTop: "15px"
 }
