@@ -19,7 +19,6 @@ import {
 } from "firebase/auth"
 
 import RegisterAccount from "./components/RegisterAccount.jsx"
-import Navbar from "./components/Navbar.jsx"
 import MgsSidebar from "./components/MgsSidebar.jsx"
 
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
