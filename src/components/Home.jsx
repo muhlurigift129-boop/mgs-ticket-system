@@ -1,4 +1,3 @@
-```jsx
 import { useNavigate } from "react-router-dom"
 
 export default function Home() {
@@ -238,4 +237,3 @@ const buyBtn = {
   fontWeight: "bold",
   fontSize: "16px"
 }
-```
