@@ -217,11 +217,12 @@ export default function App() {
             {/* REGISTER */}
 
             <Route
-
-              path="/register-account"
-
-              element={<RegisterAccount />}
-
+              path="/register"
+              element={
+                <ProtectedAccount>
+                  <Register />
+                </ProtectedAccount>
+              }
             />
 
             {/* ACCOUNT */}
