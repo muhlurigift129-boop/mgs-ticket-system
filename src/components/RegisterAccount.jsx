@@ -119,9 +119,18 @@ export default function RegisterAccount() {
 
       )
 
-      navigate("/my-account")
+      const selectedTicket =
+        localStorage.getItem("selectedTicket")
 
-    }
+      if (selectedTicket) {
+
+         navigate("/register")
+
+       } else {
+
+         navigate("/my-account")
+
+       }
 
     catch(error){
 
