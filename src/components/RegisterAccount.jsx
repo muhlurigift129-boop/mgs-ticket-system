@@ -1,59 +1,39 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import {
-  createUserWithEmailAndPassword
-} from "firebase/auth"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
 
-import {
-  doc,
-  setDoc
-} from "firebase/firestore"
-
-import {
-  auth,
-  db
-} from "../firebase/config"
+import { auth, db } from "../firebase/config"
 
 export default function RegisterAccount() {
 
   const navigate = useNavigate()
 
-  const [loading,setLoading] =
-    useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const [error,setError] =
-    useState("")
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  })
 
-  const [formData,setFormData] =
-    useState({
-
-      fullName:"",
-      phone:"",
-      email:"",
-      password:"",
-      confirmPassword:""
-
-    })
-
-  function handleChange(e){
-
+  function handleChange(e) {
     setFormData({
-
       ...formData,
-
-      [e.target.name]:
-      e.target.value
-
+      [e.target.name]: e.target.value
     })
-
   }
 
   async function handleSubmit(e) {
+
     e.preventDefault()
 
-    setError("")
     setLoading(true)
+    setError("")
 
     try {
 
@@ -65,7 +45,7 @@ export default function RegisterAccount() {
         throw new Error("Passwords do not match.")
       }
 
-     const userCredential =
+      const userCredential =
         await createUserWithEmailAndPassword(
           auth,
           formData.email,
@@ -92,99 +72,34 @@ export default function RegisterAccount() {
         navigate("/my-account")
       }
 
-    } catch (error) {
+    } catch (err) {
 
-      setError(error.message)
+      setError(err.message)
 
     } finally {
 
       setLoading(false)
 
     }
-  }
-
-        await createUserWithEmailAndPassword(
-
-          auth,
-          formData.email,
-          formData.password
-
-        )
-
-      await setDoc(
-
-        doc(
-          db,
-          "users",
-          userCredential.user.uid
-        ),
-
-        {
-
-          uid:
-            userCredential.user.uid,
-
-          fullName:
-            formData.fullName,
-
-          phone:
-            formData.phone,
-
-          email:
-            formData.email,
-
-          createdAt:
-            new Date()
-            .toISOString()
-
-        }
-
-      )
-
-      const selectedTicket =
-        localStorage.getItem("selectedTicket")
-
-      if (selectedTicket) {
-
-         navigate("/register")
-
-       } else {
-
-         navigate("/my-account")
-
-       }
-
-    catch(error){
-
-      setError(error.message)
-
-    }
-
-    setLoading(false)
 
   }
 
-  return(
+  return (
 
     <div style={container}>
 
       <div style={card}>
 
-        <h1 style={title}>
-          MGS REGISTER
-        </h1>
+        <h1 style={title}>MGS REGISTER</h1>
 
         <p style={subtitle}>
-          Create your account to
-          buy tickets and track orders.
+          Create your account to buy tickets and track orders.
         </p>
 
         {error && (
-
           <div style={errorBox}>
             {error}
           </div>
-
         )}
 
         <form onSubmit={handleSubmit}>
@@ -193,12 +108,7 @@ export default function RegisterAccount() {
             name="fullName"
             placeholder="Full Name"
             required
-            style={{
-              ...input,
-              border:error
-                ? "1px solid red"
-                : "1px solid #333"
-            }}
+            style={input}
             onChange={handleChange}
           />
 
@@ -206,12 +116,7 @@ export default function RegisterAccount() {
             name="phone"
             placeholder="Phone Number"
             required
-            style={{
-              ...input,
-              border:error
-                ? "1px solid red"
-                : "1px solid #333"
-            }}
+            style={input}
             onChange={handleChange}
           />
 
@@ -220,12 +125,7 @@ export default function RegisterAccount() {
             name="email"
             placeholder="Email Address"
             required
-            style={{
-              ...input,
-              border:error
-                ? "1px solid red"
-                : "1px solid #333"
-            }}
+            style={input}
             onChange={handleChange}
           />
 
@@ -234,12 +134,7 @@ export default function RegisterAccount() {
             name="password"
             placeholder="Password"
             required
-            style={{
-              ...input,
-              border:error
-                ? "1px solid red"
-                : "1px solid #333"
-            }}
+            style={input}
             onChange={handleChange}
           />
 
@@ -248,12 +143,7 @@ export default function RegisterAccount() {
             name="confirmPassword"
             placeholder="Confirm Password"
             required
-            style={{
-              ...input,
-              border:error
-                ? "1px solid red"
-                : "1px solid #333"
-            }}
+            style={input}
             onChange={handleChange}
           />
 
@@ -262,21 +152,13 @@ export default function RegisterAccount() {
             disabled={loading}
             style={button}
           >
-
-            {
-              loading
-              ? "CREATING ACCOUNT..."
-              : "REGISTER"
-            }
-
+            {loading ? "CREATING ACCOUNT..." : "REGISTER"}
           </button>
 
         </form>
 
         <button
-          onClick={() =>
-            navigate("/login")
-          }
+          onClick={() => navigate("/login")}
           style={loginButton}
         >
           ALREADY HAVE AN ACCOUNT?
@@ -291,131 +173,74 @@ export default function RegisterAccount() {
 }
 
 const container = {
-
-  minHeight:"100vh",
-
-  background:
-    "linear-gradient(to bottom,#000,#111)",
-
-  display:"flex",
-
-  justifyContent:"center",
-
-  alignItems:"center",
-
-  padding:"20px"
-
+  minHeight: "100vh",
+  background: "linear-gradient(to bottom,#000,#111)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "20px"
 }
 
 const card = {
-
-  width:"500px",
-
-  background:"#111",
-
-  padding:"40px",
-
-  borderRadius:"20px",
-
-  boxShadow:
-    "0 0 30px rgba(255,0,0,.5)"
-
+  width: "500px",
+  background: "#111",
+  padding: "40px",
+  borderRadius: "20px",
+  boxShadow: "0 0 30px rgba(255,0,0,.5)"
 }
 
 const title = {
-
-  color:"red",
-
-  textAlign:"center",
-
-  marginBottom:"10px"
-
+  color: "red",
+  textAlign: "center",
+  marginBottom: "10px"
 }
 
 const subtitle = {
-
-  color:"#999",
-
-  textAlign:"center",
-
-  marginBottom:"25px"
-
+  color: "#999",
+  textAlign: "center",
+  marginBottom: "25px"
 }
 
 const errorBox = {
-
-  background:"#4d0000",
-
-  border:"1px solid red",
-
-  color:"white",
-
-  padding:"12px",
-
-  borderRadius:"10px",
-
-  marginBottom:"15px"
-
+  background: "#4d0000",
+  border: "1px solid red",
+  color: "white",
+  padding: "12px",
+  borderRadius: "10px",
+  marginBottom: "15px"
 }
 
 const input = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  marginBottom:"15px",
-
-  background:"#1a1a1a",
-
-  color:"white",
-
-  borderRadius:"10px",
-
-  boxSizing:"border-box",
-
-  outline:"none"
-
+  width: "100%",
+  padding: "15px",
+  marginBottom: "15px",
+  background: "#1a1a1a",
+  color: "white",
+  border: "1px solid #333",
+  borderRadius: "10px",
+  boxSizing: "border-box",
+  outline: "none"
 }
 
 const button = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  background:"red",
-
-  color:"white",
-
-  border:"none",
-
-  borderRadius:"10px",
-
-  cursor:"pointer",
-
-  fontWeight:"bold"
-
+  width: "100%",
+  padding: "15px",
+  background: "red",
+  color: "white",
+  border: "none",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold"
 }
 
 const loginButton = {
-
-  width:"100%",
-
-  padding:"15px",
-
-  background:"#1a1a1a",
-
-  color:"white",
-
-  border:"1px solid red",
-
-  borderRadius:"10px",
-
-  cursor:"pointer",
-
-  fontWeight:"bold",
-
-  marginTop:"15px"
-
+  width: "100%",
+  padding: "15px",
+  background: "#1a1a1a",
+  color: "white",
+  border: "1px solid red",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  marginTop: "15px"
 }
