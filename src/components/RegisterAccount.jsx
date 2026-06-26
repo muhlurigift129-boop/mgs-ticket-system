@@ -49,37 +49,59 @@ export default function RegisterAccount() {
 
   }
 
-  async function handleSubmit(e){
-
+  async function handleSubmit(e) {
     e.preventDefault()
 
     setError("")
     setLoading(true)
 
-    try{
+    try {
 
-      if(
-        formData.password.length < 6
-      ){
-
-        throw new Error(
-          "Password must be at least 6 characters."
-        )
-
+      if (formData.password.length < 6) {
+        throw new Error("Password must be at least 6 characters.")
       }
 
-      if(
-        formData.password !==
-        formData.confirmPassword
-      ){
-
-        throw new Error(
-          "Passwords do not match."
-        )
-
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error("Passwords do not match.")
       }
 
-      const userCredential =
+     const userCredential =
+        await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        )
+
+      await setDoc(
+        doc(db, "users", userCredential.user.uid),
+        {
+          uid: userCredential.user.uid,
+          fullName: formData.fullName,
+          phone: formData.phone,
+          email: formData.email,
+          createdAt: new Date().toISOString()
+        }
+      )
+
+      const selectedTicket =
+        localStorage.getItem("selectedTicket")
+
+      if (selectedTicket) {
+        navigate("/register")
+      } else {
+        navigate("/my-account")
+      }
+
+    } catch (error) {
+
+      setError(error.message)
+
+    } finally {
+
+      setLoading(false)
+
+    }
+  }
 
         await createUserWithEmailAndPassword(
 
