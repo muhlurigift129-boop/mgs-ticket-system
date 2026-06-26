@@ -158,7 +158,10 @@ export default function App() {
         ) : (
           <>
             {/* HOME */}
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/"
+              element={<h1 style={{color:"white"}}>Home Works</h1>}
+            />
  
             {/* AUTH */}
             <Route path="/login" element={<Login />} />
