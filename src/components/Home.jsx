@@ -65,7 +65,15 @@ export default function Home() {
       JSON.stringify(ticket)
     )
 
-    navigate("/login")
+    if (auth.currentUser) {
+
+      navigate("/register")
+
+    } else {
+
+      navigate("/register-account")
+
+    }
 
   }
 
