@@ -1,154 +1,275 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { auth } from "../firebase/config"
 import responses from "./aiResponses"
 
 export default function MgsAI() {
 
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState("")
-  const [chat, setChat] = useState([
-    {
-      sender: "bot",
-      text: responses.hello
-    }
-  ])
+  const [typing, setTyping] = useState(false)
 
-  function sendMessage() {
+  const [chat, setChat] = useState([])
 
-    if (!message.trim()) return
+  const bottomRef = useRef()
 
-    const userMessage = {
-      sender: "user",
-      text: message
-    }
+  useEffect(() => {
 
-    let reply = responses.default
+    const name =
+      auth.currentUser?.displayName ||
+      auth.currentUser?.email ||
+      "there"
+
+    setChat([
+      {
+        sender: "bot",
+        text:
+`👋 Hello ${name}
+
+I'm MGS AI.
+
+I can help you with:
+
+🎫 Tickets
+
+💳 Payments
+
+📅 Event information
+
+👤 Your account
+
+☎ Contact
+
+Just ask me anything.`
+      }
+    ])
+
+  }, [])
+
+  useEffect(() => {
+
+    bottomRef.current?.scrollIntoView({
+      behavior:"smooth"
+    })
+
+  },[chat])
+
+  function botReply(reply){
+
+    setTyping(true)
+
+    setTimeout(()=>{
+
+      setTyping(false)
+
+      setChat(prev=>[
+        ...prev,
+        {
+          sender:"bot",
+          text:reply
+        }
+      ])
+
+    },1200)
+
+  }
+
+  function sendMessage(){
+
+    if(!message.trim()) return
 
     const text = message.toLowerCase()
 
-    if (
-      text.includes("ticket") ||
-      text.includes("price") ||
-      text.includes("full event") ||
-      text.includes("vibe")
-    ) {
-      reply = responses.tickets
-    }
-
-    else if (
-      text.includes("payment") ||
-      text.includes("pay")
-    ) {
-      reply = responses.payment
-    }
-
-    else if (
-      text.includes("login") ||
-      text.includes("sign in")
-    ) {
-      reply = responses.login
-    }
-
-    else if (
-      text.includes("register") ||
-      text.includes("create account")
-    ) {
-      reply = responses.register
-    }
-
-    else if (
-      text.includes("contact") ||
-      text.includes("phone") ||
-      text.includes("email")
-    ) {
-      reply = responses.contact
-    }
-
-    setChat(prev => [
+    setChat(prev=>[
       ...prev,
-      userMessage,
       {
-        sender: "bot",
-        text: reply
+        sender:"user",
+        text:message
       }
     ])
 
     setMessage("")
+
+    if(
+      text.includes("ticket")||
+      text.includes("price")||
+      text.includes("buy")
+    ){
+
+      return botReply(responses.tickets)
+
+    }
+
+    if(
+      text.includes("payment")||
+      text.includes("pay")
+    ){
+
+      return botReply(responses.payment)
+
+    }
+
+    if(
+      text.includes("event")||
+      text.includes("date")||
+      text.includes("where")
+    ){
+
+      return botReply(responses.event)
+
+    }
+
+    if(
+      text.includes("account")||
+      text.includes("login")||
+      text.includes("register")
+    ){
+
+      return botReply(responses.account)
+
+    }
+
+    if(
+      text.includes("contact")||
+      text.includes("phone")||
+      text.includes("email")
+    ){
+
+      return botReply(responses.contact)
+
+    }
+
+    botReply(responses.default)
+
   }
 
-  return (
+  function quick(text){
+
+    setMessage(text)
+
+    setTimeout(()=>{
+      sendMessage()
+    },100)
+
+  }
+
+  return(
 
     <>
 
-      {/* Floating Button */}
-
       <button
-        onClick={() => setOpen(!open)}
-        style={robotButton}
+      style={robot}
+      onClick={()=>setOpen(!open)}
       >
-        🤖
+
+      🤖
+
       </button>
 
       {open && (
 
-        <div style={chatBox}>
+      <div style={box}>
 
-          <div style={header}>
-            🤖 MGS AI Assistant
-          </div>
+      <div style={header}>
 
-          <div style={messages}>
+      🤖 MGS AI Assistant
 
-            {chat.map((msg, index) => (
+      </div>
 
-              <div
-                key={index}
-                style={{
-                  ...bubble,
-                  alignSelf:
-                    msg.sender === "user"
-                      ? "flex-end"
-                      : "flex-start",
-                  background:
-                    msg.sender === "user"
-                      ? "red"
-                      : "#222"
-                }}
-              >
+      <div style={quickBar}>
 
-                {msg.text}
+      <button onClick={()=>quick("tickets")}>
+      🎫 Tickets
+      </button>
 
-              </div>
+      <button onClick={()=>quick("payment")}>
+      💳 Pay
+      </button>
 
-            ))}
+      <button onClick={()=>quick("event")}>
+      📅 Event
+      </button>
 
-          </div>
+      </div>
 
-          <div style={inputArea}>
+      <div style={messages}>
 
-            <input
-              value={message}
-              onChange={(e) =>
-                setMessage(e.target.value)
-              }
-              onKeyDown={(e)=>{
-                if(e.key==="Enter"){
-                  sendMessage()
-                }
-              }}
-              placeholder="Ask me anything..."
-              style={input}
-            />
+      {chat.map((msg,i)=>(
 
-            <button
-              onClick={sendMessage}
-              style={sendButton}
-            >
-              ➤
-            </button>
+      <div
 
-          </div>
+      key={i}
 
-        </div>
+      style={{
+      ...bubble,
+      alignSelf:
+      msg.sender==="user"
+      ?"flex-end"
+      :"flex-start",
+
+      background:
+      msg.sender==="user"
+      ?"red"
+      :"#1d1d1d"
+      }}
+
+      >
+
+      {msg.text}
+
+      </div>
+
+      ))}
+
+      {typing &&
+
+      <div style={typingBubble}>
+
+      MGS AI is typing...
+
+      </div>
+
+      }
+
+      <div ref={bottomRef}></div>
+
+      </div>
+
+      <div style={inputArea}>
+
+      <input
+
+      value={message}
+
+      placeholder="Ask anything..."
+
+      onChange={(e)=>setMessage(e.target.value)}
+
+      onKeyDown={(e)=>{
+
+      if(e.key==="Enter"){
+
+      sendMessage()
+
+      }
+
+      }}
+
+      style={input}
+
+      />
+
+      <button
+      style={send}
+      onClick={sendMessage}
+      >
+
+      ➜
+
+      </button>
+
+      </div>
+
+      </div>
 
       )}
 
@@ -158,146 +279,93 @@ export default function MgsAI() {
 
 }
 
-const robotButton = {
-
-  position:"fixed",
-
-  bottom:"25px",
-
-  right:"25px",
-
-  width:"70px",
-
-  height:"70px",
-
-  borderRadius:"50%",
-
-  border:"none",
-
-  background:"red",
-
-  color:"white",
-
-  fontSize:"34px",
-
-  cursor:"pointer",
-
-  boxShadow:"0 0 20px rgba(255,0,0,.6)",
-
-  zIndex:99999
-
+const robot={
+position:"fixed",
+bottom:25,
+right:25,
+width:70,
+height:70,
+borderRadius:"50%",
+background:"red",
+color:"white",
+fontSize:32,
+border:"none",
+cursor:"pointer",
+zIndex:99999
 }
 
-const chatBox = {
-
-  position:"fixed",
-
-  bottom:"110px",
-
-  right:"25px",
-
-  width:"360px",
-
-  height:"500px",
-
-  background:"#111",
-
-  border:"2px solid red",
-
-  borderRadius:"20px",
-
-  display:"flex",
-
-  flexDirection:"column",
-
-  overflow:"hidden",
-
-  zIndex:99999
-
+const box={
+position:"fixed",
+bottom:110,
+right:25,
+width:380,
+height:560,
+background:"#111",
+border:"2px solid red",
+borderRadius:20,
+display:"flex",
+flexDirection:"column",
+overflow:"hidden",
+zIndex:99999
 }
 
-const header = {
-
-  background:"red",
-
-  color:"white",
-
-  padding:"18px",
-
-  fontWeight:"bold",
-
-  textAlign:"center",
-
-  fontSize:"18px"
-
+const header={
+padding:18,
+background:"red",
+color:"white",
+fontWeight:"bold",
+textAlign:"center"
 }
 
-const messages = {
-
-  flex:1,
-
-  display:"flex",
-
-  flexDirection:"column",
-
-  gap:"12px",
-
-  padding:"15px",
-
-  overflowY:"auto",
-
-  color:"white"
-
+const quickBar={
+display:"flex",
+justifyContent:"space-around",
+padding:10,
+background:"#181818"
 }
 
-const bubble = {
-
-  maxWidth:"85%",
-
-  padding:"12px",
-
-  borderRadius:"12px",
-
-  whiteSpace:"pre-line"
-
+const messages={
+flex:1,
+padding:15,
+overflowY:"auto",
+display:"flex",
+flexDirection:"column",
+gap:10,
+color:"white"
 }
 
-const inputArea = {
-
-  display:"flex",
-
-  borderTop:"1px solid #333"
-
+const bubble={
+padding:12,
+borderRadius:15,
+maxWidth:"85%",
+whiteSpace:"pre-line"
 }
 
-const input = {
-
-  flex:1,
-
-  background:"#1b1b1b",
-
-  color:"white",
-
-  border:"none",
-
-  padding:"15px",
-
-  outline:"none"
-
+const typingBubble={
+background:"#222",
+padding:12,
+borderRadius:12,
+width:"fit-content"
 }
 
-const sendButton = {
+const inputArea={
+display:"flex"
+}
 
-  width:"70px",
+const input={
+flex:1,
+background:"#1b1b1b",
+color:"white",
+border:"none",
+padding:15,
+outline:"none"
+}
 
-  border:"none",
-
-  background:"red",
-
-  color:"white",
-
-  cursor:"pointer",
-
-  fontSize:"22px"
-
+const send={
+width:70,
+background:"red",
+border:"none",
+color:"white",
+cursor:"pointer",
+fontSize:22
 }
