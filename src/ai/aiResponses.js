@@ -1,96 +1,85 @@
 const responses = {
 
-  hello:
-`👋 Welcome to MGS Events!
-
-I'm MGS AI.
-
-How can I help you today?`,
-
-  tickets:
-`🎫 Available Tickets
+tickets: `🎫 MGS Tickets
 
 🔴 Full Event — R300
 
-• Full Event Access
-• Main Stage
-• Networking
-• Activities
-
----------------------
-
 🟠 Vibe Only — R100
-
-• Entry
-• Music
-• Entertainment
-
----------------------
 
 🟡 Vibe + Drinks — R200
 
-• Entry
-• Drinks Included
-
----------------------
-
 🟢 Vibe + Food — R200
 
-• Entry
-• Meal Included`,
+Purchase tickets directly from the Home page.`,
 
-  payment:
-`💳 Payments
+payment: `💳 Payments
 
-We currently accept:
+We accept:
 
-• Card
+• Debit Cards
+
+• Credit Cards
+
 • EFT
-• Online Payment
 
-Your ticket is generated immediately after payment.`,
+Your QR Ticket is generated immediately after successful payment.`,
 
-  login:
-`👤 Login Help
+event: `📅 Event Information
 
-Already have an account?
+Event:
 
-Click LOGIN at the top of the page.
+MGS EXPERIENCE
 
-Forgot your password?
+Date:
 
-Contact an administrator.`,
+31 July – 1 August
 
-  register:
-`📝 Registration
+Venue:
 
-Click REGISTER.
+(Your Venue Here)
 
-Complete your details.
+Doors Open:
 
-Verify your email.
+10:00 AM`,
 
-Purchase your ticket.`,
+account: `👤 Account Help
 
-  contact:
-`☎ Contact Us
+Register a free account.
+
+After logging in you can:
+
+• Buy Tickets
+
+• View Orders
+
+• Access your QR Codes
+
+• Update your details`,
+
+contact: `☎ Contact
 
 Email:
+
 support@mgsevents.co.za
 
 Phone:
-+27 XXX XXX XXXX`,
 
-  default:
-`I'm still learning.
++27 XXX XXX XXX`,
 
-Try asking about:
+default: `I'm still learning.
 
-• Tickets
-• Payment
-• Register
-• Login
-• Contact`
+Try asking me about:
+
+🎫 Tickets
+
+💳 Payment
+
+📅 Event
+
+👤 Account
+
+☎ Contact`
+
 }
 
 export default responses
