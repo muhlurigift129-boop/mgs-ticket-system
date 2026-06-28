@@ -1,105 +1,57 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+
+import {
+  signOut
+} from "firebase/auth"
+
+import {
+  doc,
+  getDoc
+} from "firebase/firestore"
 
 import {
   auth,
   db
 } from "../firebase/config"
 
-import {
-  doc,
-  getDoc,
-  collection,
-  getDocs,
-  query,
-  where
-} from "firebase/firestore"
-
-import {
-  signOut
-} from "firebase/auth"
-
-import { useNavigate } from "react-router-dom"
-
 export default function MyAccount() {
 
   const navigate = useNavigate()
 
-  const [userData, setUserData] =
-    useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const [tickets, setTickets] =
-    useState([])
-
-  const [loading, setLoading] =
-    useState(true)
+  const [userData, setUserData] = useState(null)
 
   useEffect(() => {
 
-    async function loadAccount() {
+    async function loadUser() {
+
+      if (!auth.currentUser) {
+
+        navigate("/login")
+
+        return
+
+      }
 
       try {
 
-        if (!auth.currentUser) {
-
-          navigate("/login")
-          return
-
-        }
-
-        const userRef = doc(
+        const docRef = doc(
           db,
           "users",
           auth.currentUser.uid
         )
 
-        const userSnap =
-          await getDoc(userRef)
+        const docSnap = await getDoc(docRef)
 
-        if (userSnap.exists()) {
+        if (docSnap.exists()) {
 
-          setUserData(
-            userSnap.data()
-          )
+          setUserData(docSnap.data())
 
         }
 
-        const q = query(
-
-          collection(
-            db,
-            "tickets"
-          ),
-
-          where(
-            "email",
-            "==",
-            auth.currentUser.email
-          )
-
-        )
-
-        const ticketSnap =
-          await getDocs(q)
-
-        const ticketData = []
-
-        ticketSnap.forEach(doc => {
-
-          ticketData.push({
-
-            id: doc.id,
-
-            ...doc.data()
-
-          })
-
-        })
-
-        setTickets(ticketData)
-
-      }
-
-      catch(error) {
+      } catch (error) {
 
         console.log(error)
 
@@ -109,15 +61,17 @@ export default function MyAccount() {
 
     }
 
-    loadAccount()
+    loadUser()
 
-  }, [])
+  }, [navigate])
 
   async function logout() {
 
     await signOut(auth)
 
-    navigate("/login")
+    localStorage.removeItem("selectedTicket")
+
+    navigate("/")
 
   }
 
@@ -125,16 +79,7 @@ export default function MyAccount() {
 
     return (
 
-      <div
-        style={{
-          minHeight:"100vh",
-          background:"#000",
-          color:"white",
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center"
-        }}
-      >
+      <div style={loadingStyle}>
         Loading Account...
       </div>
 
@@ -144,172 +89,69 @@ export default function MyAccount() {
 
   return (
 
-    <div
-      style={{
-        minHeight:"100vh",
-        background:"#000",
-        color:"white",
-        padding:"100px 20px"
-      }}
-    >
+    <div style={container}>
 
-      <div
-        style={{
-          maxWidth:"1200px",
-          margin:"auto"
-        }}
-      >
+      <div style={card}>
 
-        <h1
-          style={{
-            color:"red"
-          }}
-        >
+        <h1 style={title}>
           MY ACCOUNT
         </h1>
 
-        <div
-          style={{
-            background:"#111",
-            padding:"25px",
-            borderRadius:"20px",
-            marginTop:"20px"
-          }}
-        >
+        <div style={infoBox}>
 
-          <h2>
-            {userData?.fullName}
-          </h2>
+          <label style={label}>
+            Full Name
+          </label>
 
-          <p>
-            {userData?.email}
-          </p>
-
-          <p>
-            {userData?.phone}
+          <p style={value}>
+            {userData?.fullName || "-"}
           </p>
 
         </div>
 
-        <div
-          style={{
-            display:"grid",
-            gridTemplateColumns:
-              "repeat(auto-fit,minmax(250px,1fr))",
-            gap:"20px",
-            marginTop:"25px"
-          }}
-        >
+        <div style={infoBox}>
 
-          <div style={card}>
-            <h3>Total Tickets</h3>
-            <h1>{tickets.length}</h1>
-          </div>
+          <label style={label}>
+            Email
+          </label>
 
-          <div style={card}>
-            <h3>Status</h3>
-            <h1>ACTIVE</h1>
-          </div>
+          <p style={value}>
+            {userData?.email || "-"}
+          </p>
 
         </div>
 
-        <h2
-          style={{
-            marginTop:"40px",
-            color:"red"
-          }}
-        >
-          MY TICKETS
-        </h2>
+        <div style={infoBox}>
 
-        {
+          <label style={label}>
+            Phone Number
+          </label>
 
-          tickets.length === 0
-
-          ?
-
-          <p>
-            No tickets found.
+          <p style={value}>
+            {userData?.phone || "-"}
           </p>
 
-          :
+        </div>
 
-          tickets.map(ticket => (
+        <div style={infoBox}>
 
-            <div
-              key={ticket.id}
-              style={{
-                background:"#111",
-                padding:"25px",
-                borderRadius:"20px",
-                marginTop:"20px"
-              }}
-            >
+          <label style={label}>
+            Account Created
+          </label>
 
-              <h3>
-                {ticket.packageName}
-              </h3>
+          <p style={value}>
+            {userData?.createdAt
+              ? new Date(userData.createdAt).toLocaleDateString()
+              : "-"}
+          </p>
 
-              <p>
-                Ticket ID:
-                {ticket.id}
-              </p>
-
-              <p>
-                Quantity:
-                {ticket.quantity}
-              </p>
-
-              <p>
-                Total:
-                R{ticket.total}
-              </p>
-
-              <p>
-                Status:
-                {ticket.status}
-              </p>
-
-              {
-
-                ticket.qrCode && (
-
-                  <img
-                    src={ticket.qrCode}
-                    alt="QR"
-                    width="220"
-                    style={{
-                      marginTop:"15px",
-                      borderRadius:"10px",
-                      background:"white",
-                      padding:"10px"
-                    }}
-                  />
-
-                )
-
-              }
-
-            </div>
-
-          ))
-
-        }
+        </div>
 
         <button
+          style={logoutBtn}
           onClick={logout}
-          style={{
-            marginTop:"30px",
-            background:"red",
-            color:"white",
-            border:"none",
-            padding:"15px 30px",
-            borderRadius:"12px",
-            cursor:"pointer",
-            fontWeight:"bold"
-          }}
         >
-          LOGOUT
+          LOG OUT
         </button>
 
       </div>
@@ -320,17 +162,112 @@ export default function MyAccount() {
 
 }
 
+const loadingStyle = {
+
+  background: "#000",
+
+  color: "white",
+
+  height: "100vh",
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  fontSize: "22px"
+
+}
+
+const container = {
+
+  minHeight: "100vh",
+
+  background: "linear-gradient(#000,#111)",
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  padding: "30px"
+
+}
+
 const card = {
 
-  background:"#111",
+  width: "500px",
 
-  padding:"25px",
+  background: "#111",
 
-  borderRadius:"20px",
+  border: "1px solid red",
 
-  textAlign:"center",
+  borderRadius: "20px",
 
-  boxShadow:
-    "0 0 20px rgba(255,0,0,.3)"
+  padding: "40px",
+
+  color: "white",
+
+  boxShadow: "0 0 25px rgba(255,0,0,.35)"
+
+}
+
+const title = {
+
+  textAlign: "center",
+
+  color: "red",
+
+  marginBottom: "35px"
+
+}
+
+const infoBox = {
+
+  marginBottom: "20px"
+
+}
+
+const label = {
+
+  color: "#888",
+
+  fontSize: "14px"
+
+}
+
+const value = {
+
+  marginTop: "6px",
+
+  fontSize: "18px",
+
+  fontWeight: "bold"
+
+}
+
+const logoutBtn = {
+
+  width: "100%",
+
+  marginTop: "30px",
+
+  padding: "15px",
+
+  background: "red",
+
+  color: "white",
+
+  border: "none",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontWeight: "bold",
+
+  fontSize: "16px"
 
 }
