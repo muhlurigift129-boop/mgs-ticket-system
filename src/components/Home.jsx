@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom"
+import { auth } from "../firebase/config"
 
 export default function Home() {
-
   const navigate = useNavigate()
 
   const tickets = [
-
     {
       name: "FULL EVENT",
       price: 300,
@@ -16,10 +15,9 @@ export default function Home() {
         "Full Event Access",
         "Main Stage",
         "Networking",
-        "All Activities"
-      ]
+        "All Activities",
+      ],
     },
-
     {
       name: "VIBE ONLY",
       price: 100,
@@ -28,10 +26,9 @@ export default function Home() {
       features: [
         "Event Entry",
         "Live Entertainment",
-        "Music & Vibes"
-      ]
+        "Music & Vibes",
+      ],
     },
-
     {
       name: "VIBE + DRINKS",
       price: 200,
@@ -40,10 +37,9 @@ export default function Home() {
       features: [
         "Event Entry",
         "Selected Drinks",
-        "Live Entertainment"
-      ]
+        "Live Entertainment",
+      ],
     },
-
     {
       name: "VIBE + FOOD",
       price: 200,
@@ -52,71 +48,54 @@ export default function Home() {
       features: [
         "Event Entry",
         "Meal Included",
-        "Live Entertainment"
-      ]
-    }
-
+        "Live Entertainment",
+      ],
+    },
   ]
 
   function selectTicket(ticket) {
-
     localStorage.setItem(
       "selectedTicket",
       JSON.stringify(ticket)
     )
 
     if (auth.currentUser) {
-
       navigate("/register")
-
     } else {
-
       navigate("/register-account")
-
     }
-
   }
 
   return (
-
     <div style={page}>
-
       <div style={header}>
-
-        <h1 style={title}>
-          MGS EVENT
-        </h1>
+        <h1 style={title}>MGS EVENT</h1>
 
         <h2 style={date}>
           JULY 31 – AUGUST 01
         </h2>
 
         <p style={desc}>
-          Choose your preferred ticket package and secure your place.
+          Choose your preferred ticket package and
+          secure your place.
         </p>
-
       </div>
 
       <div style={grid}>
-
         {tickets.map((ticket) => (
-
           <div
             key={ticket.type}
             style={{
               ...card,
               border: ticket.popular
                 ? "2px solid red"
-                : "1px solid #333"
+                : "1px solid #333",
             }}
           >
-
             {ticket.popular && (
-
               <div style={badge}>
                 MOST POPULAR
               </div>
-
             )}
 
             <h2 style={ticketTitle}>
@@ -132,69 +111,62 @@ export default function Home() {
             </p>
 
             <div style={featureBox}>
-
               {ticket.features.map((feature) => (
-
                 <p key={feature}>
                   ✓ {feature}
                 </p>
-
               ))}
-
             </div>
 
             <button
               style={buyBtn}
-              onClick={() => selectTicket(ticket)}
+              onClick={() =>
+                selectTicket(ticket)
+              }
             >
               BUY NOW
             </button>
-
           </div>
-
         ))}
-
       </div>
-
     </div>
-
   )
-
 }
 
 const page = {
   minHeight: "100vh",
   background: "linear-gradient(180deg,#000,#111)",
   color: "white",
-  paddingTop: "90px"
+  paddingTop: "90px",
 }
 
 const header = {
   textAlign: "center",
-  padding: "40px 20px"
+  padding: "40px 20px",
 }
 
 const title = {
   color: "red",
   fontSize: "60px",
-  marginBottom: "10px"
+  marginBottom: "10px",
 }
 
 const date = {
-  color: "white"
+  color: "white",
 }
 
 const desc = {
   color: "#aaa",
   maxWidth: "700px",
-  margin: "20px auto"
+  margin: "20px auto",
 }
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
+  gridTemplateColumns:
+    "repeat(auto-fit,minmax(300px,1fr))",
   gap: "25px",
-  padding: "40px"
+  padding: "40px",
 }
 
 const card = {
@@ -202,7 +174,6 @@ const card = {
   borderRadius: "20px",
   padding: "25px",
   textAlign: "center",
-  transition: ".3s"
 }
 
 const badge = {
@@ -213,24 +184,24 @@ const badge = {
   borderRadius: "20px",
   marginBottom: "15px",
   fontWeight: "bold",
-  fontSize: "12px"
+  fontSize: "12px",
 }
 
 const ticketTitle = {
-  color: "red"
+  color: "red",
 }
 
 const price = {
-  fontSize: "42px"
+  fontSize: "42px",
 }
 
 const description = {
-  color: "#bbb"
+  color: "#bbb",
 }
 
 const featureBox = {
   textAlign: "left",
-  marginTop: "20px"
+  marginTop: "20px",
 }
 
 const buyBtn = {
@@ -243,5 +214,5 @@ const buyBtn = {
   borderRadius: "10px",
   cursor: "pointer",
   fontWeight: "bold",
-  fontSize: "16px"
+  fontSize: "16px",
 }
