@@ -1,41 +1,57 @@
-import { initializeApp } from "firebase/app"
+// ==========================================
+// MGS TICKET SYSTEM - FIREBASE CONFIG
+// ==========================================
 
-import { getFirestore } from "firebase/firestore"
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-import { getAuth } from "firebase/auth"
+// ==========================================
+// FIREBASE CONFIGURATION
+// ==========================================
 
 const firebaseConfig = {
+  apiKey: "AIzaSyAtLqZlGNtI6Y6Cb-M_qjDkx9p5EFylAt8",
 
-  apiKey:
-    "AIzaSyAtLqZlGNtI6Y6Cb-M_qjDkx9p5EFylAt8",
+  authDomain: "mgs-ticket.firebaseapp.com",
 
-  authDomain:
-    "mgs-ticket.firebaseapp.com",
+  projectId: "mgs-ticket",
 
-  projectId:
-    "mgs-ticket",
+  storageBucket: "mgs-ticket.firebasestorage.app",
 
-  storageBucket:
-    "mgs-ticket.firebasestorage.app",
+  messagingSenderId: "502379201015",
 
-  messagingSenderId:
-    "502379201015",
+  appId: "1:502379201015:web:088f997afa9bb0aa0c6ef2",
 
-  appId:
-    "1:502379201015:web:088f997afa9bb0aa0c6ef2",
+  measurementId: "G-X8HP8D242C",
+};
 
-  measurementId:
-    "G-X8HP8D242C"
+// ==========================================
+// INITIALIZE FIREBASE
+// ==========================================
 
-}
+const app = initializeApp(firebaseConfig);
 
-const app =
-  initializeApp(firebaseConfig)
+// ==========================================
+// FIRESTORE
+// ==========================================
 
-export const db =
-  getFirestore(app)
+const db = getFirestore(app);
 
-export const auth =
-  getAuth(app)
+// ==========================================
+// AUTHENTICATION
+// ==========================================
 
-export default app
+const auth = getAuth(app);
+
+// ==========================================
+// EXPORT
+// ==========================================
+
+export {
+  app,
+  db,
+  auth,
+};
+
+export default app;
