@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 
@@ -9,14 +9,7 @@ export default function Home() {
   const navigate = useNavigate()
 
   const [user, setUser] = useState(null)
-
-  const [quantity, setQuantity] = useState(1)
-
-  const [loading, setLoading] = useState(true)
-
-  // ==========================================
-  // CHECK LOGIN STATUS
-  // ==========================================
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
 
@@ -25,8 +18,7 @@ export default function Home() {
       (currentUser) => {
 
         setUser(currentUser)
-
-        setLoading(false)
+        setAuthLoading(false)
 
       }
     )
@@ -35,42 +27,34 @@ export default function Home() {
 
   }, [])
 
-  // ==========================================
-  // TICKET
-  // ==========================================
-
   const ticket = {
 
-    name: "MGS EVENT TICKET",
+    name: "UNLIMITED TICKET",
 
     price: 420,
 
     description:
-      "Unlimited access ticket for the MGS Braai & Get To Know Each Other event.",
+      "Unlimited event ticket with full access to the MGS experience.",
 
     type: "unlimited",
 
+    quantity: "UNLIMITED",
+
     date: "12 September 2026",
-
-    time: "12H00",
-
-    location: "Nthabiseko Resort",
 
     features: [
 
-      "Unlimited Event Ticket Availability",
-
-      "Event Entrance",
+      "Full Event Entrance",
 
       "Meat Included",
 
       "Drinks Included",
 
-      "Good Music & Entertainment",
+      "Live Entertainment",
+
+      "Good Music & Vibes",
 
       "Connect & Build Friendships",
-
-      "Enjoy Great Food & Drinks",
 
       "Grow Together"
 
@@ -78,78 +62,40 @@ export default function Home() {
 
   }
 
-  // ==========================================
-  // BUY TICKET
-  // ==========================================
-
   function buyTicket() {
 
-    const selectedTicket = {
-
-      ...ticket,
-
-      quantity: quantity,
-
-      total: ticket.price * quantity
-
-    }
-
+    // Save selected ticket
     localStorage.setItem(
-
       "selectedTicket",
-
-      JSON.stringify(selectedTicket)
-
+      JSON.stringify(ticket)
     )
 
-    // ----------------------------------------
-    // LOGGED IN
-    // ----------------------------------------
+    /*
+      LOGGED OUT
 
-    if (user) {
+      User must create an account first.
+    */
 
-      navigate("/register")
+    if (!user) {
+
+      navigate("/register-account")
 
       return
 
     }
 
-    // ----------------------------------------
-    // LOGGED OUT
-    // ----------------------------------------
+    /*
+      LOGGED IN
 
-    navigate("/register-account")
+      User can go directly to ticket
+      purchase/registration.
+    */
 
-  }
-
-  // ==========================================
-  // CHANGE QUANTITY
-  // ==========================================
-
-  function increaseQuantity() {
-
-    setQuantity(
-      previous => previous + 1
-    )
+    navigate("/ticket-purchase")
 
   }
 
-  function decreaseQuantity() {
-
-    setQuantity(
-      previous =>
-        previous > 1
-          ? previous - 1
-          : 1
-    )
-
-  }
-
-  // ==========================================
-  // LOADING
-  // ==========================================
-
-  if (loading) {
+  if (authLoading) {
 
     return (
 
@@ -160,10 +106,8 @@ export default function Home() {
         </div>
 
         <h2>
-          Loading MGS Events...
+          Checking your account...
         </h2>
-
-        <div style={loader}></div>
 
       </div>
 
@@ -171,45 +115,43 @@ export default function Home() {
 
   }
 
-  // ==========================================
-  // PAGE
-  // ==========================================
-
   return (
 
     <div style={page}>
 
-      {/* =====================================
-          HERO
-      ===================================== */}
+      {/* ============================= */}
+      {/* HERO */}
+      {/* ============================= */}
 
       <section style={hero}>
 
         <div style={heroOverlay}>
 
-          <div style={heroContent}>
+          <p style={eventLabel}>
+            MGS EVENTS PRESENTS
+          </p>
 
-            <div style={logo}>
-              MGS
-            </div>
+          <h1 style={title}>
+            MGS EVENT
+          </h1>
 
-            <h1 style={mainTitle}>
-              BRAAI & GET TO KNOW EACH OTHER
-            </h1>
+          <h2 style={date}>
+            12 SEPTEMBER 2026
+          </h2>
 
-            <p style={heroText}>
-              COME • CONNECT • SHARE • GROW
-            </p>
+          <p style={heroText}>
+            Come connect, share, grow and
+            enjoy an unforgettable experience.
+          </p>
 
-            <div style={heroLine}></div>
+          <div style={statusBox}>
 
-            <p style={heroDescription}>
+            <span style={statusDot}></span>
 
-              Join us for an unforgettable
-              day filled with great food,
-              drinks, music and good people.
-
-            </p>
+            {user
+              ? "YOU ARE LOGGED IN"
+              : "LOGIN REQUIRED TO PURCHASE"
+            }
 
           </div>
 
@@ -218,232 +160,129 @@ export default function Home() {
       </section>
 
 
-      {/* =====================================
-          EVENT INFORMATION
-      ===================================== */}
+      {/* ============================= */}
+      {/* EVENT INFORMATION */}
+      {/* ============================= */}
 
-      <section style={eventInfo}>
+      <section style={infoSection}>
 
         <div style={infoCard}>
 
-          <div style={infoIcon}>
+          <div style={icon}>
             📍
           </div>
 
-          <div>
+          <h3>
+            LOCATION
+          </h3>
 
-            <span style={infoLabel}>
-              PLACE
-            </span>
-
-            <strong style={infoValue}>
-              NTHABISEKO RESORT
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={infoIcon}>
-            📅
-          </div>
-
-          <div>
-
-            <span style={infoLabel}>
-              DATE
-            </span>
-
-            <strong style={infoValue}>
-              12 SEPTEMBER 2026
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={infoIcon}>
-            🕛
-          </div>
-
-          <div>
-
-            <span style={infoLabel}>
-              TIME
-            </span>
-
-            <strong style={infoValue}>
-              12H00
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={infoIcon}>
-            🎟️
-          </div>
-
-          <div>
-
-            <span style={infoLabel}>
-              TICKET
-            </span>
-
-            <strong style={infoValue}>
-              R420 PER PERSON
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* =====================================
-          TICKET SECTION
-      ===================================== */}
-
-      <section style={ticketSection}>
-
-        <div style={sectionHeader}>
-
-          <span style={sectionSmallTitle}>
-            OFFICIAL MGS EVENT
-          </span>
-
-          <h2 style={sectionTitle}>
-            UNLIMITED TICKET
-          </h2>
-
-          <p style={sectionDescription}>
-
-            One ticket package is available.
-            There is no ticket limit.
-
+          <p>
+            Nthabiseko Resort
           </p>
 
         </div>
 
 
+        <div style={infoCard}>
+
+          <div style={icon}>
+            📅
+          </div>
+
+          <h3>
+            DATE
+          </h3>
+
+          <p>
+            12 September 2026
+          </p>
+
+        </div>
+
+
+        <div style={infoCard}>
+
+          <div style={icon}>
+            🕛
+          </div>
+
+          <h3>
+            TIME
+          </h3>
+
+          <p>
+            12H00
+          </p>
+
+        </div>
+
+
+        <div style={infoCard}>
+
+          <div style={icon}>
+            🎫
+          </div>
+
+          <h3>
+            TICKETS
+          </h3>
+
+          <p>
+            Unlimited
+          </p>
+
+        </div>
+
+      </section>
+
+
+      {/* ============================= */}
+      {/* TICKET */}
+      {/* ============================= */}
+
+      <section style={ticketSection}>
+
+        <p style={sectionLabel}>
+          AVAILABLE TICKET
+        </p>
+
+        <h2 style={sectionTitle}>
+          GET YOUR TICKET
+        </h2>
+
         <div style={ticketCard}>
 
           <div style={popularBadge}>
-            UNLIMITED AVAILABILITY
+            UNLIMITED AVAILABLE
           </div>
-
-
-          <div style={ticketIcon}>
-            🎟️
-          </div>
-
 
           <h2 style={ticketTitle}>
             {ticket.name}
           </h2>
 
-
           <div style={price}>
             R{ticket.price}
           </div>
 
-
-          <div style={perPerson}>
+          <p style={perPerson}>
             PER PERSON
-          </div>
+          </p>
 
-
-          <p style={ticketDescription}>
+          <p style={description}>
             {ticket.description}
           </p>
 
 
-          {/* =================================
-              EVENT DETAILS
-          ================================= */}
+          {/* FEATURES */}
 
-          <div style={detailsBox}>
-
-            <div style={detailRow}>
-
-              <span>
-                📅 Date
-              </span>
-
-              <strong>
-                {ticket.date}
-              </strong>
-
-            </div>
-
-
-            <div style={detailRow}>
-
-              <span>
-                🕛 Time
-              </span>
-
-              <strong>
-                {ticket.time}
-              </strong>
-
-            </div>
-
-
-            <div style={detailRow}>
-
-              <span>
-                📍 Location
-              </span>
-
-              <strong>
-                {ticket.location}
-              </strong>
-
-            </div>
-
-
-            <div style={detailRow}>
-
-              <span>
-                🎟️ Availability
-              </span>
-
-              <strong style={unlimitedText}>
-                UNLIMITED
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          {/* =================================
-              FEATURES
-          ================================= */}
-
-          <div style={featuresBox}>
-
-            <h3 style={featuresTitle}>
-              EVERYTHING INCLUDED
-            </h3>
+          <div style={featureContainer}>
 
             {ticket.features.map(
               (feature, index) => (
 
                 <div
                   key={index}
-                  style={featureRow}
+                  style={feature}
                 >
 
                   <span style={check}>
@@ -462,130 +301,50 @@ export default function Home() {
           </div>
 
 
-          {/* =================================
-              QUANTITY
-          ================================= */}
-
-          <div style={quantitySection}>
-
-            <h3 style={quantityTitle}>
-              NUMBER OF TICKETS
-            </h3>
-
-
-            <div style={quantityControls}>
-
-              <button
-                onClick={decreaseQuantity}
-                style={quantityButton}
-              >
-                −
-              </button>
-
-
-              <div style={quantityNumber}>
-                {quantity}
-              </div>
-
-
-              <button
-                onClick={increaseQuantity}
-                style={quantityButton}
-              >
-                +
-              </button>
-
-            </div>
-
-
-            <div style={totalBox}>
-
-              <span>
-                TOTAL
-              </span>
-
-              <strong>
-                R{ticket.price * quantity}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          {/* =================================
-              BUY BUTTON
-          ================================= */}
+          {/* BUY BUTTON */}
 
           <button
             onClick={buyTicket}
             style={buyButton}
           >
 
-            🎟️ BUY TICKET NOW
+            🎫 BUY TICKET NOW
 
           </button>
 
 
-          {/* =================================
-              LOGIN MESSAGE
-          ================================= */}
+          {/* LOGIN MESSAGE */}
 
-          {user ? (
+          <p style={smallText}>
 
-            <p style={loggedInMessage}>
+            {user
 
-              ✓ You are logged in.
-              You can continue directly
-              to ticket registration.
+              ? "✓ You are logged in. You can continue directly."
 
-            </p>
+              : "You will need to create an account before purchasing."
 
-          ) : (
+            }
 
-            <p style={loggedOutMessage}>
-
-              You are not logged in.
-              You will need to create an
-              account before purchasing.
-
-            </p>
-
-          )}
+          </p>
 
         </div>
 
       </section>
 
 
-      {/* =====================================
-          EVENT BOTTOM MESSAGE
-      ===================================== */}
+      {/* ============================= */}
+      {/* EVENT MESSAGE */}
+      {/* ============================= */}
 
-      <section style={bottomSection}>
+      <section style={messageSection}>
 
-        <h2 style={bottomTitle}>
+        <h2>
           DON'T MISS OUT!
         </h2>
 
-        <p style={bottomText}>
-
-          BRING YOUR FRIENDS &
-          LET'S MAKE MEMORIES!
-
+        <p>
+          Bring your friends and let's make memories.
         </p>
-
-        <p style={verse}>
-
-          "Let us consider how we may spur
-          one another on toward love and
-          good deeds."
-
-        </p>
-
-        <strong style={verseReference}>
-          — Hebrews 10:24
-        </strong>
 
       </section>
 
@@ -596,9 +355,9 @@ export default function Home() {
 }
 
 
-// =====================================================
-// STYLES
-// =====================================================
+/* ========================================= */
+/* STYLES */
+/* ========================================= */
 
 const page = {
 
@@ -609,16 +368,13 @@ const page = {
 
   color: "white",
 
-  paddingTop: "80px",
+  paddingTop: "70px",
 
-  overflowX: "hidden"
+  fontFamily:
+    "Arial, Helvetica, sans-serif"
 
 }
 
-
-// =====================================================
-// LOADING
-// =====================================================
 
 const loadingPage = {
 
@@ -630,257 +386,203 @@ const loadingPage = {
 
   display: "flex",
 
-  justifyContent: "center",
-
-  alignItems: "center",
-
   flexDirection: "column",
 
-  gap: "15px"
+  justifyContent: "center",
+
+  alignItems: "center"
 
 }
+
 
 const loadingRobot = {
 
   fontSize: "60px",
 
-  animation:
-    "pulse 1.2s infinite"
+  marginBottom: "15px"
 
 }
 
-const loader = {
-
-  width: "45px",
-
-  height: "45px",
-
-  borderRadius: "50%",
-
-  border:
-    "4px solid #333",
-
-  borderTop:
-    "4px solid red",
-
-  animation:
-    "spin 1s linear infinite"
-
-}
-
-
-// =====================================================
-// HERO
-// =====================================================
 
 const hero = {
 
-  minHeight: "520px",
-
-  background:
-
-    "linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.9)), url('/event-bg.jpg')",
-
-  backgroundSize: "cover",
-
-  backgroundPosition: "center",
+  minHeight: "500px",
 
   display: "flex",
 
-  alignItems: "center",
-
   justifyContent: "center",
 
-  textAlign: "center"
+  alignItems: "center",
+
+  textAlign: "center",
+
+  padding: "40px 20px",
+
+  background:
+    "radial-gradient(circle at center,#300 0%,#080808 55%,#000 100%)"
 
 }
+
 
 const heroOverlay = {
 
-  width: "100%",
-
-  minHeight: "520px",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  justifyContent: "center",
-
-  background:
-    "radial-gradient(circle,rgba(255,0,0,.12),transparent 60%)"
+  maxWidth: "850px"
 
 }
 
-const heroContent = {
 
-  maxWidth: "1000px",
+const eventLabel = {
 
-  padding: "50px 25px"
-
-}
-
-const logo = {
-
-  fontSize: "70px",
-
-  fontWeight: "900",
-
-  color: "red",
-
-  letterSpacing: "8px",
-
-  textShadow:
-    "0 0 30px rgba(255,0,0,.7)"
-
-}
-
-const mainTitle = {
-
-  fontSize: "clamp(35px,6vw,75px)",
-
-  lineHeight: "1",
-
-  margin: "20px 0",
-
-  fontWeight: "900",
-
-  textTransform: "uppercase"
-
-}
-
-const heroText = {
-
-  color: "#ffae00",
-
-  fontSize: "20px",
+  color: "#ff3333",
 
   fontWeight: "bold",
 
-  letterSpacing: "4px"
+  letterSpacing: "4px",
+
+  fontSize: "14px"
 
 }
 
-const heroLine = {
 
-  width: "180px",
+const title = {
 
-  height: "4px",
+  color: "#ff1a1a",
 
-  background: "red",
+  fontSize: "clamp(50px,10vw,100px)",
 
-  margin: "25px auto"
+  margin: "15px 0",
+
+  fontWeight: "900"
 
 }
 
-const heroDescription = {
 
-  color: "#ddd",
+const date = {
 
-  maxWidth: "700px",
+  fontSize: "clamp(25px,5vw,45px)",
 
-  margin: "auto",
+  margin: "10px 0"
+
+}
+
+
+const heroText = {
+
+  color: "#aaa",
 
   fontSize: "18px",
 
-  lineHeight: "1.7"
+  maxWidth: "650px",
+
+  margin:
+    "20px auto",
+
+  lineHeight: "1.6"
 
 }
 
 
-// =====================================================
-// EVENT INFO
-// =====================================================
+const statusBox = {
 
-const eventInfo = {
+  display: "inline-flex",
 
-  maxWidth: "1200px",
+  alignItems: "center",
 
-  margin: "auto",
+  gap: "10px",
 
-  padding: "35px 20px",
+  marginTop: "20px",
+
+  padding: "12px 20px",
+
+  background: "#151515",
+
+  border: "1px solid #333",
+
+  borderRadius: "30px",
+
+  fontSize: "13px",
+
+  fontWeight: "bold"
+
+}
+
+
+const statusDot = {
+
+  width: "10px",
+
+  height: "10px",
+
+  background: "#00ff66",
+
+  borderRadius: "50%",
+
+  display: "inline-block"
+
+}
+
+
+const infoSection = {
 
   display: "grid",
 
   gridTemplateColumns:
     "repeat(auto-fit,minmax(220px,1fr))",
 
-  gap: "15px"
+  gap: "20px",
+
+  padding: "40px 6%",
+
+  background: "#050505"
 
 }
+
 
 const infoCard = {
 
   background: "#111",
 
-  border: "1px solid #333",
+  border: "1px solid #292929",
 
-  borderRadius: "15px",
+  borderRadius: "16px",
 
-  padding: "20px",
+  padding: "25px",
 
-  display: "flex",
-
-  alignItems: "center",
-
-  gap: "15px"
-
-}
-
-const infoIcon = {
-
-  fontSize: "35px"
-
-}
-
-const infoLabel = {
-
-  display: "block",
-
-  color: "red",
-
-  fontSize: "12px",
-
-  fontWeight: "bold",
-
-  marginBottom: "5px"
-
-}
-
-const infoValue = {
-
-  display: "block",
-
-  fontSize: "16px"
+  textAlign: "center"
 
 }
 
 
-// =====================================================
-// TICKET SECTION
-// =====================================================
+const icon = {
+
+  fontSize: "35px",
+
+  marginBottom: "10px"
+
+}
+
+
+const infoCardH3 = {
+
+  color: "#ff2222",
+
+  marginBottom: "8px"
+
+}
+
 
 const ticketSection = {
 
-  maxWidth: "1000px",
+  padding: "70px 20px",
 
-  margin: "auto",
-
-  padding: "50px 20px 100px"
+  textAlign: "center"
 
 }
 
-const sectionHeader = {
 
-  textAlign: "center",
+const sectionLabel = {
 
-  marginBottom: "35px"
-
-}
-
-const sectionSmallTitle = {
-
-  color: "red",
+  color: "#ff2222",
 
   fontWeight: "bold",
 
@@ -888,49 +590,38 @@ const sectionSmallTitle = {
 
 }
 
+
 const sectionTitle = {
 
-  fontSize: "45px",
+  fontSize: "42px",
 
-  margin: "10px 0"
-
-}
-
-const sectionDescription = {
-
-  color: "#aaa",
-
-  fontSize: "17px"
+  marginBottom: "40px"
 
 }
 
-
-// =====================================================
-// TICKET CARD
-// =====================================================
 
 const ticketCard = {
 
-  maxWidth: "650px",
+  position: "relative",
+
+  maxWidth: "550px",
 
   margin: "auto",
+
+  padding: "40px 30px",
 
   background:
     "linear-gradient(145deg,#151515,#080808)",
 
-  border:
-    "2px solid red",
+  border: "2px solid red",
 
   borderRadius: "25px",
 
-  padding: "35px",
-
-  textAlign: "center",
-
   boxShadow:
-    "0 0 50px rgba(255,0,0,.25)"
+    "0 0 40px rgba(255,0,0,.25)"
 
 }
+
 
 const popularBadge = {
 
@@ -940,7 +631,7 @@ const popularBadge = {
 
   color: "white",
 
-  padding: "8px 18px",
+  padding: "8px 16px",
 
   borderRadius: "30px",
 
@@ -948,140 +639,79 @@ const popularBadge = {
 
   fontWeight: "bold",
 
-  letterSpacing: "1px",
-
   marginBottom: "20px"
 
 }
 
-const ticketIcon = {
-
-  fontSize: "55px"
-
-}
 
 const ticketTitle = {
 
-  fontSize: "28px",
+  color: "white",
 
-  margin: "15px 0",
-
-  color: "white"
+  fontSize: "28px"
 
 }
+
 
 const price = {
 
-  fontSize: "65px",
+  color: "#ff2222",
 
-  color: "red",
+  fontSize: "70px",
 
   fontWeight: "900",
 
-  lineHeight: "1"
+  marginTop: "15px"
 
 }
+
 
 const perPerson = {
 
   color: "#aaa",
 
-  fontSize: "13px",
+  marginTop: "-10px",
 
-  fontWeight: "bold",
-
-  letterSpacing: "2px",
-
-  marginTop: "8px"
+  fontWeight: "bold"
 
 }
 
-const ticketDescription = {
+
+const description = {
 
   color: "#bbb",
 
   lineHeight: "1.6",
 
-  margin:
-    "20px auto 30px",
+  margin: "20px auto",
 
-  maxWidth: "500px"
-
-}
-
-
-// =====================================================
-// DETAILS
-// =====================================================
-
-const detailsBox = {
-
-  background: "#0d0d0d",
-
-  border:
-    "1px solid #333",
-
-  borderRadius: "15px",
-
-  padding: "15px",
-
-  marginBottom: "25px"
-
-}
-
-const detailRow = {
-
-  display: "flex",
-
-  justifyContent: "space-between",
-
-  alignItems: "center",
-
-  gap: "15px",
-
-  padding: "13px 5px",
-
-  borderBottom:
-    "1px solid #222",
-
-  textAlign: "left"
-
-}
-
-const unlimitedText = {
-
-  color: "#00ff66"
+  maxWidth: "450px"
 
 }
 
 
-// =====================================================
-// FEATURES
-// =====================================================
-
-const featuresBox = {
+const featureContainer = {
 
   textAlign: "left",
 
-  marginTop: "25px"
+  marginTop: "25px",
+
+  padding: "20px",
+
+  background: "#0d0d0d",
+
+  borderRadius: "15px"
 
 }
 
-const featuresTitle = {
 
-  color: "#ffae00",
-
-  textAlign: "center",
-
-  marginBottom: "20px"
-
-}
-
-const featureRow = {
+const feature = {
 
   display: "flex",
 
   gap: "12px",
+
+  alignItems: "center",
 
   padding: "9px 0",
 
@@ -1089,114 +719,27 @@ const featureRow = {
 
 }
 
+
 const check = {
 
   color: "#00ff66",
 
   fontWeight: "bold",
 
-  fontSize: "18px"
+  fontSize: "20px"
 
 }
 
-
-// =====================================================
-// QUANTITY
-// =====================================================
-
-const quantitySection = {
-
-  marginTop: "30px",
-
-  paddingTop: "25px",
-
-  borderTop:
-    "1px solid #333"
-
-}
-
-const quantityTitle = {
-
-  fontSize: "14px",
-
-  color: "#aaa",
-
-  letterSpacing: "1px"
-
-}
-
-const quantityControls = {
-
-  display: "flex",
-
-  justifyContent: "center",
-
-  alignItems: "center",
-
-  gap: "20px",
-
-  margin: "15px 0"
-
-}
-
-const quantityButton = {
-
-  width: "45px",
-
-  height: "45px",
-
-  borderRadius: "50%",
-
-  border: "1px solid red",
-
-  background: "#111",
-
-  color: "white",
-
-  fontSize: "25px",
-
-  cursor: "pointer"
-
-}
-
-const quantityNumber = {
-
-  fontSize: "25px",
-
-  fontWeight: "bold",
-
-  minWidth: "40px"
-
-}
-
-const totalBox = {
-
-  display: "flex",
-
-  justifyContent: "space-between",
-
-  alignItems: "center",
-
-  background: "#111",
-
-  padding: "15px 20px",
-
-  borderRadius: "10px",
-
-  marginTop: "10px"
-
-}
 
 const buyButton = {
 
   width: "100%",
 
+  marginTop: "30px",
+
   padding: "18px",
 
-  marginTop: "25px",
-
-  background:
-    "linear-gradient(90deg,#d00000,#ff1a1a)",
+  background: "red",
 
   color: "white",
 
@@ -1204,100 +747,53 @@ const buyButton = {
 
   borderRadius: "12px",
 
+  fontSize: "18px",
+
+  fontWeight: "bold",
+
   cursor: "pointer",
 
-  fontWeight: "900",
-
-  fontSize: "17px",
-
   boxShadow:
-    "0 0 25px rgba(255,0,0,.3)"
+    "0 0 20px rgba(255,0,0,.3)"
 
 }
 
 
-// =====================================================
-// LOGIN STATUS
-// =====================================================
+const smallText = {
 
-const loggedInMessage = {
+  color: "#777",
 
-  color: "#00ff66",
-
-  fontSize: "13px",
+  fontSize: "12px",
 
   marginTop: "15px"
 
 }
 
-const loggedOutMessage = {
 
-  color: "#aaa",
-
-  fontSize: "13px",
-
-  marginTop: "15px",
-
-  lineHeight: "1.5"
-
-}
-
-
-// =====================================================
-// BOTTOM
-// =====================================================
-
-const bottomSection = {
+const messageSection = {
 
   textAlign: "center",
 
   padding: "70px 20px",
 
-  background: "#050505",
-
-  borderTop:
-    "1px solid #222"
+  borderTop: "1px solid #222"
 
 }
 
-const bottomTitle = {
 
-  fontSize: "45px",
+const messageSectionH2 = {
 
-  fontWeight: "900",
+  color: "white",
 
-  fontStyle: "italic",
-
-  marginBottom: "10px"
+  fontSize: "40px"
 
 }
 
-const bottomText = {
 
-  color: "#ffae00",
-
-  fontSize: "20px",
-
-  fontWeight: "bold"
-
-}
-
-const verse = {
+const messageSectionP = {
 
   color: "#aaa",
 
-  maxWidth: "600px",
-
-  margin: "30px auto 5px",
-
-  fontStyle: "italic",
-
-  lineHeight: "1.6"
-
-}
-
-const verseReference = {
-
-  color: "#ffae00"
+  fontSize: "18px"
 
 }
