@@ -1,799 +1,753 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { onAuthStateChanged } from "firebase/auth"
-
-import { auth } from "../firebase/config"
+import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase/config.jsx";
 
 export default function Home() {
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-
-  const [user, setUser] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
-
-  useEffect(() => {
-
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-
-        setUser(currentUser)
-        setAuthLoading(false)
-
-      }
-    )
-
-    return unsubscribe
-
-  }, [])
+  // ==========================================
+  // MGS EVENT TICKET
+  // ==========================================
 
   const ticket = {
-
-    name: "UNLIMITED TICKET",
-
+    name: "MGS EVENT",
+    packageName: "MGS EVENT",
     price: 420,
-
-    description:
-      "Unlimited event ticket with full access to the MGS experience.",
-
+    quantity: "Unlimited",
     type: "unlimited",
-
-    quantity: "UNLIMITED",
-
     date: "12 September 2026",
-
+    description:
+      "Get unlimited access to the MGS Event on 12 September 2026.",
     features: [
-
       "Full Event Entrance",
-
-      "Meat Included",
-
-      "Drinks Included",
-
+      "Main Event Access",
       "Live Entertainment",
+      "Music & Entertainment",
+      "Full Event Experience",
+    ],
+  };
 
-      "Good Music & Vibes",
-
-      "Connect & Build Friendships",
-
-      "Grow Together"
-
-    ]
-
-  }
+  // ==========================================
+  // BUY TICKET
+  // ==========================================
 
   function buyTicket() {
+    // Save the selected ticket so Payment.jsx
+    // can read it.
 
-    // Save selected ticket
     localStorage.setItem(
       "selectedTicket",
       JSON.stringify(ticket)
-    )
+    );
 
-    /*
-      LOGGED OUT
+    // If user is logged in, go directly
+    // to the existing protected payment route.
 
-      User must create an account first.
-    */
-
-    if (!user) {
-
-      navigate("/register-account")
-
-      return
-
+    if (auth.currentUser) {
+      navigate("/register");
+      return;
     }
 
-    /*
-      LOGGED IN
+    // If user is not logged in, create account first.
 
-      User can go directly to ticket
-      purchase/registration.
-    */
-
-    navigate("/ticket-purchase")
-
-  }
-
-  if (authLoading) {
-
-    return (
-
-      <div style={loadingPage}>
-
-        <div style={loadingRobot}>
-          🤖
-        </div>
-
-        <h2>
-          Checking your account...
-        </h2>
-
-      </div>
-
-    )
-
+    navigate("/register-account");
   }
 
   return (
-
     <div style={page}>
-
-      {/* ============================= */}
-      {/* HERO */}
-      {/* ============================= */}
+      {/* ======================================
+          HERO
+      ====================================== */}
 
       <section style={hero}>
-
         <div style={heroOverlay}>
+          <div style={eventBadge}>
+            MGS EVENTS
+          </div>
 
-          <p style={eventLabel}>
-            MGS EVENTS PRESENTS
-          </p>
-
-          <h1 style={title}>
+          <h1 style={mainTitle}>
             MGS EVENT
           </h1>
 
-          <h2 style={date}>
-            12 SEPTEMBER 2026
-          </h2>
-
           <p style={heroText}>
-            Come connect, share, grow and
-            enjoy an unforgettable experience.
+            ONE EVENT. ONE EXPERIENCE.
           </p>
 
-          <div style={statusBox}>
+          <div style={dateBox}>
+            <span style={dateLabel}>
+              EVENT DATE
+            </span>
 
-            <span style={statusDot}></span>
-
-            {user
-              ? "YOU ARE LOGGED IN"
-              : "LOGIN REQUIRED TO PURCHASE"
-            }
-
+            <strong style={dateValue}>
+              12 SEPTEMBER 2026
+            </strong>
           </div>
-
         </div>
-
       </section>
 
-
-      {/* ============================= */}
-      {/* EVENT INFORMATION */}
-      {/* ============================= */}
-
-      <section style={infoSection}>
-
-        <div style={infoCard}>
-
-          <div style={icon}>
-            📍
-          </div>
-
-          <h3>
-            LOCATION
-          </h3>
-
-          <p>
-            Nthabiseko Resort
-          </p>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={icon}>
-            📅
-          </div>
-
-          <h3>
-            DATE
-          </h3>
-
-          <p>
-            12 September 2026
-          </p>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={icon}>
-            🕛
-          </div>
-
-          <h3>
-            TIME
-          </h3>
-
-          <p>
-            12H00
-          </p>
-
-        </div>
-
-
-        <div style={infoCard}>
-
-          <div style={icon}>
-            🎫
-          </div>
-
-          <h3>
-            TICKETS
-          </h3>
-
-          <p>
-            Unlimited
-          </p>
-
-        </div>
-
-      </section>
-
-
-      {/* ============================= */}
-      {/* TICKET */}
-      {/* ============================= */}
+      {/* ======================================
+          TICKETS SECTION
+      ====================================== */}
 
       <section style={ticketSection}>
+        <div style={sectionHeader}>
+          <p style={sectionSmallTitle}>
+            SECURE YOUR PLACE
+          </p>
 
-        <p style={sectionLabel}>
-          AVAILABLE TICKET
-        </p>
-
-        <h2 style={sectionTitle}>
-          GET YOUR TICKET
-        </h2>
-
-        <div style={ticketCard}>
-
-          <div style={popularBadge}>
-            UNLIMITED AVAILABLE
-          </div>
-
-          <h2 style={ticketTitle}>
-            {ticket.name}
+          <h2 style={sectionTitle}>
+            GET YOUR MGS TICKET
           </h2>
 
-          <div style={price}>
-            R{ticket.price}
-          </div>
-
-          <p style={perPerson}>
-            PER PERSON
+          <p style={sectionDescription}>
+            Only one ticket package is available.
+            Tickets are unlimited and cost R420 each.
           </p>
-
-          <p style={description}>
-            {ticket.description}
-          </p>
-
-
-          {/* FEATURES */}
-
-          <div style={featureContainer}>
-
-            {ticket.features.map(
-              (feature, index) => (
-
-                <div
-                  key={index}
-                  style={feature}
-                >
-
-                  <span style={check}>
-                    ✓
-                  </span>
-
-                  <span>
-                    {feature}
-                  </span>
-
-                </div>
-
-              )
-            )}
-
-          </div>
-
-
-          {/* BUY BUTTON */}
-
-          <button
-            onClick={buyTicket}
-            style={buyButton}
-          >
-
-            🎫 BUY TICKET NOW
-
-          </button>
-
-
-          {/* LOGIN MESSAGE */}
-
-          <p style={smallText}>
-
-            {user
-
-              ? "✓ You are logged in. You can continue directly."
-
-              : "You will need to create an account before purchasing."
-
-            }
-
-          </p>
-
         </div>
 
+        {/* ====================================
+            TICKET CARD
+        ==================================== */}
+
+        <div style={ticketWrapper}>
+          <div style={ticketCard}>
+            {/* POPULAR BADGE */}
+
+            <div style={popularBadge}>
+              UNLIMITED TICKETS
+            </div>
+
+            {/* TICKET TITLE */}
+
+            <h2 style={ticketTitle}>
+              {ticket.name}
+            </h2>
+
+            <p style={ticketDescription}>
+              {ticket.description}
+            </p>
+
+            {/* PRICE */}
+
+            <div style={priceContainer}>
+              <span style={currency}>
+                R
+              </span>
+
+              <span style={price}>
+                {ticket.price}
+              </span>
+            </div>
+
+            <p style={priceText}>
+              PER TICKET
+            </p>
+
+            {/* DATE */}
+
+            <div style={infoBox}>
+              <div style={infoItem}>
+                <span style={infoIcon}>
+                  📅
+                </span>
+
+                <div>
+                  <span style={infoLabel}>
+                    DATE
+                  </span>
+
+                  <strong style={infoValue}>
+                    {ticket.date}
+                  </strong>
+                </div>
+              </div>
+
+              <div style={divider} />
+
+              <div style={infoItem}>
+                <span style={infoIcon}>
+                  🎟️
+                </span>
+
+                <div>
+                  <span style={infoLabel}>
+                    AVAILABILITY
+                  </span>
+
+                  <strong style={unlimited}>
+                    UNLIMITED
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* FEATURES */}
+
+            <div style={featuresBox}>
+              <h3 style={featuresTitle}>
+                TICKET INCLUDES
+              </h3>
+
+              {ticket.features.map(
+                (feature, index) => (
+                  <div
+                    key={`${feature}-${index}`}
+                    style={featureRow}
+                  >
+                    <span style={check}>
+                      ✓
+                    </span>
+
+                    <span style={featureText}>
+                      {feature}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* BUY BUTTON */}
+
+            <button
+              type="button"
+              onClick={buyTicket}
+              style={buyButton}
+            >
+              BUY TICKET NOW
+            </button>
+
+            <p style={secureText}>
+              🔒 Secure ticket registration
+            </p>
+          </div>
+        </div>
       </section>
 
+      {/* ======================================
+          EVENT INFORMATION
+      ====================================== */}
 
-      {/* ============================= */}
-      {/* EVENT MESSAGE */}
-      {/* ============================= */}
+      <section style={eventSection}>
+        <div style={eventContainer}>
+          <h2 style={eventTitle}>
+            MGS EVENT 2026
+          </h2>
 
-      <section style={messageSection}>
+          <p style={eventDescription}>
+            Join us on 12 September 2026 for the
+            MGS Event experience.
+          </p>
 
-        <h2>
-          DON'T MISS OUT!
-        </h2>
+          <div style={eventDetails}>
+            <div style={detailCard}>
+              <div style={detailIcon}>
+                📅
+              </div>
 
-        <p>
-          Bring your friends and let's make memories.
+              <h3 style={detailTitle}>
+                DATE
+              </h3>
+
+              <p style={detailText}>
+                12 September 2026
+              </p>
+            </div>
+
+            <div style={detailCard}>
+              <div style={detailIcon}>
+                🎟️
+              </div>
+
+              <h3 style={detailTitle}>
+                TICKET
+              </h3>
+
+              <p style={detailText}>
+                R420
+              </p>
+            </div>
+
+            <div style={detailCard}>
+              <div style={detailIcon}>
+                ♾️
+              </div>
+
+              <h3 style={detailTitle}>
+                AVAILABILITY
+              </h3>
+
+              <p style={detailText}>
+                Unlimited
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================
+          FOOTER
+      ====================================== */}
+
+      <footer style={footer}>
+        <h3 style={footerTitle}>
+          MGS EVENTS
+        </h3>
+
+        <p style={footerText}>
+          12 September 2026 • R420
         </p>
 
-      </section>
-
+        <p style={copyright}>
+          © 2026 MGS Events. All rights reserved.
+        </p>
+      </footer>
     </div>
-
-  )
-
+  );
 }
 
 
-/* ========================================= */
-/* STYLES */
-/* ========================================= */
+// ==========================================
+// PAGE
+// ==========================================
 
 const page = {
-
   minHeight: "100vh",
-
   background:
-    "linear-gradient(180deg,#000 0%,#080808 45%,#111 100%)",
-
-  color: "white",
-
-  paddingTop: "70px",
-
-  fontFamily:
-    "Arial, Helvetica, sans-serif"
-
-}
+    "linear-gradient(180deg, #000 0%, #080808 45%, #111 100%)",
+  color: "#fff",
+  paddingTop: "80px",
+  overflowX: "hidden",
+};
 
 
-const loadingPage = {
-
-  minHeight: "100vh",
-
-  background: "#000",
-
-  color: "white",
-
-  display: "flex",
-
-  flexDirection: "column",
-
-  justifyContent: "center",
-
-  alignItems: "center"
-
-}
-
-
-const loadingRobot = {
-
-  fontSize: "60px",
-
-  marginBottom: "15px"
-
-}
-
+// ==========================================
+// HERO
+// ==========================================
 
 const hero = {
-
   minHeight: "500px",
-
   display: "flex",
-
   justifyContent: "center",
-
   alignItems: "center",
-
   textAlign: "center",
-
-  padding: "40px 20px",
-
+  padding: "60px 20px",
   background:
-    "radial-gradient(circle at center,#300 0%,#080808 55%,#000 100%)"
-
-}
+    "radial-gradient(circle at center, #350000 0%, #080000 35%, #000 75%)",
+  borderBottom: "1px solid #222",
+};
 
 
 const heroOverlay = {
+  maxWidth: "900px",
+  width: "100%",
+};
 
-  maxWidth: "850px"
 
-}
-
-
-const eventLabel = {
-
+const eventBadge = {
+  display: "inline-block",
+  padding: "8px 18px",
+  border: "1px solid red",
+  borderRadius: "30px",
   color: "#ff3333",
+  fontSize: "13px",
+  fontWeight: "800",
+  letterSpacing: "3px",
+  marginBottom: "20px",
+};
 
-  fontWeight: "bold",
 
+const mainTitle = {
+  margin: 0,
+  color: "#fff",
+  fontSize: "clamp(48px, 9vw, 100px)",
+  fontWeight: "900",
   letterSpacing: "4px",
-
-  fontSize: "14px"
-
-}
-
-
-const title = {
-
-  color: "#ff1a1a",
-
-  fontSize: "clamp(50px,10vw,100px)",
-
-  margin: "15px 0",
-
-  fontWeight: "900"
-
-}
-
-
-const date = {
-
-  fontSize: "clamp(25px,5vw,45px)",
-
-  margin: "10px 0"
-
-}
+  textShadow:
+    "0 0 30px rgba(255,0,0,0.5)",
+};
 
 
 const heroText = {
-
   color: "#aaa",
-
   fontSize: "18px",
-
-  maxWidth: "650px",
-
-  margin:
-    "20px auto",
-
-  lineHeight: "1.6"
-
-}
+  fontWeight: "700",
+  letterSpacing: "5px",
+  marginTop: "15px",
+};
 
 
-const statusBox = {
-
-  display: "inline-flex",
-
-  alignItems: "center",
-
-  gap: "10px",
-
-  marginTop: "20px",
-
-  padding: "12px 20px",
-
-  background: "#151515",
-
-  border: "1px solid #333",
-
-  borderRadius: "30px",
-
-  fontSize: "13px",
-
-  fontWeight: "bold"
-
-}
-
-
-const statusDot = {
-
-  width: "10px",
-
-  height: "10px",
-
-  background: "#00ff66",
-
-  borderRadius: "50%",
-
-  display: "inline-block"
-
-}
-
-
-const infoSection = {
-
-  display: "grid",
-
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(220px,1fr))",
-
-  gap: "20px",
-
-  padding: "40px 6%",
-
-  background: "#050505"
-
-}
-
-
-const infoCard = {
-
-  background: "#111",
-
-  border: "1px solid #292929",
-
+const dateBox = {
+  margin: "35px auto 0",
+  padding: "20px 35px",
+  maxWidth: "420px",
+  background:
+    "rgba(255,0,0,0.08)",
+  border:
+    "1px solid rgba(255,0,0,0.5)",
   borderRadius: "16px",
-
-  padding: "25px",
-
-  textAlign: "center"
-
-}
+};
 
 
-const icon = {
+const dateLabel = {
+  display: "block",
+  color: "#888",
+  fontSize: "11px",
+  letterSpacing: "3px",
+  marginBottom: "8px",
+};
 
-  fontSize: "35px",
 
-  marginBottom: "10px"
+const dateValue = {
+  display: "block",
+  color: "#fff",
+  fontSize: "24px",
+  letterSpacing: "1px",
+};
 
-}
 
-
-const infoCardH3 = {
-
-  color: "#ff2222",
-
-  marginBottom: "8px"
-
-}
-
+// ==========================================
+// TICKET SECTION
+// ==========================================
 
 const ticketSection = {
-
-  padding: "70px 20px",
-
-  textAlign: "center"
-
-}
+  padding: "80px 20px",
+  maxWidth: "1200px",
+  margin: "0 auto",
+};
 
 
-const sectionLabel = {
+const sectionHeader = {
+  textAlign: "center",
+  marginBottom: "45px",
+};
 
-  color: "#ff2222",
 
-  fontWeight: "bold",
-
-  letterSpacing: "3px"
-
-}
+const sectionSmallTitle = {
+  color: "red",
+  fontSize: "13px",
+  fontWeight: "800",
+  letterSpacing: "4px",
+  marginBottom: "10px",
+};
 
 
 const sectionTitle = {
-
+  margin: 0,
   fontSize: "42px",
+  fontWeight: "900",
+};
 
-  marginBottom: "40px"
 
-}
+const sectionDescription = {
+  maxWidth: "650px",
+  margin: "15px auto 0",
+  color: "#999",
+  lineHeight: 1.7,
+};
+
+
+const ticketWrapper = {
+  display: "flex",
+  justifyContent: "center",
+};
 
 
 const ticketCard = {
-
-  position: "relative",
-
-  maxWidth: "550px",
-
-  margin: "auto",
-
-  padding: "40px 30px",
-
+  width: "100%",
+  maxWidth: "560px",
   background:
-    "linear-gradient(145deg,#151515,#080808)",
-
+    "linear-gradient(145deg, #171717, #0d0d0d)",
   border: "2px solid red",
-
   borderRadius: "25px",
-
+  padding: "35px",
+  boxSizing: "border-box",
   boxShadow:
-    "0 0 40px rgba(255,0,0,.25)"
-
-}
+    "0 0 50px rgba(255,0,0,0.18)",
+  textAlign: "center",
+};
 
 
 const popularBadge = {
-
   display: "inline-block",
-
   background: "red",
-
-  color: "white",
-
-  padding: "8px 16px",
-
+  color: "#fff",
+  padding: "8px 18px",
   borderRadius: "30px",
-
-  fontSize: "12px",
-
-  fontWeight: "bold",
-
-  marginBottom: "20px"
-
-}
+  fontSize: "11px",
+  fontWeight: "900",
+  letterSpacing: "1px",
+  marginBottom: "20px",
+};
 
 
 const ticketTitle = {
+  margin: "5px 0 10px",
+  color: "#fff",
+  fontSize: "34px",
+  fontWeight: "900",
+};
 
-  color: "white",
 
-  fontSize: "28px"
+const ticketDescription = {
+  color: "#999",
+  lineHeight: 1.6,
+  margin: "0 auto 20px",
+  maxWidth: "450px",
+};
 
-}
+
+const priceContainer = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
+  marginTop: "20px",
+};
+
+
+const currency = {
+  color: "red",
+  fontSize: "28px",
+  fontWeight: "900",
+  marginTop: "10px",
+};
 
 
 const price = {
-
-  color: "#ff2222",
-
-  fontSize: "70px",
-
+  color: "#fff",
+  fontSize: "80px",
+  lineHeight: 1,
   fontWeight: "900",
-
-  marginTop: "15px"
-
-}
+};
 
 
-const perPerson = {
-
-  color: "#aaa",
-
-  marginTop: "-10px",
-
-  fontWeight: "bold"
-
-}
+const priceText = {
+  color: "#777",
+  fontSize: "11px",
+  letterSpacing: "3px",
+  fontWeight: "700",
+};
 
 
-const description = {
-
-  color: "#bbb",
-
-  lineHeight: "1.6",
-
-  margin: "20px auto",
-
-  maxWidth: "450px"
-
-}
-
-
-const featureContainer = {
-
-  textAlign: "left",
-
-  marginTop: "25px",
-
+const infoBox = {
+  marginTop: "30px",
   padding: "20px",
-
-  background: "#0d0d0d",
-
-  borderRadius: "15px"
-
-}
+  background: "#090909",
+  border: "1px solid #292929",
+  borderRadius: "15px",
+};
 
 
-const feature = {
-
+const infoItem = {
   display: "flex",
-
-  gap: "12px",
-
   alignItems: "center",
+  textAlign: "left",
+  gap: "15px",
+};
 
-  padding: "9px 0",
 
-  color: "#ddd"
+const infoIcon = {
+  fontSize: "27px",
+  width: "40px",
+  textAlign: "center",
+};
 
-}
+
+const infoLabel = {
+  display: "block",
+  color: "#666",
+  fontSize: "10px",
+  fontWeight: "800",
+  letterSpacing: "2px",
+  marginBottom: "5px",
+};
+
+
+const infoValue = {
+  display: "block",
+  color: "#fff",
+  fontSize: "16px",
+};
+
+
+const unlimited = {
+  display: "block",
+  color: "#20d66b",
+  fontSize: "16px",
+  fontWeight: "900",
+};
+
+
+const divider = {
+  height: "1px",
+  background: "#252525",
+  margin: "18px 0",
+};
+
+
+const featuresBox = {
+  marginTop: "30px",
+  textAlign: "left",
+};
+
+
+const featuresTitle = {
+  color: "#fff",
+  fontSize: "14px",
+  letterSpacing: "2px",
+  marginBottom: "18px",
+};
+
+
+const featureRow = {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "10px 0",
+  borderBottom: "1px solid #202020",
+};
 
 
 const check = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "23px",
+  height: "23px",
+  background: "red",
+  color: "#fff",
+  borderRadius: "50%",
+  fontSize: "13px",
+  fontWeight: "900",
+  flexShrink: 0,
+};
 
-  color: "#00ff66",
 
-  fontWeight: "bold",
-
-  fontSize: "20px"
-
-}
+const featureText = {
+  color: "#ccc",
+  fontSize: "14px",
+};
 
 
 const buyButton = {
-
   width: "100%",
-
   marginTop: "30px",
-
   padding: "18px",
-
-  background: "red",
-
-  color: "white",
-
+  background:
+    "linear-gradient(90deg, #d90000, #ff2020)",
+  color: "#fff",
   border: "none",
-
   borderRadius: "12px",
-
-  fontSize: "18px",
-
-  fontWeight: "bold",
-
   cursor: "pointer",
-
+  fontWeight: "900",
+  fontSize: "17px",
+  letterSpacing: "1px",
   boxShadow:
-    "0 0 20px rgba(255,0,0,.3)"
-
-}
-
-
-const smallText = {
-
-  color: "#777",
-
-  fontSize: "12px",
-
-  marginTop: "15px"
-
-}
+    "0 10px 25px rgba(255,0,0,0.25)",
+};
 
 
-const messageSection = {
+const secureText = {
+  color: "#666",
+  fontSize: "11px",
+  marginTop: "15px",
+};
 
-  textAlign: "center",
 
+// ==========================================
+// EVENT INFORMATION
+// ==========================================
+
+const eventSection = {
   padding: "70px 20px",
-
-  borderTop: "1px solid #222"
-
-}
-
-
-const messageSectionH2 = {
-
-  color: "white",
-
-  fontSize: "40px"
-
-}
+  background: "#080808",
+  borderTop: "1px solid #1b1b1b",
+  borderBottom: "1px solid #1b1b1b",
+};
 
 
-const messageSectionP = {
+const eventContainer = {
+  maxWidth: "1100px",
+  margin: "0 auto",
+  textAlign: "center",
+};
 
+
+const eventTitle = {
+  color: "#fff",
+  fontSize: "35px",
+  fontWeight: "900",
+};
+
+
+const eventDescription = {
+  color: "#888",
+  maxWidth: "600px",
+  margin: "0 auto",
+  lineHeight: 1.7,
+};
+
+
+const eventDetails = {
+  display: "grid",
+  gridTemplateColumns:
+    "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "20px",
+  marginTop: "40px",
+};
+
+
+const detailCard = {
+  background: "#111",
+  border: "1px solid #292929",
+  borderRadius: "18px",
+  padding: "25px",
+};
+
+
+const detailIcon = {
+  fontSize: "32px",
+  marginBottom: "10px",
+};
+
+
+const detailTitle = {
+  color: "red",
+  fontSize: "13px",
+  letterSpacing: "2px",
+};
+
+
+const detailText = {
+  color: "#ddd",
+  fontWeight: "700",
+};
+
+
+// ==========================================
+// FOOTER
+// ==========================================
+
+const footer = {
+  padding: "50px 20px",
+  textAlign: "center",
+  background: "#000",
+};
+
+
+const footerTitle = {
+  color: "red",
+  fontSize: "24px",
+  fontWeight: "900",
+  letterSpacing: "3px",
+};
+
+
+const footerText = {
   color: "#aaa",
+};
 
-  fontSize: "18px"
 
-}
+const copyright = {
+  color: "#555",
+  fontSize: "12px",
+  marginTop: "20px",
+};
