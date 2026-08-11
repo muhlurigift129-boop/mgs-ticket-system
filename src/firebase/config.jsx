@@ -1,15 +1,6 @@
-// ==========================================
-// MGS TICKET SYSTEM
-// FIREBASE CONFIGURATION
-// ==========================================
-
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
-// ==========================================
-// FIREBASE CONFIG
-// ==========================================
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtLqZlGNtI6Y6Cb-M_qjDkx9p5EFylAt8",
@@ -21,28 +12,16 @@ const firebaseConfig = {
   measurementId: "G-X8HP8D242C",
 };
 
-// ==========================================
-// INITIALIZE FIREBASE
-// ==========================================
-
 const app = initializeApp(firebaseConfig);
-
-// ==========================================
-// FIRESTORE
-// ==========================================
-
-const db = getFirestore(app);
-
-// ==========================================
-// AUTHENTICATION
-// ==========================================
 
 const auth = getAuth(app);
 
-// ==========================================
-// EXPORT
-// ==========================================
+const db = getFirestore(app);
 
-export { app, db, auth };
+export {
+  app,
+  auth,
+  db,
+};
 
 export default app;
