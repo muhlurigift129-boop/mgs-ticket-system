@@ -1,122 +1,59 @@
 import { useEffect, useState } from "react"
-import { auth, db } from "../firebase/config"
 import { useNavigate } from "react-router-dom"
 
-import { addDoc, collection } from "firebase/firestore"
+import { auth, db } from "../firebase/config"
+
+import {
+  addDoc,
+  collection
+} from "firebase/firestore"
 
 export default function Register() {
 
   const navigate = useNavigate()
 
+  const selectedTicket = JSON.parse(
+    localStorage.getItem("selectedTicket") || "null"
+  )
+
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
+    email: auth.currentUser?.email || "",
     phone: "",
     delivery: "email",
-    ticketType: "full",
     quantity: 1
   })
 
   const [loading, setLoading] = useState(false)
 
-  const [selectedTicket, setSelectedTicket] = useState(null)
+  const ticket = selectedTicket || {
+    name: "MGS EVENT TICKET",
+    price: 420,
+    type: "full"
+  }
 
-  // =========================
-  // CHECK LOGIN
-  // =========================
+  const price = Number(ticket.price) || 420
+
+  const quantity = Math.max(
+    1,
+    Number(formData.quantity) || 1
+  )
+
+  const total = price * quantity
+
 
   useEffect(() => {
 
     if (!auth.currentUser) {
-      navigate("/login")
-      return
-    }
-
-    const savedTicket =
-      JSON.parse(
-        localStorage.getItem("selectedTicket")
-      )
-
-    if (savedTicket) {
-
-      setSelectedTicket(savedTicket)
-
-      setFormData(prev => ({
-        ...prev,
-        ticketType: savedTicket.type || "full"
-      }))
-
-    }
-
-    // Automatically use Firebase account email
-    if (auth.currentUser.email) {
-
-      setFormData(prev => ({
-        ...prev,
-        email: auth.currentUser.email
-      }))
-
+      navigate("/login", { replace: true })
     }
 
   }, [navigate])
 
 
-  // =========================
-  // TICKET PRICES
-  // =========================
-
-  const prices = {
-
-    full: 420,
-
-    vibe: 420,
-
-    vibeDrinks: 420,
-
-    vibeFood: 420
-
-  }
-
-
-  // =========================
-  // TICKET NAMES
-  // =========================
-
-  const ticketNames = {
-
-    full: "MGS EVENT TICKET",
-
-    vibe: "MGS EVENT TICKET",
-
-    vibeDrinks: "MGS EVENT TICKET",
-
-    vibeFood: "MGS EVENT TICKET"
-
-  }
-
-
-  // =========================
-  // SELECTED PRICE
-  // =========================
-
-  const price =
-    prices[formData.ticketType] || 420
-
-
-  const total =
-    price * Number(formData.quantity)
-
-
-  // =========================
-  // HANDLE INPUT
-  // =========================
-
   function handleChange(e) {
 
-    const {
-      name,
-      value
-    } = e.target
+    const { name, value } = e.target
 
     setFormData(prev => ({
       ...prev,
@@ -126,154 +63,113 @@ export default function Register() {
   }
 
 
-  // =========================
-  // SUBMIT ORDER
-  // =========================
-
   async function handleSubmit(e) {
 
     e.preventDefault()
 
-    if (!auth.currentUser) {
+    const currentUser = auth.currentUser
 
-      alert(
-        "Your login session has expired. Please login again."
-      )
+    if (!currentUser) {
+
+      alert("Please login first.")
 
       navigate("/login")
 
       return
-    }
-
-
-    if (Number(formData.quantity) < 1) {
-
-      alert("Quantity must be at least 1.")
-
-      return
 
     }
-
 
     setLoading(true)
 
-
     try {
 
-      const user =
-        auth.currentUser
-
-
-      // =========================
-      // CREATE ORDER
-      // =========================
-
+      // CREATE THE PAYMENT ORDER FIRST
       const order = {
 
-        userId:
-          user.uid,
+        userId: currentUser.uid,
 
-        fullName:
-          formData.fullName,
+        fullName: formData.fullName,
 
-        email:
-          formData.email || user.email,
+        email: formData.email || currentUser.email,
 
-        phone:
-          formData.phone,
+        phone: formData.phone,
 
-        delivery:
-          formData.delivery,
+        delivery: formData.delivery,
 
-        ticketType:
-          formData.ticketType,
+        ticketType: ticket.type,
 
-        ticketName:
-          ticketNames[formData.ticketType],
+        ticketName: ticket.name,
 
-        packageName:
-          ticketNames[formData.ticketType],
+        packageName: ticket.name,
 
-        quantity:
-          Number(formData.quantity),
+        quantity: quantity,
 
-        price:
-          price,
+        price: price,
 
-        total:
-          total,
+        total: total,
 
-        status:
-          "pending",
+        status: "Pending Payment",
 
-        paymentStatus:
-          "unpaid",
+        paymentStatus: "unpaid",
 
-        createdAt:
-          new Date().toISOString()
+        createdAt: new Date().toISOString()
 
       }
 
 
-      // =========================
-      // SAVE ORDER TO FIRESTORE
-      // =========================
-
-      const orderRef =
-        await addDoc(
-          collection(db, "tickets"),
-          order
-        )
-
-
-      console.log(
-        "ORDER CREATED:",
-        orderRef.id
-      )
-
-
-      // =========================
-      // SAVE ORDER FOR PAYMENT
-      // =========================
-
-      const paymentOrder = {
-
-        ...order,
-
-        orderId:
-          orderRef.id
-
-      }
-
-
+      // IMPORTANT:
+      // SAVE THIS BEFORE GOING TO PAYMENT
       localStorage.setItem(
         "mgsCustomer",
-        JSON.stringify(paymentOrder)
+        JSON.stringify(order)
       )
 
 
-      // =========================
-      // SAVE USER ORDER LOCALLY
-      // =========================
+      // TEST THAT IT WAS ACTUALLY SAVED
+      const savedOrder = localStorage.getItem(
+        "mgsCustomer"
+      )
 
+      if (!savedOrder) {
+
+        throw new Error(
+          "Order could not be saved in browser storage."
+        )
+
+      }
+
+
+      // SAVE TO FIRESTORE FOR ORDERS PAGE
+      const orderRef = await addDoc(
+        collection(db, "tickets"),
+        order
+      )
+
+
+      // SAVE FIRESTORE ORDER ID
       localStorage.setItem(
         "mgsOrderId",
         orderRef.id
       )
 
 
-      // =========================
-      // REMOVE SELECTED TICKET
-      // =========================
-
-      localStorage.removeItem(
-        "selectedTicket"
+      // UPDATE LOCAL PAYMENT ORDER WITH ORDER ID
+      localStorage.setItem(
+        "mgsCustomer",
+        JSON.stringify({
+          ...order,
+          orderId: orderRef.id
+        })
       )
 
 
-      // =========================
-      // GO TO PAYMENT
-      // =========================
+      console.log(
+        "ORDER SAVED:",
+        JSON.parse(
+          localStorage.getItem("mgsCustomer")
+        )
+      )
+
 
       navigate("/payment")
 
@@ -281,12 +177,12 @@ export default function Register() {
     } catch (error) {
 
       console.error(
-        "ORDER ERROR:",
+        "ORDER CREATION ERROR:",
         error
       )
 
       alert(
-        "Could not create your order.\n\n" +
+        "Could not create order: " +
         error.message
       )
 
@@ -299,214 +195,88 @@ export default function Register() {
   }
 
 
-  // =========================
-  // PAGE
-  // =========================
-
   return (
 
-    <div
-      style={container}
-    >
+    <div style={container}>
 
-      <div
-        style={card}
-      >
+      <div style={card}>
 
-        <h1
-          style={title}
-        >
-          MGS EVENT
+        <h1 style={title}>
+          MGS REGISTRATION
         </h1>
 
-
-        <p
-          style={subtitle}
-        >
-          COMPLETE YOUR TICKET ORDER
+        <p style={subtitle}>
+          Complete your ticket order
         </p>
 
 
-        {selectedTicket && (
+        <div style={summary}>
 
-          <div
-            style={selectedBox}
-          >
+          <h2 style={{ color: "red" }}>
+            MGS EVENT TICKET
+          </h2>
 
-            <p>
-              SELECTED TICKET
-            </p>
+          <p>
+            Date: 12 September 2026
+          </p>
 
-            <h2>
-              MGS EVENT TICKET
-            </h2>
+          <p>
+            Price: R{price}
+          </p>
 
-            <h1>
-              R420
-            </h1>
-
-          </div>
-
-        )}
+        </div>
 
 
-        <form
-          onSubmit={handleSubmit}
-        >
-
-          {/* FULL NAME */}
+        <form onSubmit={handleSubmit}>
 
           <input
-
             type="text"
-
             name="fullName"
-
             placeholder="Full Name"
-
             required
-
-            value={
-              formData.fullName
-            }
-
-            onChange={
-              handleChange
-            }
-
+            value={formData.fullName}
+            onChange={handleChange}
             style={inputStyle}
-
           />
 
 
-          {/* EMAIL */}
-
           <input
-
             type="email"
-
             name="email"
-
             placeholder="Email Address"
-
             required
-
-            value={
-              formData.email
-            }
-
-            onChange={
-              handleChange
-            }
-
+            value={formData.email}
+            onChange={handleChange}
             style={inputStyle}
-
           />
 
 
-          {/* PHONE */}
-
           <input
-
             type="tel"
-
             name="phone"
-
             placeholder="WhatsApp / Phone Number"
-
             required
-
-            value={
-              formData.phone
-            }
-
-            onChange={
-              handleChange
-            }
-
+            value={formData.phone}
+            onChange={handleChange}
             style={inputStyle}
-
           />
 
-
-          {/* TICKET */}
-
-          <select
-
-            name="ticketType"
-
-            value={
-              formData.ticketType
-            }
-
-            onChange={
-              handleChange
-            }
-
-            style={inputStyle}
-
-          >
-
-            <option value="full">
-              MGS EVENT TICKET — R420
-            </option>
-
-            <option value="vibe">
-              MGS EVENT TICKET — R420
-            </option>
-
-            <option value="vibeDrinks">
-              MGS EVENT TICKET — R420
-            </option>
-
-            <option value="vibeFood">
-              MGS EVENT TICKET — R420
-            </option>
-
-          </select>
-
-
-          {/* QUANTITY */}
 
           <input
-
             type="number"
-
             name="quantity"
-
             min="1"
-
-            max="20"
-
-            value={
-              formData.quantity
-            }
-
-            onChange={
-              handleChange
-            }
-
+            value={formData.quantity}
+            onChange={handleChange}
             style={inputStyle}
-
           />
 
 
-          {/* DELIVERY */}
-
           <select
-
             name="delivery"
-
-            value={
-              formData.delivery
-            }
-
-            onChange={
-              handleChange
-            }
-
+            value={formData.delivery}
+            onChange={handleChange}
             style={inputStyle}
-
           >
 
             <option value="email">
@@ -520,100 +290,48 @@ export default function Register() {
           </select>
 
 
-          {/* ORDER SUMMARY */}
+          <div style={summary}>
 
-          <div
-            style={summary}
-          >
-
-            <h2
-              style={{
-                color: "red"
-              }}
-            >
+            <h2 style={{ color: "red" }}>
               ORDER SUMMARY
             </h2>
 
-
             <p>
-              Ticket:
-              {" "}
-              MGS EVENT TICKET
+              Ticket: {ticket.name}
             </p>
 
-
             <p>
-              Price:
-              {" "}
-              R420
+              Quantity: {quantity}
             </p>
 
-
             <p>
-              Quantity:
-              {" "}
-              {formData.quantity}
+              Price each: R{price}
             </p>
 
-
-            <hr
-              style={{
-                borderColor: "#333"
-              }}
-            />
-
-
-            <h1
-              style={{
-                color: "red",
-                textAlign: "center"
-              }}
-            >
+            <h1 style={{
+              color: "red",
+              textAlign: "center"
+            }}>
               TOTAL: R{total}
             </h1>
 
           </div>
 
 
-          {/* PAY BUTTON */}
-
           <button
-
             type="submit"
-
             disabled={loading}
-
-            style={{
-              ...button,
-              opacity:
-                loading ? 0.6 : 1
-            }}
-
+            style={button}
           >
 
             {loading
               ? "CREATING ORDER..."
-              : "CREATE ORDER & PAY"
+              : "CONTINUE TO PAYMENT"
             }
 
           </button>
 
         </form>
-
-
-        <button
-
-          onClick={() =>
-            navigate("/")
-          }
-
-          style={backButton}
-
-        >
-
-          ← BACK TO HOME
-
-        </button>
 
       </div>
 
@@ -624,16 +342,12 @@ export default function Register() {
 }
 
 
-// ======================================
-// STYLES
-// ======================================
-
 const container = {
 
   minHeight: "100vh",
 
   background:
-    "linear-gradient(to bottom,#000,#111)",
+    "linear-gradient(to bottom, #000, #111)",
 
   display: "flex",
 
@@ -660,10 +374,10 @@ const card = {
 
   borderRadius: "25px",
 
+  color: "white",
+
   boxShadow:
     "0 0 35px rgba(255,0,0,.5)",
-
-  color: "white",
 
   boxSizing: "border-box"
 
@@ -672,42 +386,20 @@ const card = {
 
 const title = {
 
-  textAlign: "center",
-
   color: "red",
 
-  marginBottom: "5px",
-
-  fontSize: "40px"
+  textAlign: "center"
 
 }
 
 
 const subtitle = {
 
-  textAlign: "center",
-
   color: "#aaa",
 
-  marginBottom: "30px"
+  textAlign: "center",
 
-}
-
-
-const selectedBox = {
-
-  background: "#1a1a1a",
-
-  border:
-    "1px solid red",
-
-  padding: "20px",
-
-  borderRadius: "15px",
-
-  marginBottom: "25px",
-
-  textAlign: "center"
+  marginBottom: "25px"
 
 }
 
@@ -722,8 +414,7 @@ const inputStyle = {
 
   borderRadius: "10px",
 
-  border:
-    "1px solid #333",
+  border: "1px solid #333",
 
   background: "#1a1a1a",
 
@@ -731,9 +422,7 @@ const inputStyle = {
 
   fontSize: "16px",
 
-  boxSizing: "border-box",
-
-  outline: "none"
+  boxSizing: "border-box"
 
 }
 
@@ -745,8 +434,6 @@ const summary = {
   padding: "20px",
 
   borderRadius: "15px",
-
-  marginTop: "10px",
 
   marginBottom: "20px"
 
@@ -761,39 +448,16 @@ const button = {
 
   background: "red",
 
+  color: "white",
+
   border: "none",
 
   borderRadius: "12px",
-
-  color: "white",
 
   fontSize: "18px",
 
   fontWeight: "bold",
 
   cursor: "pointer"
-
-}
-
-
-const backButton = {
-
-  width: "100%",
-
-  padding: "14px",
-
-  marginTop: "15px",
-
-  background: "#1a1a1a",
-
-  border: "1px solid #444",
-
-  borderRadius: "10px",
-
-  color: "white",
-
-  cursor: "pointer",
-
-  fontWeight: "bold"
 
 }

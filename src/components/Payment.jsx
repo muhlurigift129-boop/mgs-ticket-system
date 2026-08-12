@@ -1,7 +1,11 @@
 export default function Payment() {
-  const order = JSON.parse(
-    localStorage.getItem("mgsCustomer")
-  )
+  const savedOrder = localStorage.getItem("mgsCustomer")
+
+  console.log("mgsCustomer:", savedOrder)
+
+  const order = savedOrder
+    ? JSON.parse(savedOrder)
+    : null
 
   if (!order) {
     return (
