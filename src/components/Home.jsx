@@ -1,8 +1,34 @@
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "../firebase/config"
 
 export default function Home() {
 
   const navigate = useNavigate()
+
+  // ======================================
+  // FIREBASE AUTH STATE
+  // ======================================
+
+  const [user, setUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (currentUser) => {
+
+        setUser(currentUser)
+        setAuthLoading(false)
+
+      }
+    )
+
+    return () => unsubscribe()
+
+  }, [])
 
   // ======================================
   // MGS EVENT TICKET
@@ -15,6 +41,7 @@ export default function Home() {
       "Full access to the MGS Event on 12 September 2026.",
     type: "mgs-event",
     popular: true,
+
     features: [
       "Full Event Access",
       "Main Stage",
@@ -30,14 +57,28 @@ export default function Home() {
 
   function selectTicket() {
 
+    // Save selected ticket
     localStorage.setItem(
       "selectedTicket",
       JSON.stringify(ticket)
     )
 
-    // Customer must login before continuing
-    navigate("/login")
+    // --------------------------------------
+    // USER IS ALREADY LOGGED IN
+    // --------------------------------------
 
+    if (user) {
+
+      navigate("/register")
+
+      return
+    }
+
+    // --------------------------------------
+    // USER IS NOT LOGGED IN
+    // --------------------------------------
+
+    navigate("/login")
   }
 
   // ======================================
@@ -82,7 +123,7 @@ export default function Home() {
 
         <div style={card}>
 
-          {/* POPULAR BADGE */}
+          {/* BADGE */}
 
           <div style={badge}>
             MGS EVENT TICKET
@@ -113,18 +154,46 @@ export default function Home() {
           <div style={details}>
 
             <div style={detailRow}>
-              <span>📅 Date</span>
-              <strong>12 September 2026</strong>
+
+              <span>
+                📅 Date
+              </span>
+
+              <strong>
+                12 September 2026
+              </strong>
+
             </div>
 
-            <div style={detailRow}>
-              <span>🎟 Ticket</span>
-              <strong>Full Event Access</strong>
-            </div>
 
             <div style={detailRow}>
-              <span>💰 Price</span>
-              <strong>R420</strong>
+
+              <span>
+                🎟 Ticket
+              </span>
+
+              <strong>
+                Full Event Access
+              </strong>
+
+            </div>
+
+
+            <div
+              style={{
+                ...detailRow,
+                borderBottom: "none"
+              }}
+            >
+
+              <span>
+                💰 Price
+              </span>
+
+              <strong>
+                R420
+              </strong>
+
             </div>
 
           </div>
@@ -157,17 +226,64 @@ export default function Home() {
           <button
             onClick={selectTicket}
             style={buyBtn}
+            disabled={authLoading}
           >
-            BUY TICKET — R420
+
+            {authLoading
+              ? "CHECKING ACCOUNT..."
+              : "BUY TICKET — R420"
+            }
+
           </button>
 
 
           {/* LOGIN MESSAGE */}
 
           <p style={loginMessage}>
-            You will be asked to login or create an account
-            before completing your purchase.
+
+            {authLoading
+              ? "Checking your account..."
+              : user
+                ? "You are logged in. Continue directly to ticket registration."
+                : "You will be asked to login or create an account before completing your purchase."
+            }
+
           </p>
+
+
+          {/* CURRENT ACCOUNT STATUS */}
+
+          {!authLoading && (
+
+            <div style={statusBox}>
+
+              {user ? (
+
+                <>
+                  <span style={statusDot}>
+                    ●
+                  </span>
+
+                  LOGGED IN
+
+                </>
+
+              ) : (
+
+                <>
+                  <span style={statusDot}>
+                    ●
+                  </span>
+
+                  NOT LOGGED IN
+
+                </>
+
+              )}
+
+            </div>
+
+          )}
 
         </div>
 
@@ -229,6 +345,7 @@ const header = {
 
 }
 
+
 const smallTitle = {
 
   color: "#aaa",
@@ -242,6 +359,7 @@ const smallTitle = {
   marginBottom: "15px"
 
 }
+
 
 const title = {
 
@@ -259,6 +377,7 @@ const title = {
 
 }
 
+
 const date = {
 
   color: "white",
@@ -272,6 +391,7 @@ const date = {
   letterSpacing: "2px"
 
 }
+
 
 const desc = {
 
@@ -432,6 +552,7 @@ const details = {
 
 }
 
+
 const detailRow = {
 
   display: "flex",
@@ -466,6 +587,7 @@ const features = {
 
 }
 
+
 const featuresTitle = {
 
   color: "red",
@@ -477,6 +599,7 @@ const featuresTitle = {
   marginBottom: "15px"
 
 }
+
 
 const featureItem = {
 
@@ -532,6 +655,42 @@ const loginMessage = {
   lineHeight: "1.5",
 
   marginTop: "15px"
+
+}
+
+
+// ======================================
+// ACCOUNT STATUS
+// ======================================
+
+const statusBox = {
+
+  marginTop: "15px",
+
+  padding: "10px",
+
+  borderRadius: "10px",
+
+  background: "#0a0a0a",
+
+  border: "1px solid #292929",
+
+  color: "#aaa",
+
+  fontSize: "12px",
+
+  fontWeight: "bold",
+
+  letterSpacing: "1px"
+
+}
+
+
+const statusDot = {
+
+  color: "red",
+
+  marginRight: "7px"
 
 }
 
