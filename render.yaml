@@ -1,9 +1,11 @@
 services:
   - type: web
-    name: mgs-ticket-system
-    env: static
+    runtime: static
+    name: mgs-ticket-system-frontend
+
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+
+    staticPublishPath: ./dist
 
     routes:
       - type: rewrite

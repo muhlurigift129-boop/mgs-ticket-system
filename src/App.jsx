@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+
 import {
   HashRouter,
   Routes,
@@ -6,25 +8,22 @@ import {
 } from "react-router-dom"
 
 import {
-  useState,
-  useEffect
-} from "react"
-
-import {
-  auth
-} from "./firebase/config"
-
-import {
   onAuthStateChanged
 } from "firebase/auth"
 
-import RegisterAccount from "./components/RegisterAccount.jsx"
-import MgsSidebar from "./components/MgsSidebar.jsx"
+import { auth } from "./firebase/config"
 
+// ===============================
+// COMPONENTS
+// ===============================
+
+import MgsSidebar from "./components/MgsSidebar.jsx"
 import WelcomeScreen from "./components/WelcomeScreen.jsx"
 
 import Home from "./components/Home.jsx"
 import Login from "./components/Login.jsx"
+import RegisterAccount from "./components/RegisterAccount.jsx"
+import Register from "./components/Register.jsx"
 
 import MyAccount from "./components/MyAccount.jsx"
 import Orders from "./components/Orders.jsx"
@@ -69,7 +68,41 @@ function ProtectedAdmin({ children }) {
 
 function ProtectedAccount({ children }) {
 
-  const user = auth.currentUser
+  const [checking, setChecking] =
+    useState(true)
+
+  const [user, setUser] =
+    useState(null)
+
+
+  useEffect(() => {
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        currentUser => {
+
+          setUser(currentUser)
+          setChecking(false)
+
+        }
+      )
+
+    return () => unsubscribe()
+
+  }, [])
+
+
+  if (checking) {
+
+    return (
+      <div style={loadingPage}>
+        CHECKING ACCOUNT...
+      </div>
+    )
+
+  }
+
 
   if (!user) {
 
@@ -81,6 +114,65 @@ function ProtectedAccount({ children }) {
     )
 
   }
+
+
+  return children
+}
+
+
+// ==========================================
+// REGISTER TICKET PROTECTION
+// ==========================================
+
+function ProtectedRegister({ children }) {
+
+  const [checking, setChecking] =
+    useState(true)
+
+  const [user, setUser] =
+    useState(null)
+
+
+  useEffect(() => {
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        currentUser => {
+
+          setUser(currentUser)
+          setChecking(false)
+
+        }
+      )
+
+    return () => unsubscribe()
+
+  }, [])
+
+
+  if (checking) {
+
+    return (
+      <div style={loadingPage}>
+        CHECKING LOGIN...
+      </div>
+    )
+
+  }
+
+
+  if (!user) {
+
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    )
+
+  }
+
 
   return children
 }
@@ -94,27 +186,9 @@ function NotFound() {
 
   return (
 
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#000",
-        color: "white",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        padding: "20px",
-        textAlign: "center"
-      }}
-    >
+    <div style={notFoundPage}>
 
-      <h1
-        style={{
-          color: "red",
-          fontSize: "90px",
-          margin: 0
-        }}
-      >
+      <h1 style={notFoundTitle}>
         404
       </h1>
 
@@ -124,18 +198,9 @@ function NotFound() {
 
       <button
         onClick={() => {
-          window.location.hash = "#/"
+          window.location.hash = "/"
         }}
-        style={{
-          marginTop: "20px",
-          background: "red",
-          color: "white",
-          border: "none",
-          padding: "14px 25px",
-          borderRadius: "10px",
-          cursor: "pointer",
-          fontWeight: "bold"
-        }}
+        style={homeButton}
       >
         GO HOME
       </button>
@@ -160,7 +225,7 @@ export default function App() {
 
 
   // ========================================
-  // FIREBASE AUTH LISTENER
+  // FIREBASE AUTH INITIALIZATION
   // ========================================
 
   useEffect(() => {
@@ -181,25 +246,23 @@ export default function App() {
 
 
   // ========================================
-  // AUTH LOADING
+  // FIREBASE LOADING
   // ========================================
 
   if (authLoading) {
 
     return (
 
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#000",
-          color: "white",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "20px"
-        }}
-      >
-        Loading...
+      <div style={loadingPage}>
+
+        <h2>
+          MGS EVENTS
+        </h2>
+
+        <p>
+          LOADING...
+        </p>
+
       </div>
 
     )
@@ -216,9 +279,9 @@ export default function App() {
     return (
 
       <WelcomeScreen
-        onFinish={() => {
+        onFinish={() =>
           setShowWelcome(false)
-        }}
+        }
       />
 
     )
@@ -227,24 +290,18 @@ export default function App() {
 
 
   // ========================================
-  // MAIN APPLICATION
+  // ROUTER
   // ========================================
 
   return (
 
     <HashRouter>
 
-      {/* SIDEBAR */}
-
       <MgsSidebar />
-
-
-      {/* ROUTES */}
 
       <Routes>
 
-
-        {/* ================================
+        {/* =================================
             HOME
         ================================= */}
 
@@ -254,7 +311,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             LOGIN
         ================================= */}
 
@@ -264,8 +321,8 @@ export default function App() {
         />
 
 
-        {/* ================================
-            REGISTER ACCOUNT
+        {/* =================================
+            CREATE ACCOUNT
         ================================= */}
 
         <Route
@@ -274,7 +331,22 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
+            REGISTER TICKET
+            THIS IS THE IMPORTANT ROUTE
+        ================================= */}
+
+        <Route
+          path="/register"
+          element={
+            <ProtectedRegister>
+              <Register />
+            </ProtectedRegister>
+          }
+        />
+
+
+        {/* =================================
             MY ACCOUNT
         ================================= */}
 
@@ -288,7 +360,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             ORDERS
         ================================= */}
 
@@ -302,7 +374,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             CONTACT
         ================================= */}
 
@@ -312,7 +384,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             PAYMENT
         ================================= */}
 
@@ -322,7 +394,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             SUCCESS
         ================================= */}
 
@@ -332,7 +404,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             SCANNER
         ================================= */}
 
@@ -342,7 +414,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             ADMIN LOGIN
         ================================= */}
 
@@ -352,7 +424,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             ADMIN
         ================================= */}
 
@@ -366,7 +438,7 @@ export default function App() {
         />
 
 
-        {/* ================================
+        {/* =================================
             404
         ================================= */}
 
@@ -380,5 +452,93 @@ export default function App() {
     </HashRouter>
 
   )
+
+}
+
+
+// ==========================================
+// LOADING PAGE
+// ==========================================
+
+const loadingPage = {
+
+  minHeight: "100vh",
+
+  background: "#000",
+
+  color: "white",
+
+  display: "flex",
+
+  flexDirection: "column",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  textAlign: "center"
+
+}
+
+
+// ==========================================
+// 404 PAGE
+// ==========================================
+
+const notFoundPage = {
+
+  minHeight: "100vh",
+
+  background: "#000",
+
+  color: "white",
+
+  display: "flex",
+
+  flexDirection: "column",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  textAlign: "center",
+
+  padding: "20px",
+
+  boxSizing: "border-box"
+
+}
+
+
+const notFoundTitle = {
+
+  color: "red",
+
+  fontSize: "90px",
+
+  margin: "0",
+
+  lineHeight: "1"
+
+}
+
+
+const homeButton = {
+
+  marginTop: "25px",
+
+  padding: "14px 30px",
+
+  background: "red",
+
+  color: "white",
+
+  border: "none",
+
+  borderRadius: "10px",
+
+  fontWeight: "bold",
+
+  cursor: "pointer"
 
 }
