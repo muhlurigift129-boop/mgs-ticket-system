@@ -1,55 +1,94 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { onAuthStateChanged } from "firebase/auth"
-import { auth } from "../firebase/config"
+
+import {
+  onAuthStateChanged
+} from "firebase/auth"
+
+import {
+  auth
+} from "../firebase/config"
+
 
 export default function Home() {
 
   const navigate = useNavigate()
 
   // ======================================
-  // FIREBASE AUTH STATE
+  // AUTH STATE
   // ======================================
 
   const [user, setUser] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
+
+  const [authLoading, setAuthLoading] =
+    useState(true)
+
+  const [buying, setBuying] =
+    useState(false)
+
+
+  // ======================================
+  // FIREBASE AUTH LISTENER
+  // ======================================
 
   useEffect(() => {
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        (currentUser) => {
 
-        setUser(currentUser)
-        setAuthLoading(false)
+          setUser(currentUser)
 
-      }
-    )
+          setAuthLoading(false)
+
+        }
+      )
 
     return () => unsubscribe()
 
   }, [])
+
 
   // ======================================
   // MGS EVENT TICKET
   // ======================================
 
   const ticket = {
+
+    id: "MGS-EVENT-2026",
+
     name: "MGS EVENT TICKET",
+
     price: 420,
+
     description:
       "Full access to the MGS Event on 12 September 2026.",
+
     type: "mgs-event",
+
+    eventName: "MGS EVENT",
+
+    eventDate: "12 September 2026",
+
     popular: true,
 
     features: [
+
       "Full Event Access",
+
       "Main Stage",
+
       "Live Entertainment",
+
       "Networking",
+
       "All Activities"
+
     ]
+
   }
+
 
   // ======================================
   // BUY TICKET
@@ -57,29 +96,85 @@ export default function Home() {
 
   function selectTicket() {
 
-    // Save selected ticket
-    localStorage.setItem(
-      "selectedTicket",
-      JSON.stringify(ticket)
-    )
+    if (buying) {
+      return
+    }
+
+    setBuying(true)
+
 
     // --------------------------------------
-    // USER IS ALREADY LOGGED IN
+    // SAVE TICKET
+    // --------------------------------------
+
+    try {
+
+      localStorage.setItem(
+        "selectedTicket",
+        JSON.stringify(ticket)
+      )
+
+    } catch (error) {
+
+      console.error(
+        "Could not save selected ticket:",
+        error
+      )
+
+      setBuying(false)
+
+      alert(
+        "Unable to save your ticket selection. Please try again."
+      )
+
+      return
+
+    }
+
+
+    // --------------------------------------
+    // CHECK LOGIN
     // --------------------------------------
 
     if (user) {
 
-      navigate("/register")
+      // ====================================
+      // ALREADY LOGGED IN
+      // ====================================
+
+      console.log(
+        "MGS: User logged in. Going to ticket registration."
+      )
+
+      navigate(
+        "/register",
+        {
+          replace: false
+        }
+      )
 
       return
+
     }
 
-    // --------------------------------------
-    // USER IS NOT LOGGED IN
-    // --------------------------------------
 
-    navigate("/login")
+    // ======================================
+    // NOT LOGGED IN
+    // ======================================
+
+    console.log(
+      "MGS: User not logged in. Going to login."
+    )
+
+    navigate(
+      "/login",
+      {
+        replace: false
+      }
+    )
+
   }
+
 
   // ======================================
   // PAGE
@@ -99,17 +194,21 @@ export default function Home() {
           MGS EVENTS PRESENTS
         </p>
 
+
         <h1 style={title}>
           MGS EVENT
         </h1>
+
 
         <h2 style={date}>
           12 SEPTEMBER 2026
         </h2>
 
+
         <p style={desc}>
-          Get ready for an unforgettable MGS experience.
-          Secure your ticket today and join us for the event.
+          Get ready for an unforgettable MGS
+          experience. Secure your ticket today
+          and join us for the event.
         </p>
 
       </div>
@@ -149,7 +248,9 @@ export default function Home() {
           </p>
 
 
-          {/* EVENT DETAILS */}
+          {/* ==================================
+              EVENT DETAILS
+          ================================== */}
 
           <div style={details}>
 
@@ -199,7 +300,9 @@ export default function Home() {
           </div>
 
 
-          {/* FEATURES */}
+          {/* ==================================
+              FEATURES
+          ================================== */}
 
           <div style={features}>
 
@@ -207,51 +310,83 @@ export default function Home() {
               YOUR TICKET INCLUDES
             </h3>
 
-            {ticket.features.map((feature) => (
 
-              <p
-                key={feature}
-                style={featureItem}
-              >
-                ✓ {feature}
-              </p>
+            {ticket.features.map(
+              (feature) => (
 
-            ))}
+                <p
+                  key={feature}
+                  style={featureItem}
+                >
+                  ✓ {feature}
+                </p>
+
+              )
+            )}
 
           </div>
 
 
-          {/* BUY BUTTON */}
+          {/* ==================================
+              BUY BUTTON
+          ================================== */}
 
           <button
             onClick={selectTicket}
-            style={buyBtn}
-            disabled={authLoading}
+            style={{
+              ...buyBtn,
+
+              opacity:
+                authLoading || buying
+                  ? 0.6
+                  : 1,
+
+              cursor:
+                authLoading || buying
+                  ? "not-allowed"
+                  : "pointer"
+            }}
+            disabled={
+              authLoading || buying
+            }
           >
 
             {authLoading
               ? "CHECKING ACCOUNT..."
-              : "BUY TICKET — R420"
+
+              : buying
+                ? "CONTINUING..."
+
+                : "BUY TICKET — R420"
             }
 
           </button>
 
 
-          {/* LOGIN MESSAGE */}
+          {/* ==================================
+              MESSAGE
+          ================================== */}
 
           <p style={loginMessage}>
 
             {authLoading
+
               ? "Checking your account..."
+
               : user
-                ? "You are logged in. Continue directly to ticket registration."
+
+                ? "You are logged in. You will continue directly to ticket registration."
+
                 : "You will be asked to login or create an account before completing your purchase."
+
             }
 
           </p>
 
 
-          {/* CURRENT ACCOUNT STATUS */}
+          {/* ==================================
+              ACCOUNT STATUS
+          ================================== */}
 
           {!authLoading && (
 
@@ -260,6 +395,7 @@ export default function Home() {
               {user ? (
 
                 <>
+
                   <span style={statusDot}>
                     ●
                   </span>
@@ -271,6 +407,7 @@ export default function Home() {
               ) : (
 
                 <>
+
                   <span style={statusDot}>
                     ●
                   </span>
@@ -309,12 +446,13 @@ export default function Home() {
     </div>
 
   )
+
 }
 
 
-// ======================================
+// ==================================================
 // PAGE STYLE
-// ======================================
+// ==================================================
 
 const page = {
 
@@ -332,9 +470,9 @@ const page = {
 }
 
 
-// ======================================
+// ==================================================
 // HEADER
-// ======================================
+// ==================================================
 
 const header = {
 
@@ -408,9 +546,9 @@ const desc = {
 }
 
 
-// ======================================
+// ==================================================
 // TICKET CONTAINER
-// ======================================
+// ==================================================
 
 const ticketContainer = {
 
@@ -424,9 +562,9 @@ const ticketContainer = {
 }
 
 
-// ======================================
-// TICKET CARD
-// ======================================
+// ==================================================
+// CARD
+// ==================================================
 
 const card = {
 
@@ -454,9 +592,9 @@ const card = {
 }
 
 
-// ======================================
+// ==================================================
 // BADGE
-// ======================================
+// ==================================================
 
 const badge = {
 
@@ -482,9 +620,9 @@ const badge = {
 }
 
 
-// ======================================
+// ==================================================
 // TICKET NAME
-// ======================================
+// ==================================================
 
 const ticketName = {
 
@@ -500,9 +638,9 @@ const ticketName = {
 }
 
 
-// ======================================
+// ==================================================
 // PRICE
-// ======================================
+// ==================================================
 
 const price = {
 
@@ -518,9 +656,9 @@ const price = {
 }
 
 
-// ======================================
+// ==================================================
 // DESCRIPTION
-// ======================================
+// ==================================================
 
 const description = {
 
@@ -533,9 +671,9 @@ const description = {
 }
 
 
-// ======================================
+// ==================================================
 // EVENT DETAILS
-// ======================================
+// ==================================================
 
 const details = {
 
@@ -575,9 +713,9 @@ const detailRow = {
 }
 
 
-// ======================================
+// ==================================================
 // FEATURES
-// ======================================
+// ==================================================
 
 const features = {
 
@@ -613,9 +751,9 @@ const featureItem = {
 }
 
 
-// ======================================
+// ==================================================
 // BUY BUTTON
-// ======================================
+// ==================================================
 
 const buyBtn = {
 
@@ -642,9 +780,9 @@ const buyBtn = {
 }
 
 
-// ======================================
+// ==================================================
 // LOGIN MESSAGE
-// ======================================
+// ==================================================
 
 const loginMessage = {
 
@@ -659,9 +797,9 @@ const loginMessage = {
 }
 
 
-// ======================================
+// ==================================================
 // ACCOUNT STATUS
-// ======================================
+// ==================================================
 
 const statusBox = {
 
@@ -673,7 +811,8 @@ const statusBox = {
 
   background: "#0a0a0a",
 
-  border: "1px solid #292929",
+  border:
+    "1px solid #292929",
 
   color: "#aaa",
 
@@ -695,9 +834,9 @@ const statusDot = {
 }
 
 
-// ======================================
+// ==================================================
 // FOOTER
-// ======================================
+// ==================================================
 
 const footer = {
 
