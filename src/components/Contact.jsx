@@ -1,5 +1,16 @@
 export default function Contact() {
 
+  const whatsappNumber = "27735306246"
+
+  const whatsappMessage =
+    encodeURIComponent(
+      "Hello MGS Events Support, I need help with my ticket/order."
+    )
+
+  const whatsappLink =
+    `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
+
+
   return (
 
     <div
@@ -98,8 +109,10 @@ export default function Contact() {
             </h3>
 
             <a
-              href="tel:+27735306246"
-              style={link}
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={whatsappNumberLink}
             >
               +27 73 530 6246
             </a>
@@ -174,19 +187,69 @@ export default function Contact() {
           }}
         >
 
+          {/* EMAIL */}
+
           <a
             href="mailto:mashaoad@gmail.com"
             style={button}
           >
-            EMAIL SUPPORT
+            📧 EMAIL SUPPORT
           </a>
 
+
+          {/* PHONE */}
 
           <a
             href="tel:+27647391463"
             style={button}
           >
-            CALL 064 739 1463
+            📞 CALL 064 739 1463
+          </a>
+
+
+          {/* WHATSAPP SHORTCUT */}
+
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={whatsappButton}
+          >
+            💬 WHATSAPP SUPPORT
+          </a>
+
+        </div>
+
+
+        {/* ================================
+            QUICK WHATSAPP BOX
+        ================================= */}
+
+        <div style={whatsappBox}>
+
+          <div style={whatsappIcon}>
+            💬
+          </div>
+
+          <div style={whatsappText}>
+
+            <strong>
+              Need help quickly?
+            </strong>
+
+            <span>
+              Chat with MGS Event Support on WhatsApp.
+            </span>
+
+          </div>
+
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={whatsappChatButton}
+          >
+            CHAT NOW
           </a>
 
         </div>
@@ -252,6 +315,27 @@ const link = {
 }
 
 
+/* ======================================
+   WHATSAPP NUMBER LINK
+====================================== */
+
+const whatsappNumberLink = {
+
+  color: "#25D366",
+
+  textDecoration: "none",
+
+  fontSize: "16px",
+
+  fontWeight: "bold"
+
+}
+
+
+/* ======================================
+   NORMAL BUTTON
+====================================== */
+
 const button = {
 
   display: "flex",
@@ -277,5 +361,129 @@ const button = {
   minHeight: "50px",
 
   boxSizing: "border-box"
+
+}
+
+
+/* ======================================
+   WHATSAPP BUTTON
+====================================== */
+
+const whatsappButton = {
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  padding: "15px",
+
+  background: "#25D366",
+
+  color: "white",
+
+  textDecoration: "none",
+
+  borderRadius: "10px",
+
+  fontWeight: "bold",
+
+  fontSize: "14px",
+
+  minHeight: "50px",
+
+  boxSizing: "border-box",
+
+  boxShadow:
+    "0 0 20px rgba(37,211,102,.25)"
+
+}
+
+
+/* ======================================
+   WHATSAPP QUICK BOX
+====================================== */
+
+const whatsappBox = {
+
+  marginTop: "25px",
+
+  padding: "20px",
+
+  background: "#0d1b12",
+
+  border: "1px solid #25D366",
+
+  borderRadius: "15px",
+
+  display: "flex",
+
+  alignItems: "center",
+
+  gap: "15px",
+
+  flexWrap: "wrap",
+
+  boxSizing: "border-box"
+
+}
+
+
+const whatsappIcon = {
+
+  width: "50px",
+
+  height: "50px",
+
+  borderRadius: "50%",
+
+  background: "#25D366",
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  fontSize: "25px",
+
+  flexShrink: 0
+
+}
+
+
+const whatsappText = {
+
+  display: "flex",
+
+  flexDirection: "column",
+
+  gap: "5px",
+
+  flex: "1",
+
+  minWidth: "180px"
+
+}
+
+
+const whatsappChatButton = {
+
+  background: "#25D366",
+
+  color: "white",
+
+  textDecoration: "none",
+
+  padding: "12px 20px",
+
+  borderRadius: "10px",
+
+  fontWeight: "bold",
+
+  fontSize: "13px",
+
+  whiteSpace: "nowrap"
 
 }
