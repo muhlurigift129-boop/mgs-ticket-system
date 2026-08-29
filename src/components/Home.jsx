@@ -104,8 +104,12 @@ export default function Home() {
 
       name: "07 NOVEMBER TICKET",
 
-      price: 650,
+      price: 900,
 
+      deposit: 400,
+
+      balance: 500,
+      
       description:
         "Full access to the MGS Event on 07 November 2026.",
 
@@ -145,8 +149,12 @@ export default function Home() {
 
       name: "07 NOVEMBER COUPLE TICKET",
 
-      price: 850,
+      price: 1300,
+      
+      deposit: 400,
 
+      balance: 900,
+      
       description:
         "Couple ticket for the MGS Event on 07 November 2026.",
 
