@@ -112,10 +112,9 @@ export default function Register() {
           JSON.parse(savedTicket)
 
 
-        /*
-         * Make sure the important
-         * payment fields exist.
-         */
+        // ==================================
+        // NORMALIZE TICKET
+        // ==================================
 
         const normalizedTicket = {
 
@@ -125,7 +124,19 @@ export default function Register() {
             Number(parsedTicket.price) || 420,
 
           deposit:
-            Number(parsedTicket.deposit) || 0
+            Number(parsedTicket.deposit) || 420,
+
+          balance:
+            Number(parsedTicket.balance) || 0,
+
+          paymentType:
+            parsedTicket.paymentType ||
+            (
+              parsedTicket.eventDate ===
+              "07 November 2026"
+                ? "deposit"
+                : "full"
+            )
 
         }
 
@@ -140,16 +151,16 @@ export default function Register() {
 
 
       // ==================================
-      // DEFAULT EXISTING TICKET
+      // DEFAULT THABISEKO TICKET
       // ==================================
 
       const defaultTicket = {
 
         id:
-          "MGS-EVENT-2026",
+          "MGS-THABISEKO-2026",
 
         name:
-          "MGS EVENT TICKET",
+          "THABISEKO TRIP",
 
         price:
           420,
@@ -157,11 +168,14 @@ export default function Register() {
         deposit:
           420,
 
+        balance:
+          0,
+
         type:
-          "mgs-event",
+          "thabiseko-trip",
 
         eventName:
-          "MGS EVENT",
+          "THABISEKO TRIP",
 
         eventDate:
           "12 September 2026",
@@ -198,10 +212,10 @@ export default function Register() {
       const fallbackTicket = {
 
         id:
-          "MGS-EVENT-2026",
+          "MGS-THABISEKO-2026",
 
         name:
-          "MGS EVENT TICKET",
+          "THABISEKO TRIP",
 
         price:
           420,
@@ -209,11 +223,14 @@ export default function Register() {
         deposit:
           420,
 
+        balance:
+          0,
+
         type:
-          "mgs-event",
+          "thabiseko-trip",
 
         eventName:
-          "MGS EVENT",
+          "THABISEKO TRIP",
 
         eventDate:
           "12 September 2026",
@@ -330,49 +347,50 @@ export default function Register() {
   // DEPOSIT PER TICKET
   // ======================================
 
+  const depositPerTicket =
+    Number(ticket.deposit) || price
+
+
+  // ======================================
+  // PAYMENT TYPE
+  // ======================================
+
   /*
-   * New 07 November tickets:
+   * IMPORTANT:
    *
-   * Single  = R900
-   * Couple  = R1300
-   * Deposit = R400
+   * Home.jsx saves:
    *
-   * Existing 12 September ticket:
+   * paymentType = "full"
    *
-   * R420 and paid in full.
+   * OR
+   *
+   * paymentType = "deposit"
+   *
+   * We MUST use that value here.
    */
 
-  let depositPerTicket =
-    Number(ticket.deposit)
-
-
-  if (
-    !depositPerTicket ||
-    depositPerTicket <= 0
-  ) {
-
-    if (
-      ticket.eventDate ===
-      "07 November 2026"
-    ) {
-
-      depositPerTicket = 400
-
-    } else {
-
-      depositPerTicket = price
-
-    }
-
-  }
+  const paymentType =
+    ticket.paymentType === "deposit"
+      ? "deposit"
+      : "full"
 
 
   // ======================================
-  // DEPOSIT TOTAL
+  // IS DEPOSIT?
   // ======================================
 
-  const depositTotal =
-    depositPerTicket * quantity
+  const isDepositPayment =
+    paymentType === "deposit"
+
+
+  // ======================================
+  // PAYMENT AMOUNT
+  // ======================================
+
+  const paymentAmount =
+    isDepositPayment
+      ? depositPerTicket * quantity
+      : total
 
 
   // ======================================
@@ -382,23 +400,8 @@ export default function Register() {
   const remainingBalance =
     Math.max(
       0,
-      total - depositTotal
+      total - paymentAmount
     )
-
-
-  // ======================================
-  // PAYMENT TYPE
-  // ======================================
-
-  const isDepositTicket =
-    ticket.eventDate ===
-      "07 November 2026"
-
-
-  const paymentAmount =
-    isDepositTicket
-      ? depositTotal
-      : total
 
 
   // ======================================
@@ -419,6 +422,7 @@ export default function Register() {
 
       [name]:
         name === "quantity"
+
           ? Math.min(
               20,
               Math.max(
@@ -426,6 +430,7 @@ export default function Register() {
                 Number(value) || 1
               )
             )
+
           : value
 
     }))
@@ -582,23 +587,23 @@ export default function Register() {
 
         ticketId:
           ticket.id ||
-          "MGS-EVENT-2026",
+          "MGS-THABISEKO-2026",
 
         ticketType:
           ticket.type ||
-          "mgs-event",
+          "thabiseko-trip",
 
         ticketName:
           ticket.name ||
-          "MGS EVENT TICKET",
+          "THABISEKO TRIP",
 
         packageName:
           ticket.name ||
-          "MGS EVENT TICKET",
+          "THABISEKO TRIP",
 
         eventName:
           ticket.eventName ||
-          "MGS EVENT",
+          "THABISEKO TRIP",
 
         eventDate:
           ticket.eventDate ||
@@ -627,7 +632,7 @@ export default function Register() {
           depositPerTicket,
 
         depositTotal:
-          depositTotal,
+          depositPerTicket * quantity,
 
         remainingBalance:
           remainingBalance,
@@ -637,13 +642,11 @@ export default function Register() {
         // PAYMENT
         // -------------------------------
 
+        paymentType:
+          paymentType,
+
         paymentAmount:
           paymentAmount,
-
-        paymentType:
-          isDepositTicket
-            ? "deposit"
-            : "full",
 
         paymentStatus:
           "unpaid",
@@ -656,7 +659,7 @@ export default function Register() {
 
 
         // -------------------------------
-        // IMPORTANT
+        // TICKET CREATION
         // -------------------------------
 
         ticketCreated:
@@ -782,15 +785,13 @@ export default function Register() {
             total,
 
           deposit:
-            depositTotal,
+            depositPerTicket * quantity,
 
           balance:
             remainingBalance,
 
           paymentType:
-            isDepositTicket
-              ? "deposit"
-              : "full"
+            paymentType
 
         })
 
@@ -800,12 +801,6 @@ export default function Register() {
       console.log(
         "MGS ORDER CREATED:",
         finalOrder
-      )
-
-
-      console.log(
-        "Firestore ID:",
-        orderRef.id
       )
 
 
@@ -857,7 +852,9 @@ export default function Register() {
       <div style={card}>
 
 
-        {/* HEADER */}
+        {/* ==================================
+            HEADER
+        ================================== */}
 
         <p style={eventLabel}>
           MGS EVENTS
@@ -881,7 +878,7 @@ export default function Register() {
         <div style={ticketSummary}>
 
           <div style={ticketBadge}>
-            MGS EVENT TICKET
+            {ticket.eventName}
           </div>
 
 
@@ -890,7 +887,7 @@ export default function Register() {
           </h2>
 
 
-          <p style={eventDate}>
+          <p style={eventDateStyle}>
             📅 {ticket.eventDate}
           </p>
 
@@ -908,28 +905,59 @@ export default function Register() {
           </div>
 
 
-          {/* DEPOSIT */}
+          {/* ==================================
+              PAYMENT TYPE
+          ================================== */}
 
-          {isDepositTicket && (
+          <div style={selectedPaymentBox}>
 
-            <div
-              style={{
-                ...depositBox,
-                marginTop: "12px"
-              }}
-            >
+            <span>
+              PAYMENT OPTION
+            </span>
 
-              <span>
-                DEPOSIT
-              </span>
+            <strong>
 
-              <strong>
-                R{depositPerTicket}
-              </strong>
+              {isDepositPayment
+                ? "DEPOSIT"
+                : "FULL PAYMENT"}
 
-            </div>
+            </strong>
 
-          )}
+          </div>
+
+
+          {/* ==================================
+              PAY NOW
+          ================================== */}
+
+          <div style={payNowBox}>
+
+            <span>
+              PAY NOW
+            </span>
+
+            <strong>
+              R{paymentAmount}
+            </strong>
+
+          </div>
+
+
+          {/* ==================================
+              REMAINING
+          ================================== */}
+
+          <div style={remainingBox}>
+
+            <span>
+              REMAINING BALANCE
+            </span>
+
+            <strong>
+              R{remainingBalance}
+            </strong>
+
+          </div>
 
         </div>
 
@@ -1074,11 +1102,11 @@ export default function Register() {
             <div style={summaryRow}>
 
               <span>
-                Ticket
+                Trip
               </span>
 
               <strong>
-                {ticket.name}
+                {ticket.eventName}
               </strong>
 
             </div>
@@ -1087,11 +1115,24 @@ export default function Register() {
             <div style={summaryRow}>
 
               <span>
-                Event Date
+                Date
               </span>
 
               <strong>
                 {ticket.eventDate}
+              </strong>
+
+            </div>
+
+
+            <div style={summaryRow}>
+
+              <span>
+                Ticket
+              </span>
+
+              <strong>
+                {ticket.name}
               </strong>
 
             </div>
@@ -1136,51 +1177,74 @@ export default function Register() {
             </div>
 
 
-            {/* DEPOSIT */}
+            <div style={summaryRow}>
 
-            {isDepositTicket && (
+              <span>
+                Payment Option
+              </span>
 
-              <>
+              <strong
+                style={{
+                  color:
+                    isDepositPayment
+                      ? "orange"
+                      : "red"
+                }}
+              >
 
-                <div style={summaryRow}>
+                {isDepositPayment
+                  ? "DEPOSIT"
+                  : "FULL PAYMENT"}
 
-                  <span>
-                    Deposit Required
-                  </span>
+              </strong>
 
-                  <strong
-                    style={{
-                      color: "orange"
-                    }}
-                  >
-                    R{depositTotal}
-                  </strong>
-
-                </div>
+            </div>
 
 
-                <div style={summaryRow}>
+            {isDepositPayment && (
 
-                  <span>
-                    Balance After Deposit
-                  </span>
+              <div style={summaryRow}>
 
-                  <strong
-                    style={{
-                      color: "#ff7777"
-                    }}
-                  >
-                    R{remainingBalance}
-                  </strong>
+                <span>
+                  Deposit
+                </span>
 
-                </div>
+                <strong
+                  style={{
+                    color: "orange"
+                  }}
+                >
+                  R{paymentAmount}
+                </strong>
 
-              </>
+              </div>
 
             )}
 
 
-            {/* PAYMENT TODAY */}
+            <div style={summaryRow}>
+
+              <span>
+                Remaining Balance
+              </span>
+
+              <strong
+                style={{
+                  color:
+                    remainingBalance > 0
+                      ? "#ff7777"
+                      : "#aaa"
+                }}
+              >
+                R{remainingBalance}
+              </strong>
+
+            </div>
+
+
+            {/* ==================================
+                PAY NOW
+            ================================== */}
 
             <div
               style={{
@@ -1194,9 +1258,7 @@ export default function Register() {
                 PAY NOW
               </span>
 
-              <strong
-                style={totalPrice}
-              >
+              <strong style={totalPrice}>
                 R{paymentAmount}
               </strong>
 
@@ -1213,20 +1275,25 @@ export default function Register() {
           <div style={paymentNotice}>
 
             <strong>
-              {isDepositTicket
-                ? "R400 deposit required"
-                : "Full payment required"
+
+              {isDepositPayment
+
+                ? `DEPOSIT PAYMENT — R${paymentAmount}`
+
+                : `FULL PAYMENT — R${paymentAmount}`
+
               }
+
             </strong>
 
 
             <p>
 
-              {isDepositTicket
+              {isDepositPayment
 
-                ? `You will pay R${paymentAmount} now. Your remaining balance will be R${remainingBalance}.`
+                ? `You are paying the R${paymentAmount} deposit now. Your remaining balance is R${remainingBalance}.`
 
-                : `You will pay the full amount of R${paymentAmount}.`
+                : `You are paying the complete ticket amount of R${paymentAmount}. Your remaining balance is R0.`
 
               }
 
@@ -1468,7 +1535,7 @@ const ticketTitle = {
 }
 
 
-const eventDate = {
+const eventDateStyle = {
 
   color: "#aaa",
 
@@ -1489,12 +1556,14 @@ const priceBox = {
 
   padding: "15px",
 
-  borderRadius: "10px"
+  borderRadius: "10px",
+
+  marginBottom: "10px"
 
 }
 
 
-const depositBox = {
+const selectedPaymentBox = {
 
   display: "flex",
 
@@ -1502,16 +1571,64 @@ const depositBox = {
 
   alignItems: "center",
 
-  background: "#211500",
+  background: "#1a0000",
 
   border:
-    "1px solid #664400",
+    "1px solid red",
 
   padding: "15px",
 
   borderRadius: "10px",
 
-  color: "#ffb000"
+  marginBottom: "10px",
+
+  color: "white"
+
+}
+
+
+const payNowBox = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  background: "#220000",
+
+  border:
+    "1px solid red",
+
+  padding: "15px",
+
+  borderRadius: "10px",
+
+  marginBottom: "10px",
+
+  color: "white"
+
+}
+
+
+const remainingBox = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  background: "#111",
+
+  border:
+    "1px solid #333",
+
+  padding: "15px",
+
+  borderRadius: "10px",
+
+  color: "#aaa"
 
 }
 
