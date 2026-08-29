@@ -26,6 +26,14 @@ export default function Home() {
   const [buyingId, setBuyingId] =
     useState(null)
 
+  // ======================================
+  // PAYMENT CHOICE
+  // ticket.id -> "full" OR "deposit"
+  // ======================================
+
+  const [paymentChoices, setPaymentChoices] =
+    useState({})
+
 
   // ======================================
   // FIREBASE AUTH LISTENER
@@ -57,34 +65,36 @@ export default function Home() {
   const tickets = [
 
     // ====================================
+    // THABISEKO TRIP
     // 12 SEPTEMBER 2026
-    // EXISTING TICKET — DO NOT CHANGE
+    // R420
     // ====================================
 
     {
-      id: "MGS-EVENT-2026",
+      id: "MGS-THABISEKO-2026",
 
-      name: "MGS EVENT TICKET",
+      name: "THABISEKO TRIP",
 
       price: 420,
 
-      // Full payment required
       deposit: 420,
 
       balance: 0,
 
       description:
-        "Full access to the MGS Event on 12 September 2026.",
+        "Thabiseko Trip on 12 September 2026. Full payment is required to secure your ticket.",
 
-      type: "mgs-event",
+      type: "thabiseko-trip",
 
-      eventName: "MGS EVENT",
+      eventName: "THABISEKO TRIP",
 
       eventDate: "12 September 2026",
 
       popular: true,
 
       ticketCategory: "Standard",
+
+      allowDeposit: false,
 
       features: [
         "Full Event Access",
@@ -98,14 +108,17 @@ export default function Home() {
 
 
     // ====================================
+    // BELA BELA TRIP
     // 07 NOVEMBER 2026
-    // R900 PER PERSON
+    // SINGLE — R900
+    // DEPOSIT — R400
+    // BALANCE — R500
     // ====================================
 
     {
-      id: "MGS-NOV-2026-PER-PERSON",
+      id: "MGS-BELA-BELA-2026-SINGLE",
 
-      name: "07 NOVEMBER TICKET",
+      name: "BELA BELA TRIP — SINGLE",
 
       price: 900,
 
@@ -114,19 +127,22 @@ export default function Home() {
       balance: 500,
 
       description:
-        "Full access to the MGS Event on 07 November 2026.",
+        "Bela Bela Trip on 07 November 2026. Choose to pay the full R900 or secure your spot with a R400 deposit.",
 
-      type: "november-person",
+      type: "bela-bela-single",
 
-      eventName: "MGS EVENT",
+      eventName: "BELA BELA TRIP",
 
       eventDate: "07 November 2026",
 
       popular: true,
 
-      ticketCategory: "Per Person",
+      ticketCategory: "Single",
+
+      allowDeposit: true,
 
       features: [
+        "Entry for 1 Person",
         "Full Event Access",
         "Main Stage",
         "Live Entertainment",
@@ -138,14 +154,17 @@ export default function Home() {
 
 
     // ====================================
+    // BELA BELA TRIP
     // 07 NOVEMBER 2026
-    // R1300 COUPLE
+    // COUPLE — R1300
+    // DEPOSIT — R400
+    // BALANCE — R900
     // ====================================
 
     {
-      id: "MGS-NOV-2026-COUPLE",
+      id: "MGS-BELA-BELA-2026-COUPLE",
 
-      name: "07 NOVEMBER COUPLE TICKET",
+      name: "BELA BELA TRIP — COUPLE",
 
       price: 1300,
 
@@ -154,17 +173,19 @@ export default function Home() {
       balance: 900,
 
       description:
-        "Couple ticket for the MGS Event on 07 November 2026.",
+        "Bela Bela Trip on 07 November 2026. Choose to pay the full R1,300 or secure your spot with a R400 deposit.",
 
-      type: "november-couple",
+      type: "bela-bela-couple",
 
-      eventName: "MGS EVENT",
+      eventName: "BELA BELA TRIP",
 
       eventDate: "07 November 2026",
 
       popular: true,
 
       ticketCategory: "Couple",
+
+      allowDeposit: true,
 
       features: [
         "Entry for 2 People",
@@ -181,6 +202,23 @@ export default function Home() {
 
 
   // ======================================
+  // SET PAYMENT CHOICE
+  // ======================================
+
+  function choosePayment(ticket, choice) {
+
+    setPaymentChoices((previous) => ({
+
+      ...previous,
+
+      [ticket.id]: choice
+
+    }))
+
+  }
+
+
+  // ======================================
   // BUY TICKET
   // ======================================
 
@@ -189,6 +227,36 @@ export default function Home() {
     if (buyingId !== null) {
       return
     }
+
+
+    // ====================================
+    // DETERMINE PAYMENT TYPE
+    // ====================================
+
+    const selectedPayment =
+      paymentChoices[ticket.id] ||
+      (ticket.allowDeposit ? "deposit" : "full")
+
+
+    const isFullPayment =
+      selectedPayment === "full"
+
+
+    // ====================================
+    // CALCULATE PAYMENT
+    // ====================================
+
+    const paymentAmount =
+      isFullPayment
+        ? Number(ticket.price)
+        : Number(ticket.deposit)
+
+
+    const remainingBalance =
+      isFullPayment
+        ? 0
+        : Number(ticket.balance)
+
 
     setBuyingId(ticket.id)
 
@@ -201,20 +269,37 @@ export default function Home() {
 
       ...ticket,
 
-      // Make sure numbers are stored
-      // as numbers and not strings.
-
       price: Number(ticket.price),
 
       deposit: Number(ticket.deposit),
 
       balance: Number(ticket.balance),
 
-      // Amount to pay now
-      paymentAmount: Number(ticket.deposit),
+      // ==================================
+      // PAYMENT SELECTION
+      // ==================================
 
-      // Amount still outstanding
-      remainingBalance: Number(ticket.balance)
+      paymentType:
+        isFullPayment
+          ? "full"
+          : "deposit",
+
+      paymentLabel:
+        isFullPayment
+          ? "Full Payment"
+          : "Deposit",
+
+      // ==================================
+      // AMOUNT TO PAY NOW
+      // ==================================
+
+      paymentAmount,
+
+      // ==================================
+      // AMOUNT STILL OWING
+      // ==================================
+
+      remainingBalance
 
     }
 
@@ -230,10 +315,12 @@ export default function Home() {
         JSON.stringify(selectedTicket)
       )
 
+
       console.log(
         "MGS SELECTED TICKET:",
         selectedTicket
       )
+
 
     } catch (error) {
 
@@ -312,9 +399,10 @@ export default function Home() {
 
 
         <p style={desc}>
-          Get ready for unforgettable MGS
-          experiences. Choose your ticket below
-          and secure your place.
+          Choose your trip and ticket.
+          For the Bela Bela Trip, you can
+          pay in full or secure your spot
+          with a deposit.
         </p>
 
       </div>
@@ -326,315 +414,454 @@ export default function Home() {
 
       <div style={ticketContainer}>
 
-        {tickets.map((ticket) => (
+        {tickets.map((ticket) => {
 
-          <div
-            key={ticket.id}
-            style={card}
-          >
-
-            {/* ==============================
-                BADGE
-            ============================== */}
-
-            <div style={badge}>
-              {ticket.ticketCategory ||
-                "MGS EVENT TICKET"}
-            </div>
+          const selectedPayment =
+            paymentChoices[ticket.id] ||
+            (ticket.allowDeposit
+              ? "deposit"
+              : "full")
 
 
-            {/* ==============================
-                TICKET NAME
-            ============================== */}
-
-            <h2 style={ticketName}>
-              {ticket.name}
-            </h2>
+          const isFullPayment =
+            selectedPayment === "full"
 
 
-            {/* ==============================
-                DATE
-            ============================== */}
-
-            <div style={eventDate}>
-              📅 {ticket.eventDate}
-            </div>
+          const amountToPay =
+            isFullPayment
+              ? ticket.price
+              : ticket.deposit
 
 
-            {/* ==============================
-                PRICE
-            ============================== */}
-
-            <div style={price}>
-              R{ticket.price}
-            </div>
+          const remaining =
+            isFullPayment
+              ? 0
+              : ticket.balance
 
 
-            <p style={priceLabel}>
+          return (
 
-              {ticket.ticketCategory === "Couple"
+            <div
+              key={ticket.id}
+              style={card}
+            >
 
-                ? "FOR 2 PEOPLE"
+              {/* ==============================
+                  BADGE
+              ============================== */}
 
-                : ticket.ticketCategory === "Per Person"
-
-                  ? "PER PERSON"
-
-                  : "TICKET PRICE"
-
-              }
-
-            </p>
+              <div style={badge}>
+                {ticket.ticketCategory}
+              </div>
 
 
-            {/* ==============================
-                DEPOSIT
-            ============================== */}
+              {/* ==============================
+                  TICKET NAME
+              ============================== */}
 
-            <div style={paymentBox}>
+              <h2 style={ticketName}>
+                {ticket.name}
+              </h2>
 
-              <div style={paymentRow}>
 
-                <span>
-                  Deposit
-                </span>
+              {/* ==============================
+                  DATE
+              ============================== */}
 
-                <strong style={depositAmount}>
-                  R{ticket.deposit}
-                </strong>
+              <div style={eventDate}>
+                📅 {ticket.eventDate}
+              </div>
+
+
+              {/* ==============================
+                  PRICE
+              ============================== */}
+
+              <div style={price}>
+                R{ticket.price}
+              </div>
+
+
+              <p style={priceLabel}>
+
+                {ticket.ticketCategory === "Couple"
+                  ? "FOR 2 PEOPLE"
+                  : ticket.ticketCategory === "Single"
+                    ? "FOR 1 PERSON"
+                    : "TICKET PRICE"}
+
+              </p>
+
+
+              {/* ==============================
+                  PAYMENT CHOICE
+              ============================== */}
+
+              <div style={paymentBox}>
+
+                <h3 style={paymentTitle}>
+                  CHOOSE PAYMENT OPTION
+                </h3>
+
+
+                {/* ============================
+                    FULL PAYMENT
+                ============================ */}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    choosePayment(
+                      ticket,
+                      "full"
+                    )
+                  }
+
+                  style={{
+                    ...paymentChoiceButton,
+
+                    ...(isFullPayment
+                      ? selectedPaymentStyle
+                      : {})
+                  }}
+                >
+
+                  <div>
+                    <strong>
+                      💳 PAY IN FULL
+                    </strong>
+
+                    <small>
+                      Pay R{ticket.price} now
+                    </small>
+                  </div>
+
+
+                  <span>
+                    {isFullPayment
+                      ? "✓"
+                      : ""}
+                  </span>
+
+                </button>
+
+
+                {/* ============================
+                    DEPOSIT
+                ============================ */}
+
+                {ticket.allowDeposit && (
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      choosePayment(
+                        ticket,
+                        "deposit"
+                      )
+                    }
+
+                    style={{
+                      ...paymentChoiceButton,
+
+                      ...(selectedPayment === "deposit"
+                        ? selectedPaymentStyle
+                        : {})
+                    }}
+                  >
+
+                    <div>
+                      <strong>
+                        🔐 PAY DEPOSIT
+                      </strong>
+
+                      <small>
+                        Pay R{ticket.deposit} now
+                        {" "}• Remaining R{ticket.balance}
+                      </small>
+                    </div>
+
+
+                    <span>
+                      {selectedPayment === "deposit"
+                        ? "✓"
+                        : ""}
+                    </span>
+
+                  </button>
+
+                )}
+
+
+                {/* ============================
+                    PAYMENT SUMMARY
+                ============================ */}
+
+                <div style={paymentSummary}>
+
+                  <div style={paymentRow}>
+
+                    <span>
+                      Full Price
+                    </span>
+
+                    <strong>
+                      R{ticket.price}
+                    </strong>
+
+                  </div>
+
+
+                  <div style={paymentRow}>
+
+                    <span>
+                      Paying Now
+                    </span>
+
+                    <strong style={depositAmount}>
+                      R{amountToPay}
+                    </strong>
+
+                  </div>
+
+
+                  <div
+                    style={{
+                      ...paymentRow,
+                      borderBottom: "none"
+                    }}
+                  >
+
+                    <span>
+                      Remaining
+                    </span>
+
+                    <strong>
+                      R{remaining}
+                    </strong>
+
+                  </div>
+
+                </div>
 
               </div>
 
 
-              {ticket.balance > 0 && (
+              {/* ==============================
+                  DESCRIPTION
+              ============================== */}
 
-                <div style={paymentRow}>
+              <p style={description}>
+                {ticket.description}
+              </p>
+
+
+              {/* ==============================
+                  EVENT DETAILS
+              ============================== */}
+
+              <div style={details}>
+
+                <div style={detailRow}>
 
                   <span>
-                    Balance after deposit
+                    📍 Trip
                   </span>
 
                   <strong>
-                    R{ticket.balance}
+                    {ticket.eventName}
                   </strong>
 
                 </div>
 
-              )}
+
+                <div style={detailRow}>
+
+                  <span>
+                    📅 Date
+                  </span>
+
+                  <strong>
+                    {ticket.eventDate}
+                  </strong>
+
+                </div>
 
 
-              {ticket.balance === 0 && (
+                <div style={detailRow}>
 
-                <p style={paidText}>
-                  Full payment required
-                </p>
+                  <span>
+                    🎟 Ticket
+                  </span>
 
-              )}
+                  <strong>
+                    {ticket.ticketCategory}
+                  </strong>
 
-            </div>
-
-
-            {/* ==============================
-                DESCRIPTION
-            ============================== */}
-
-            <p style={description}>
-              {ticket.description}
-            </p>
+                </div>
 
 
-            {/* ==============================
-                EVENT DETAILS
-            ============================== */}
+                <div style={detailRow}>
 
-            <div style={details}>
+                  <span>
+                    💰 Full Price
+                  </span>
 
-              <div style={detailRow}>
+                  <strong>
+                    R{ticket.price}
+                  </strong>
 
-                <span>
-                  📅 Date
-                </span>
-
-                <strong>
-                  {ticket.eventDate}
-                </strong>
-
-              </div>
+                </div>
 
 
-              <div style={detailRow}>
+                <div style={detailRow}>
 
-                <span>
-                  🎟 Ticket
-                </span>
+                  <span>
+                    💳 Paying Now
+                  </span>
 
-                <strong>
-                  {ticket.ticketCategory ||
-                    "Full Event Access"}
-                </strong>
+                  <strong style={{ color: "red" }}>
+                    R{amountToPay}
+                  </strong>
 
-              </div>
-
-
-              <div style={detailRow}>
-
-                <span>
-                  💰 Full Price
-                </span>
-
-                <strong>
-                  R{ticket.price}
-                </strong>
-
-              </div>
+                </div>
 
 
-              <div style={detailRow}>
+                <div
+                  style={{
+                    ...detailRow,
+                    borderBottom: "none"
+                  }}
+                >
 
-                <span>
-                  💳 Pay Now
-                </span>
+                  <span>
+                    📌 Remaining
+                  </span>
 
-                <strong style={{ color: "red" }}>
-                  R{ticket.deposit}
-                </strong>
+                  <strong>
+                    R{remaining}
+                  </strong>
+
+                </div>
 
               </div>
 
 
-              <div
+              {/* ==============================
+                  FEATURES
+              ============================== */}
+
+              <div style={features}>
+
+                <h3 style={featuresTitle}>
+                  YOUR TICKET INCLUDES
+                </h3>
+
+
+                {ticket.features.map(
+                  (feature) => (
+
+                    <p
+                      key={feature}
+                      style={featureItem}
+                    >
+                      ✓ {feature}
+                    </p>
+
+                  )
+                )}
+
+              </div>
+
+
+              {/* ==============================
+                  BUY BUTTON
+              ============================== */}
+
+              <button
+                onClick={() =>
+                  selectTicket(ticket)
+                }
+
                 style={{
-                  ...detailRow,
-                  borderBottom: "none"
+                  ...buyBtn,
+
+                  opacity:
+                    authLoading ||
+                    buyingId !== null
+                      ? 0.6
+                      : 1,
+
+                  cursor:
+                    authLoading ||
+                    buyingId !== null
+                      ? "not-allowed"
+                      : "pointer"
                 }}
+
+                disabled={
+                  authLoading ||
+                  buyingId !== null
+                }
               >
 
-                <span>
-                  📌 Remaining
-                </span>
+                {authLoading
 
-                <strong>
-                  R{ticket.balance}
-                </strong>
+                  ? "CHECKING ACCOUNT..."
 
-              </div>
+                  : buyingId === ticket.id
+
+                    ? "CONTINUING..."
+
+                    : `CONTINUE — PAY R${amountToPay}`
+
+                }
+
+              </button>
+
+
+              {/* ==============================
+                  PAYMENT MESSAGE
+              ============================== */}
+
+              <p style={loginMessage}>
+
+                {isFullPayment
+
+                  ? `You selected full payment of R${ticket.price}. Your remaining balance will be R0.`
+
+                  : `You selected the R${ticket.deposit} deposit. Your remaining balance will be R${ticket.balance}.`
+
+                }
+
+              </p>
+
+
+              {/* ==============================
+                  LOGIN MESSAGE
+              ============================== */}
+
+              <p style={loginMessage}>
+
+                {authLoading
+
+                  ? "Checking your account..."
+
+                  : user
+
+                    ? "You are logged in. Continue directly to ticket registration."
+
+                    : "Login or create an account before completing your purchase."
+
+                }
+
+              </p>
 
             </div>
 
+          )
 
-            {/* ==============================
-                FEATURES
-            ============================== */}
-
-            <div style={features}>
-
-              <h3 style={featuresTitle}>
-                YOUR TICKET INCLUDES
-              </h3>
-
-
-              {ticket.features.map(
-                (feature) => (
-
-                  <p
-                    key={feature}
-                    style={featureItem}
-                  >
-                    ✓ {feature}
-                  </p>
-
-                )
-              )}
-
-            </div>
-
-
-            {/* ==============================
-                BUY BUTTON
-            ============================== */}
-
-            <button
-              onClick={() =>
-                selectTicket(ticket)
-              }
-
-              style={{
-                ...buyBtn,
-
-                opacity:
-                  authLoading ||
-                  buyingId !== null
-                    ? 0.6
-                    : 1,
-
-                cursor:
-                  authLoading ||
-                  buyingId !== null
-                    ? "not-allowed"
-                    : "pointer"
-              }}
-
-              disabled={
-                authLoading ||
-                buyingId !== null
-              }
-            >
-
-              {authLoading
-
-                ? "CHECKING ACCOUNT..."
-
-                : buyingId === ticket.id
-
-                  ? "CONTINUING..."
-
-                  : `BUY NOW — PAY R${ticket.deposit}`
-
-              }
-
-            </button>
-
-
-            {/* ==============================
-                PAYMENT MESSAGE
-            ============================== */}
-
-            <p style={loginMessage}>
-
-              {ticket.balance > 0
-
-                ? `Pay R${ticket.deposit} deposit now. Your remaining balance is R${ticket.balance}.`
-
-                : "Full payment is required for this ticket."
-
-              }
-
-            </p>
-
-
-            {/* ==============================
-                LOGIN MESSAGE
-            ============================== */}
-
-            <p style={loginMessage}>
-
-              {authLoading
-
-                ? "Checking your account..."
-
-                : user
-
-                  ? "You are logged in. Continue directly to ticket registration."
-
-                  : "Login or create an account before completing your purchase."
-
-              }
-
-            </p>
-
-          </div>
-
-        ))}
+        })}
 
       </div>
 
@@ -913,6 +1140,78 @@ const paymentBox = {
 }
 
 
+const paymentTitle = {
+
+  color: "white",
+
+  fontSize: "15px",
+
+  letterSpacing: "1px",
+
+  margin:
+    "0 0 12px"
+
+}
+
+
+const paymentChoiceButton = {
+
+  width: "100%",
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  textAlign: "left",
+
+  background: "#111",
+
+  color: "white",
+
+  border: "1px solid #333",
+
+  borderRadius: "10px",
+
+  padding: "14px",
+
+  marginBottom: "10px",
+
+  cursor: "pointer",
+
+  fontSize: "15px"
+
+}
+
+
+const selectedPaymentStyle = {
+
+  background:
+    "linear-gradient(145deg,#3a0000,#1b0000)",
+
+  border:
+    "2px solid red"
+
+}
+
+
+const paymentSummary = {
+
+  background: "#080808",
+
+  border:
+    "1px solid #292929",
+
+  borderRadius: "10px",
+
+  padding: "10px",
+
+  marginTop: "12px"
+
+}
+
+
 const paymentRow = {
 
   display: "flex",
@@ -925,7 +1224,10 @@ const paymentRow = {
 
   padding: "8px 0",
 
-  color: "#ccc"
+  color: "#ccc",
+
+  borderBottom:
+    "1px solid #222"
 
 }
 
@@ -935,17 +1237,6 @@ const depositAmount = {
   color: "red",
 
   fontSize: "20px"
-
-}
-
-
-const paidText = {
-
-  color: "#aaa",
-
-  margin: "8px 0 0",
-
-  fontSize: "13px"
 
 }
 
