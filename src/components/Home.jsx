@@ -57,7 +57,8 @@ export default function Home() {
   const tickets = [
 
     // ====================================
-    // EXISTING TICKET
+    // 12 SEPTEMBER 2026
+    // EXISTING TICKET — DO NOT CHANGE
     // ====================================
 
     {
@@ -66,6 +67,11 @@ export default function Home() {
       name: "MGS EVENT TICKET",
 
       price: 420,
+
+      // Full payment required
+      deposit: 420,
+
+      balance: 0,
 
       description:
         "Full access to the MGS Event on 12 September 2026.",
@@ -78,25 +84,22 @@ export default function Home() {
 
       popular: true,
 
+      ticketCategory: "Standard",
+
       features: [
-
         "Full Event Access",
-
         "Main Stage",
-
         "Live Entertainment",
-
         "Networking",
-
         "All Activities"
-
       ]
 
     },
 
 
     // ====================================
-    // 07 NOVEMBER — PER PERSON
+    // 07 NOVEMBER 2026
+    // R900 PER PERSON
     // ====================================
 
     {
@@ -109,7 +112,7 @@ export default function Home() {
       deposit: 400,
 
       balance: 500,
-      
+
       description:
         "Full access to the MGS Event on 07 November 2026.",
 
@@ -124,24 +127,19 @@ export default function Home() {
       ticketCategory: "Per Person",
 
       features: [
-
         "Full Event Access",
-
         "Main Stage",
-
         "Live Entertainment",
-
         "Networking",
-
         "All Activities"
-
       ]
 
     },
 
 
     // ====================================
-    // 07 NOVEMBER — COUPLE
+    // 07 NOVEMBER 2026
+    // R1300 COUPLE
     // ====================================
 
     {
@@ -150,11 +148,11 @@ export default function Home() {
       name: "07 NOVEMBER COUPLE TICKET",
 
       price: 1300,
-      
+
       deposit: 400,
 
       balance: 900,
-      
+
       description:
         "Couple ticket for the MGS Event on 07 November 2026.",
 
@@ -169,19 +167,12 @@ export default function Home() {
       ticketCategory: "Couple",
 
       features: [
-
         "Entry for 2 People",
-
         "Full Event Access",
-
         "Main Stage",
-
         "Live Entertainment",
-
         "Networking",
-
         "All Activities"
-
       ]
 
     }
@@ -195,11 +186,37 @@ export default function Home() {
 
   function selectTicket(ticket) {
 
-    if (buyingId) {
+    if (buyingId !== null) {
       return
     }
 
     setBuyingId(ticket.id)
+
+
+    // ====================================
+    // PREPARE PAYMENT INFORMATION
+    // ====================================
+
+    const selectedTicket = {
+
+      ...ticket,
+
+      // Make sure numbers are stored
+      // as numbers and not strings.
+
+      price: Number(ticket.price),
+
+      deposit: Number(ticket.deposit),
+
+      balance: Number(ticket.balance),
+
+      // Amount to pay now
+      paymentAmount: Number(ticket.deposit),
+
+      // Amount still outstanding
+      remainingBalance: Number(ticket.balance)
+
+    }
 
 
     // ====================================
@@ -210,7 +227,12 @@ export default function Home() {
 
       localStorage.setItem(
         "selectedTicket",
-        JSON.stringify(ticket)
+        JSON.stringify(selectedTicket)
+      )
+
+      console.log(
+        "MGS SELECTED TICKET:",
+        selectedTicket
       )
 
     } catch (error) {
@@ -241,11 +263,6 @@ export default function Home() {
         "MGS: User logged in."
       )
 
-      console.log(
-        "MGS: Selected ticket:",
-        ticket
-      )
-
       navigate(
         "/register"
       )
@@ -261,11 +278,6 @@ export default function Home() {
 
     console.log(
       "MGS: User not logged in."
-    )
-
-    console.log(
-      "MGS: Selected ticket:",
-      ticket
     )
 
     navigate(
@@ -376,6 +388,53 @@ export default function Home() {
 
 
             {/* ==============================
+                DEPOSIT
+            ============================== */}
+
+            <div style={paymentBox}>
+
+              <div style={paymentRow}>
+
+                <span>
+                  Deposit
+                </span>
+
+                <strong style={depositAmount}>
+                  R{ticket.deposit}
+                </strong>
+
+              </div>
+
+
+              {ticket.balance > 0 && (
+
+                <div style={paymentRow}>
+
+                  <span>
+                    Balance after deposit
+                  </span>
+
+                  <strong>
+                    R{ticket.balance}
+                  </strong>
+
+                </div>
+
+              )}
+
+
+              {ticket.balance === 0 && (
+
+                <p style={paidText}>
+                  Full payment required
+                </p>
+
+              )}
+
+            </div>
+
+
+            {/* ==============================
                 DESCRIPTION
             ============================== */}
 
@@ -417,6 +476,32 @@ export default function Home() {
               </div>
 
 
+              <div style={detailRow}>
+
+                <span>
+                  💰 Full Price
+                </span>
+
+                <strong>
+                  R{ticket.price}
+                </strong>
+
+              </div>
+
+
+              <div style={detailRow}>
+
+                <span>
+                  💳 Pay Now
+                </span>
+
+                <strong style={{ color: "red" }}>
+                  R{ticket.deposit}
+                </strong>
+
+              </div>
+
+
               <div
                 style={{
                   ...detailRow,
@@ -425,11 +510,11 @@ export default function Home() {
               >
 
                 <span>
-                  💰 Price
+                  📌 Remaining
                 </span>
 
                 <strong>
-                  R{ticket.price}
+                  R{ticket.balance}
                 </strong>
 
               </div>
@@ -478,13 +563,13 @@ export default function Home() {
 
                 opacity:
                   authLoading ||
-                  buyingId
+                  buyingId !== null
                     ? 0.6
                     : 1,
 
                 cursor:
                   authLoading ||
-                  buyingId
+                  buyingId !== null
                     ? "not-allowed"
                     : "pointer"
               }}
@@ -503,7 +588,7 @@ export default function Home() {
 
                   ? "CONTINUING..."
 
-                  : `BUY NOW — R${ticket.price}`
+                  : `BUY NOW — PAY R${ticket.deposit}`
 
               }
 
@@ -511,7 +596,24 @@ export default function Home() {
 
 
             {/* ==============================
-                MESSAGE
+                PAYMENT MESSAGE
+            ============================== */}
+
+            <p style={loginMessage}>
+
+              {ticket.balance > 0
+
+                ? `Pay R${ticket.deposit} deposit now. Your remaining balance is R${ticket.balance}.`
+
+                : "Full payment is required for this ticket."
+
+              }
+
+            </p>
+
+
+            {/* ==============================
+                LOGIN MESSAGE
             ============================== */}
 
             <p style={loginMessage}>
@@ -786,6 +888,64 @@ const priceLabel = {
   letterSpacing: "2px",
 
   marginBottom: "20px"
+
+}
+
+
+// ==================================================
+// PAYMENT BOX
+// ==================================================
+
+const paymentBox = {
+
+  background:
+    "linear-gradient(145deg,#1b0000,#100000)",
+
+  border:
+    "1px solid red",
+
+  borderRadius: "14px",
+
+  padding: "15px",
+
+  marginBottom: "20px"
+
+}
+
+
+const paymentRow = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  gap: "10px",
+
+  padding: "8px 0",
+
+  color: "#ccc"
+
+}
+
+
+const depositAmount = {
+
+  color: "red",
+
+  fontSize: "20px"
+
+}
+
+
+const paidText = {
+
+  color: "#aaa",
+
+  margin: "8px 0 0",
+
+  fontSize: "13px"
 
 }
 
