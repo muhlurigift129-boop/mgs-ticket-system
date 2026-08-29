@@ -14,6 +14,7 @@ export default function Home() {
 
   const navigate = useNavigate()
 
+
   // ======================================
   // AUTH STATE
   // ======================================
@@ -25,6 +26,7 @@ export default function Home() {
 
   const [buyingId, setBuyingId] =
     useState(null)
+
 
   // ======================================
   // PAYMENT CHOICE
@@ -110,9 +112,10 @@ export default function Home() {
     // ====================================
     // BELA BELA TRIP
     // 07 NOVEMBER 2026
-    // SINGLE — R900
-    // DEPOSIT — R400
-    // BALANCE — R500
+    // SINGLE
+    // FULL = R900
+    // DEPOSIT = R400
+    // BALANCE = R500
     // ====================================
 
     {
@@ -127,7 +130,7 @@ export default function Home() {
       balance: 500,
 
       description:
-        "Bela Bela Trip on 07 November 2026. Choose to pay the full R900 or secure your spot with a R400 deposit.",
+        "Bela Bela Trip on 07 November 2026. Pay R900 in full or secure your spot with a R400 deposit.",
 
       type: "bela-bela-single",
 
@@ -156,9 +159,10 @@ export default function Home() {
     // ====================================
     // BELA BELA TRIP
     // 07 NOVEMBER 2026
-    // COUPLE — R1300
-    // DEPOSIT — R400
-    // BALANCE — R900
+    // COUPLE
+    // FULL = R1300
+    // DEPOSIT = R400
+    // BALANCE = R900
     // ====================================
 
     {
@@ -173,7 +177,7 @@ export default function Home() {
       balance: 900,
 
       description:
-        "Bela Bela Trip on 07 November 2026. Choose to pay the full R1,300 or secure your spot with a R400 deposit.",
+        "Bela Bela Trip on 07 November 2026. Pay R1,300 in full or secure your spot with a R400 deposit.",
 
       type: "bela-bela-couple",
 
@@ -207,6 +211,14 @@ export default function Home() {
 
   function choosePayment(ticket, choice) {
 
+    if (
+      !ticket.allowDeposit &&
+      choice === "deposit"
+    ) {
+      return
+    }
+
+
     setPaymentChoices((previous) => ({
 
       ...previous,
@@ -230,12 +242,14 @@ export default function Home() {
 
 
     // ====================================
-    // DETERMINE PAYMENT TYPE
+    // GET SELECTED PAYMENT
     // ====================================
 
     const selectedPayment =
       paymentChoices[ticket.id] ||
-      (ticket.allowDeposit ? "deposit" : "full")
+      (ticket.allowDeposit
+        ? "deposit"
+        : "full")
 
 
     const isFullPayment =
@@ -243,7 +257,7 @@ export default function Home() {
 
 
     // ====================================
-    // CALCULATE PAYMENT
+    // PAYMENT AMOUNT
     // ====================================
 
     const paymentAmount =
@@ -251,6 +265,10 @@ export default function Home() {
         ? Number(ticket.price)
         : Number(ticket.deposit)
 
+
+    // ====================================
+    // REMAINING BALANCE
+    // ====================================
 
     const remainingBalance =
       isFullPayment
@@ -262,21 +280,25 @@ export default function Home() {
 
 
     // ====================================
-    // PREPARE PAYMENT INFORMATION
+    // SELECTED TICKET
     // ====================================
 
     const selectedTicket = {
 
       ...ticket,
 
-      price: Number(ticket.price),
+      price:
+        Number(ticket.price),
 
-      deposit: Number(ticket.deposit),
+      deposit:
+        Number(ticket.deposit),
 
-      balance: Number(ticket.balance),
+      balance:
+        Number(ticket.balance),
+
 
       // ==================================
-      // PAYMENT SELECTION
+      // PAYMENT TYPE
       // ==================================
 
       paymentType:
@@ -284,22 +306,27 @@ export default function Home() {
           ? "full"
           : "deposit",
 
+
       paymentLabel:
         isFullPayment
           ? "Full Payment"
           : "Deposit",
 
-      // ==================================
-      // AMOUNT TO PAY NOW
-      // ==================================
-
-      paymentAmount,
 
       // ==================================
-      // AMOUNT STILL OWING
+      // PAY NOW
       // ==================================
 
-      remainingBalance
+      paymentAmount:
+        paymentAmount,
+
+
+      // ==================================
+      // BALANCE
+      // ==================================
+
+      remainingBalance:
+        remainingBalance
 
     }
 
@@ -311,8 +338,13 @@ export default function Home() {
     try {
 
       localStorage.setItem(
+
         "selectedTicket",
-        JSON.stringify(selectedTicket)
+
+        JSON.stringify(
+          selectedTicket
+        )
+
       )
 
 
@@ -329,11 +361,14 @@ export default function Home() {
         error
       )
 
+
       setBuyingId(null)
+
 
       alert(
         "Unable to save your ticket selection. Please try again."
       )
+
 
       return
 
@@ -341,14 +376,10 @@ export default function Home() {
 
 
     // ====================================
-    // LOGGED IN
+    // USER LOGGED IN
     // ====================================
 
     if (user) {
-
-      console.log(
-        "MGS: User logged in."
-      )
 
       navigate(
         "/register"
@@ -360,12 +391,8 @@ export default function Home() {
 
 
     // ====================================
-    // NOT LOGGED IN
+    // USER NOT LOGGED IN
     // ====================================
-
-    console.log(
-      "MGS: User not logged in."
-    )
 
     navigate(
       "/login"
@@ -381,6 +408,7 @@ export default function Home() {
   return (
 
     <div style={page}>
+
 
       {/* ==================================
           HEADER
@@ -399,10 +427,15 @@ export default function Home() {
 
 
         <p style={desc}>
+
           Choose your trip and ticket.
-          For the Bela Bela Trip, you can
-          pay in full or secure your spot
-          with a deposit.
+
+          <br />
+
+          For the Bela Bela Trip, choose
+          either <strong>PAY IN FULL</strong>
+          or <strong>PAY DEPOSIT</strong>.
+
         </p>
 
       </div>
@@ -414,7 +447,13 @@ export default function Home() {
 
       <div style={ticketContainer}>
 
+
         {tickets.map((ticket) => {
+
+
+          // =================================
+          // SELECTED PAYMENT
+          // =================================
 
           const selectedPayment =
             paymentChoices[ticket.id] ||
@@ -427,16 +466,28 @@ export default function Home() {
             selectedPayment === "full"
 
 
+          const isDepositPayment =
+            selectedPayment === "deposit"
+
+
+          // =================================
+          // AMOUNT TO PAY
+          // =================================
+
           const amountToPay =
             isFullPayment
-              ? ticket.price
-              : ticket.deposit
+              ? Number(ticket.price)
+              : Number(ticket.deposit)
 
+
+          // =================================
+          // REMAINING
+          // =================================
 
           const remaining =
             isFullPayment
               ? 0
-              : ticket.balance
+              : Number(ticket.balance)
 
 
           return (
@@ -446,12 +497,15 @@ export default function Home() {
               style={card}
             >
 
+
               {/* ==============================
                   BADGE
               ============================== */}
 
               <div style={badge}>
+
                 {ticket.ticketCategory}
+
               </div>
 
 
@@ -460,7 +514,9 @@ export default function Home() {
               ============================== */}
 
               <h2 style={ticketName}>
+
                 {ticket.name}
+
               </h2>
 
 
@@ -469,7 +525,9 @@ export default function Home() {
               ============================== */}
 
               <div style={eventDate}>
+
                 📅 {ticket.eventDate}
+
               </div>
 
 
@@ -478,38 +536,66 @@ export default function Home() {
               ============================== */}
 
               <div style={price}>
+
                 R{ticket.price}
+
               </div>
 
 
               <p style={priceLabel}>
 
                 {ticket.ticketCategory === "Couple"
+
                   ? "FOR 2 PEOPLE"
+
                   : ticket.ticketCategory === "Single"
+
                     ? "FOR 1 PERSON"
-                    : "TICKET PRICE"}
+
+                    : "TICKET PRICE"
+
+                }
 
               </p>
 
 
-              {/* ==============================
+              {/* =================================
                   PAYMENT CHOICE
-              ============================== */}
+              ================================= */}
 
               <div style={paymentBox}>
 
-                <h3 style={paymentTitle}>
-                  CHOOSE PAYMENT OPTION
-                </h3>
+
+                <div style={paymentHeader}>
+
+                  <h3 style={paymentTitle}>
+
+                    CHOOSE PAYMENT OPTION
+
+                  </h3>
 
 
-                {/* ============================
-                    FULL PAYMENT
-                ============================ */}
+                  {ticket.allowDeposit && (
+
+                    <span style={choiceRequired}>
+
+                      SELECT ONE
+
+                    </span>
+
+                  )}
+
+                </div>
+
+
+                {/* =================================
+                    FULL PAYMENT BUTTON
+                ================================= */}
 
                 <button
+
                   type="button"
+
                   onClick={() =>
                     choosePayment(
                       ticket,
@@ -518,42 +604,85 @@ export default function Home() {
                   }
 
                   style={{
+
                     ...paymentChoiceButton,
 
                     ...(isFullPayment
                       ? selectedPaymentStyle
                       : {})
+
                   }}
+
                 >
 
-                  <div>
-                    <strong>
-                      💳 PAY IN FULL
-                    </strong>
+                  <div style={paymentButtonContent}>
 
-                    <small>
-                      Pay R{ticket.price} now
-                    </small>
+
+                    <div style={paymentIcon}>
+
+                      💳
+
+                    </div>
+
+
+                    <div>
+
+                      <strong
+                        style={
+                          paymentOptionTitle
+                        }
+                      >
+
+                        PAY IN FULL
+
+                      </strong>
+
+
+                      <small
+                        style={
+                          paymentOptionDescription
+                        }
+                      >
+
+                        Pay R{ticket.price} now
+
+                      </small>
+
+                    </div>
+
                   </div>
 
 
-                  <span>
+                  <div
+                    style={{
+                      ...radioCircle,
+
+                      ...(isFullPayment
+                        ? radioSelected
+                        : {})
+
+                    }}
+                  >
+
                     {isFullPayment
                       ? "✓"
                       : ""}
-                  </span>
+
+                  </div>
 
                 </button>
 
 
-                {/* ============================
-                    DEPOSIT
-                ============================ */}
+                {/* =================================
+                    DEPOSIT BUTTON
+                ================================= */}
 
                 {ticket.allowDeposit && (
 
                   <button
+
                     type="button"
+
                     onClick={() =>
                       choosePayment(
                         ticket,
@@ -562,42 +691,126 @@ export default function Home() {
                     }
 
                     style={{
+
                       ...paymentChoiceButton,
 
-                      ...(selectedPayment === "deposit"
+                      ...(isDepositPayment
                         ? selectedPaymentStyle
                         : {})
+
                     }}
+
                   >
 
-                    <div>
-                      <strong>
-                        🔐 PAY DEPOSIT
-                      </strong>
+                    <div style={paymentButtonContent}>
 
-                      <small>
-                        Pay R{ticket.deposit} now
-                        {" "}• Remaining R{ticket.balance}
-                      </small>
+
+                      <div style={paymentIcon}>
+
+                        🔐
+
+                      </div>
+
+
+                      <div>
+
+                        <strong
+                          style={
+                            paymentOptionTitle
+                          }
+                        >
+
+                          PAY DEPOSIT
+
+                        </strong>
+
+
+                        <small
+                          style={
+                            paymentOptionDescription
+                          }
+                        >
+
+                          Pay R{ticket.deposit} now
+
+                          {" "}
+
+                          • Remaining R{ticket.balance}
+
+                        </small>
+
+                      </div>
+
                     </div>
 
 
-                    <span>
-                      {selectedPayment === "deposit"
+                    <div
+                      style={{
+                        ...radioCircle,
+
+                        ...(isDepositPayment
+                          ? radioSelected
+                          : {})
+
+                      }}
+                    >
+
+                      {isDepositPayment
                         ? "✓"
                         : ""}
-                    </span>
+
+                    </div>
 
                   </button>
 
                 )}
 
 
-                {/* ============================
+                {/* =================================
+                    SELECTED PAYMENT MESSAGE
+                ================================= */}
+
+                <div style={selectedMessage}>
+
+                  {isFullPayment ? (
+
+                    <>
+
+                      <span>
+                        ✓ PAYMENT SELECTED:
+                      </span>
+
+                      <strong>
+                        FULL PAYMENT — R{ticket.price}
+                      </strong>
+
+                    </>
+
+                  ) : (
+
+                    <>
+
+                      <span>
+                        ✓ PAYMENT SELECTED:
+                      </span>
+
+                      <strong>
+                        DEPOSIT — R{ticket.deposit}
+                      </strong>
+
+                    </>
+
+                  )}
+
+                </div>
+
+
+                {/* =================================
                     PAYMENT SUMMARY
-                ============================ */}
+                ================================= */}
 
                 <div style={paymentSummary}>
+
 
                   <div style={paymentRow}>
 
@@ -618,7 +831,9 @@ export default function Home() {
                       Paying Now
                     </span>
 
-                    <strong style={depositAmount}>
+                    <strong
+                      style={depositAmount}
+                    >
                       R{amountToPay}
                     </strong>
 
@@ -628,7 +843,8 @@ export default function Home() {
                   <div
                     style={{
                       ...paymentRow,
-                      borderBottom: "none"
+                      borderBottom:
+                        "none"
                     }}
                   >
 
@@ -642,7 +858,9 @@ export default function Home() {
 
                   </div>
 
+
                 </div>
+
 
               </div>
 
@@ -652,7 +870,9 @@ export default function Home() {
               ============================== */}
 
               <p style={description}>
+
                 {ticket.description}
+
               </p>
 
 
@@ -661,6 +881,7 @@ export default function Home() {
               ============================== */}
 
               <div style={details}>
+
 
                 <div style={detailRow}>
 
@@ -720,7 +941,11 @@ export default function Home() {
                     💳 Paying Now
                   </span>
 
-                  <strong style={{ color: "red" }}>
+                  <strong
+                    style={{
+                      color: "red"
+                    }}
+                  >
                     R{amountToPay}
                   </strong>
 
@@ -730,7 +955,8 @@ export default function Home() {
                 <div
                   style={{
                     ...detailRow,
-                    borderBottom: "none"
+                    borderBottom:
+                      "none"
                   }}
                 >
 
@@ -744,6 +970,7 @@ export default function Home() {
 
                 </div>
 
+
               </div>
 
 
@@ -753,8 +980,11 @@ export default function Home() {
 
               <div style={features}>
 
+
                 <h3 style={featuresTitle}>
+
                   YOUR TICKET INCLUDES
+
                 </h3>
 
 
@@ -765,11 +995,14 @@ export default function Home() {
                       key={feature}
                       style={featureItem}
                     >
+
                       ✓ {feature}
+
                     </p>
 
                   )
                 )}
+
 
               </div>
 
@@ -779,11 +1012,15 @@ export default function Home() {
               ============================== */}
 
               <button
+
+                type="button"
+
                 onClick={() =>
                   selectTicket(ticket)
                 }
 
                 style={{
+
                   ...buyBtn,
 
                   opacity:
@@ -797,12 +1034,14 @@ export default function Home() {
                     buyingId !== null
                       ? "not-allowed"
                       : "pointer"
+
                 }}
 
                 disabled={
                   authLoading ||
                   buyingId !== null
                 }
+
               >
 
                 {authLoading
@@ -828,9 +1067,9 @@ export default function Home() {
 
                 {isFullPayment
 
-                  ? `You selected full payment of R${ticket.price}. Your remaining balance will be R0.`
+                  ? `You selected FULL PAYMENT of R${ticket.price}. Your remaining balance will be R0.`
 
-                  : `You selected the R${ticket.deposit} deposit. Your remaining balance will be R${ticket.balance}.`
+                  : `You selected the R${ticket.deposit} DEPOSIT. Your remaining balance will be R${ticket.balance}.`
 
                 }
 
@@ -857,11 +1096,13 @@ export default function Home() {
 
               </p>
 
+
             </div>
 
           )
 
         })}
+
 
       </div>
 
@@ -881,6 +1122,7 @@ export default function Home() {
         </p>
 
       </div>
+
 
     </div>
 
@@ -1131,11 +1373,31 @@ const paymentBox = {
   border:
     "1px solid red",
 
-  borderRadius: "14px",
+  borderRadius: "16px",
 
-  padding: "15px",
+  padding: "16px",
 
   marginBottom: "20px"
+
+}
+
+
+// ==================================================
+// PAYMENT HEADER
+// ==================================================
+
+const paymentHeader = {
+
+  display: "flex",
+
+  justifyContent:
+    "space-between",
+
+  alignItems: "center",
+
+  gap: "10px",
+
+  marginBottom: "15px"
 
 }
 
@@ -1148,11 +1410,33 @@ const paymentTitle = {
 
   letterSpacing: "1px",
 
-  margin:
-    "0 0 12px"
+  margin: 0
 
 }
 
+
+const choiceRequired = {
+
+  color: "red",
+
+  fontSize: "10px",
+
+  fontWeight: "900",
+
+  border:
+    "1px solid red",
+
+  padding:
+    "5px 8px",
+
+  borderRadius: "5px"
+
+}
+
+
+// ==================================================
+// PAYMENT CHOICE BUTTON
+// ==================================================
 
 const paymentChoiceButton = {
 
@@ -1160,7 +1444,8 @@ const paymentChoiceButton = {
 
   display: "flex",
 
-  justifyContent: "space-between",
+  justifyContent:
+    "space-between",
 
   alignItems: "center",
 
@@ -1170,31 +1455,178 @@ const paymentChoiceButton = {
 
   color: "white",
 
-  border: "1px solid #333",
+  border:
+    "2px solid #333",
 
-  borderRadius: "10px",
+  borderRadius: "12px",
 
-  padding: "14px",
+  padding: "16px",
 
-  marginBottom: "10px",
+  marginBottom: "12px",
 
   cursor: "pointer",
 
-  fontSize: "15px"
+  fontSize: "15px",
+
+  boxSizing: "border-box",
+
+  minHeight: "72px"
 
 }
 
+
+// ==================================================
+// SELECTED PAYMENT
+// ==================================================
 
 const selectedPaymentStyle = {
 
   background:
-    "linear-gradient(145deg,#3a0000,#1b0000)",
+    "linear-gradient(145deg,#4a0000,#220000)",
 
   border:
-    "2px solid red"
+    "2px solid red",
+
+  boxShadow:
+    "0 0 15px rgba(255,0,0,.35)"
 
 }
 
+
+// ==================================================
+// PAYMENT BUTTON CONTENT
+// ==================================================
+
+const paymentButtonContent = {
+
+  display: "flex",
+
+  alignItems: "center",
+
+  gap: "12px"
+
+}
+
+
+const paymentIcon = {
+
+  fontSize: "25px",
+
+  width: "35px",
+
+  textAlign: "center"
+
+}
+
+
+const paymentOptionTitle = {
+
+  display: "block",
+
+  color: "white",
+
+  fontSize: "15px",
+
+  marginBottom: "5px"
+
+}
+
+
+const paymentOptionDescription = {
+
+  display: "block",
+
+  color: "#aaa",
+
+  fontSize: "12px",
+
+  lineHeight: "1.4"
+
+}
+
+
+// ==================================================
+// RADIO CIRCLE
+// ==================================================
+
+const radioCircle = {
+
+  width: "26px",
+
+  height: "26px",
+
+  minWidth: "26px",
+
+  border:
+    "2px solid #555",
+
+  borderRadius: "50%",
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  fontWeight: "900",
+
+  fontSize: "16px",
+
+  boxSizing: "border-box"
+
+}
+
+
+const radioSelected = {
+
+  background: "red",
+
+  border:
+    "2px solid red",
+
+  color: "white"
+
+}
+
+
+// ==================================================
+// SELECTED MESSAGE
+// ==================================================
+
+const selectedMessage = {
+
+  display: "flex",
+
+  justifyContent:
+    "space-between",
+
+  alignItems: "center",
+
+  gap: "10px",
+
+  flexWrap: "wrap",
+
+  background: "#090909",
+
+  border:
+    "1px solid #333",
+
+  borderRadius: "10px",
+
+  padding: "10px 12px",
+
+  marginBottom: "12px",
+
+  color: "#aaa",
+
+  fontSize: "11px"
+
+}
+
+
+// ==================================================
+// PAYMENT SUMMARY
+// ==================================================
 
 const paymentSummary = {
 
@@ -1216,7 +1648,8 @@ const paymentRow = {
 
   display: "flex",
 
-  justifyContent: "space-between",
+  justifyContent:
+    "space-between",
 
   alignItems: "center",
 
