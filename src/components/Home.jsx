@@ -28,6 +28,14 @@ export default function Home() {
 
 
   // ======================================
+  // PAYMENT SELECTION
+  // ======================================
+
+  const [paymentChoice, setPaymentChoice] =
+    useState({})
+
+
+  // ======================================
   // FIREBASE AUTH LISTENER
   // ======================================
 
@@ -57,28 +65,30 @@ export default function Home() {
   const tickets = [
 
     // ====================================
+    // THABISEKO TRIP
     // 12 SEPTEMBER 2026
-    // EXISTING TICKET — DO NOT CHANGE
+    // R420
     // ====================================
 
     {
-      id: "MGS-EVENT-2026",
+      id: "MGS-THABISEKO-2026",
 
-      name: "MGS EVENT TICKET",
+      name: "THABISEKO TRIP",
 
       price: 420,
 
-      // Full payment required
       deposit: 420,
 
       balance: 0,
 
+      depositAvailable: false,
+
       description:
-        "Full access to the MGS Event on 12 September 2026.",
+        "Full access to the Thabiseko Trip on 12 September 2026.",
 
-      type: "mgs-event",
+      type: "thabiseko-trip",
 
-      eventName: "MGS EVENT",
+      eventName: "THABISEKO TRIP",
 
       eventDate: "12 September 2026",
 
@@ -98,14 +108,15 @@ export default function Home() {
 
 
     // ====================================
+    // BELA BELA TRIP
     // 07 NOVEMBER 2026
     // R900 PER PERSON
     // ====================================
 
     {
-      id: "MGS-NOV-2026-PER-PERSON",
+      id: "MGS-BELA-BELA-2026-PER-PERSON",
 
-      name: "07 NOVEMBER TICKET",
+      name: "BELA BELA TRIP — SINGLE",
 
       price: 900,
 
@@ -113,12 +124,14 @@ export default function Home() {
 
       balance: 500,
 
+      depositAvailable: true,
+
       description:
-        "Full access to the MGS Event on 07 November 2026.",
+        "Full access to the Bela Bela Trip on 07 November 2026.",
 
-      type: "november-person",
+      type: "bela-bela-person",
 
-      eventName: "MGS EVENT",
+      eventName: "BELA BELA TRIP",
 
       eventDate: "07 November 2026",
 
@@ -138,14 +151,15 @@ export default function Home() {
 
 
     // ====================================
+    // BELA BELA TRIP
     // 07 NOVEMBER 2026
     // R1300 COUPLE
     // ====================================
 
     {
-      id: "MGS-NOV-2026-COUPLE",
+      id: "MGS-BELA-BELA-2026-COUPLE",
 
-      name: "07 NOVEMBER COUPLE TICKET",
+      name: "BELA BELA TRIP — COUPLE",
 
       price: 1300,
 
@@ -153,12 +167,14 @@ export default function Home() {
 
       balance: 900,
 
+      depositAvailable: true,
+
       description:
-        "Couple ticket for the MGS Event on 07 November 2026.",
+        "Couple ticket for the Bela Bela Trip on 07 November 2026.",
 
-      type: "november-couple",
+      type: "bela-bela-couple",
 
-      eventName: "MGS EVENT",
+      eventName: "BELA BELA TRIP",
 
       eventDate: "07 November 2026",
 
@@ -181,6 +197,104 @@ export default function Home() {
 
 
   // ======================================
+  // DEFAULT PAYMENT CHOICE
+  // ======================================
+
+  useEffect(() => {
+
+    const initialChoices = {}
+
+    tickets.forEach((ticket) => {
+
+      initialChoices[ticket.id] =
+        ticket.depositAvailable
+          ? "deposit"
+          : "full"
+
+    })
+
+    setPaymentChoice(initialChoices)
+
+  }, [])
+
+
+  // ======================================
+  // CHANGE PAYMENT OPTION
+  // ======================================
+
+  function changePaymentOption(
+    ticketId,
+    option
+  ) {
+
+    setPaymentChoice(prev => ({
+
+      ...prev,
+
+      [ticketId]: option
+
+    }))
+
+  }
+
+
+  // ======================================
+  // GET PAYMENT AMOUNT
+  // ======================================
+
+  function getPaymentAmount(ticket) {
+
+    const choice =
+      paymentChoice[ticket.id] ||
+      (
+        ticket.depositAvailable
+          ? "deposit"
+          : "full"
+      )
+
+    if (
+      choice === "deposit" &&
+      ticket.depositAvailable
+    ) {
+
+      return Number(ticket.deposit)
+
+    }
+
+    return Number(ticket.price)
+
+  }
+
+
+  // ======================================
+  // GET REMAINING BALANCE
+  // ======================================
+
+  function getRemainingBalance(ticket) {
+
+    const choice =
+      paymentChoice[ticket.id] ||
+      (
+        ticket.depositAvailable
+          ? "deposit"
+          : "full"
+      )
+
+    if (
+      choice === "deposit" &&
+      ticket.depositAvailable
+    ) {
+
+      return Number(ticket.balance)
+
+    }
+
+    return 0
+
+  }
+
+
+  // ======================================
   // BUY TICKET
   // ======================================
 
@@ -194,27 +308,81 @@ export default function Home() {
 
 
     // ====================================
-    // PREPARE PAYMENT INFORMATION
+    // PAYMENT CHOICE
+    // ====================================
+
+    const selectedPayment =
+      paymentChoice[ticket.id] ||
+      (
+        ticket.depositAvailable
+          ? "deposit"
+          : "full"
+      )
+
+
+    // ====================================
+    // PAYMENT AMOUNT
+    // ====================================
+
+    const paymentAmount =
+      getPaymentAmount(ticket)
+
+
+    // ====================================
+    // REMAINING BALANCE
+    // ====================================
+
+    const remainingBalance =
+      getRemainingBalance(ticket)
+
+
+    // ====================================
+    // PREPARE SELECTED TICKET
     // ====================================
 
     const selectedTicket = {
 
       ...ticket,
 
-      // Make sure numbers are stored
-      // as numbers and not strings.
+      price:
+        Number(ticket.price),
 
-      price: Number(ticket.price),
+      deposit:
+        Number(ticket.deposit),
 
-      deposit: Number(ticket.deposit),
+      balance:
+        Number(ticket.balance),
 
-      balance: Number(ticket.balance),
+      // ----------------------------------
+      // CUSTOMER PAYMENT CHOICE
+      // ----------------------------------
 
-      // Amount to pay now
-      paymentAmount: Number(ticket.deposit),
+      paymentChoice:
+        selectedPayment,
 
-      // Amount still outstanding
-      remainingBalance: Number(ticket.balance)
+      // ----------------------------------
+      // AMOUNT CUSTOMER MUST PAY NOW
+      // ----------------------------------
+
+      paymentAmount:
+        Number(paymentAmount),
+
+      // ----------------------------------
+      // AMOUNT STILL OWED
+      // ----------------------------------
+
+      remainingBalance:
+        Number(remainingBalance),
+
+      // ----------------------------------
+      // PAYMENT STATUS
+      // ----------------------------------
+
+      paymentStatus:
+        "unpaid",
+
+      paid:
+        false
 
     }
 
@@ -227,13 +395,17 @@ export default function Home() {
 
       localStorage.setItem(
         "selectedTicket",
-        JSON.stringify(selectedTicket)
+        JSON.stringify(
+          selectedTicket
+        )
       )
+
 
       console.log(
         "MGS SELECTED TICKET:",
         selectedTicket
       )
+
 
     } catch (error) {
 
@@ -312,9 +484,10 @@ export default function Home() {
 
 
         <p style={desc}>
-          Get ready for unforgettable MGS
-          experiences. Choose your ticket below
-          and secure your place.
+          Choose your trip and ticket below.
+          Bela Bela customers can choose to pay
+          the full amount or secure their place with
+          a R400 deposit.
         </p>
 
       </div>
@@ -326,787 +499,176 @@ export default function Home() {
 
       <div style={ticketContainer}>
 
-        {tickets.map((ticket) => (
+        {tickets.map((ticket) => {
 
-          <div
-            key={ticket.id}
-            style={card}
-          >
+          const selectedOption =
+            paymentChoice[ticket.id] ||
+            (
+              ticket.depositAvailable
+                ? "deposit"
+                : "full"
+            )
 
-            {/* ==============================
-                BADGE
-            ============================== */}
 
-            <div style={badge}>
-              {ticket.ticketCategory ||
-                "MGS EVENT TICKET"}
-            </div>
+          const amountToPay =
+            getPaymentAmount(ticket)
 
 
-            {/* ==============================
-                TICKET NAME
-            ============================== */}
+          const remaining =
+            getRemainingBalance(ticket)
 
-            <h2 style={ticketName}>
-              {ticket.name}
-            </h2>
 
+          return (
 
-            {/* ==============================
-                DATE
-            ============================== */}
-
-            <div style={eventDate}>
-              📅 {ticket.eventDate}
-            </div>
-
-
-            {/* ==============================
-                PRICE
-            ============================== */}
-
-            <div style={price}>
-              R{ticket.price}
-            </div>
-
-
-            <p style={priceLabel}>
-
-              {ticket.ticketCategory === "Couple"
-
-                ? "FOR 2 PEOPLE"
-
-                : ticket.ticketCategory === "Per Person"
-
-                  ? "PER PERSON"
-
-                  : "TICKET PRICE"
-
-              }
-
-            </p>
-
-
-            {/* ==============================
-                DEPOSIT
-            ============================== */}
-
-            <div style={paymentBox}>
-
-              <div style={paymentRow}>
-
-                <span>
-                  Deposit
-                </span>
-
-                <strong style={depositAmount}>
-                  R{ticket.deposit}
-                </strong>
-
-              </div>
-
-
-              {ticket.balance > 0 && (
-
-                <div style={paymentRow}>
-
-                  <span>
-                    Balance after deposit
-                  </span>
-
-                  <strong>
-                    R{ticket.balance}
-                  </strong>
-
-                </div>
-
-              )}
-
-
-              {ticket.balance === 0 && (
-
-                <p style={paidText}>
-                  Full payment required
-                </p>
-
-              )}
-
-            </div>
-
-
-            {/* ==============================
-                DESCRIPTION
-            ============================== */}
-
-            <p style={description}>
-              {ticket.description}
-            </p>
-
-
-            {/* ==============================
-                EVENT DETAILS
-            ============================== */}
-
-            <div style={details}>
-
-              <div style={detailRow}>
-
-                <span>
-                  📅 Date
-                </span>
-
-                <strong>
-                  {ticket.eventDate}
-                </strong>
-
-              </div>
-
-
-              <div style={detailRow}>
-
-                <span>
-                  🎟 Ticket
-                </span>
-
-                <strong>
-                  {ticket.ticketCategory ||
-                    "Full Event Access"}
-                </strong>
-
-              </div>
-
-
-              <div style={detailRow}>
-
-                <span>
-                  💰 Full Price
-                </span>
-
-                <strong>
-                  R{ticket.price}
-                </strong>
-
-              </div>
-
-
-              <div style={detailRow}>
-
-                <span>
-                  💳 Pay Now
-                </span>
-
-                <strong style={{ color: "red" }}>
-                  R{ticket.deposit}
-                </strong>
-
-              </div>
-
-
-              <div
-                style={{
-                  ...detailRow,
-                  borderBottom: "none"
-                }}
-              >
-
-                <span>
-                  📌 Remaining
-                </span>
-
-                <strong>
-                  R{ticket.balance}
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            {/* ==============================
-                FEATURES
-            ============================== */}
-
-            <div style={features}>
-
-              <h3 style={featuresTitle}>
-                YOUR TICKET INCLUDES
-              </h3>
-
-
-              {ticket.features.map(
-                (feature) => (
-
-                  <p
-                    key={feature}
-                    style={featureItem}
-                  >
-                    ✓ {feature}
-                  </p>
-
-                )
-              )}
-
-            </div>
-
-
-            {/* ==============================
-                BUY BUTTON
-            ============================== */}
-
-            <button
-              onClick={() =>
-                selectTicket(ticket)
-              }
-
-              style={{
-                ...buyBtn,
-
-                opacity:
-                  authLoading ||
-                  buyingId !== null
-                    ? 0.6
-                    : 1,
-
-                cursor:
-                  authLoading ||
-                  buyingId !== null
-                    ? "not-allowed"
-                    : "pointer"
-              }}
-
-              disabled={
-                authLoading ||
-                buyingId !== null
-              }
+            <div
+              key={ticket.id}
+              style={card}
             >
 
-              {authLoading
+              {/* ============================
+                  BADGE
+              ============================ */}
 
-                ? "CHECKING ACCOUNT..."
+              <div style={badge}>
+                {ticket.ticketCategory ||
+                  "MGS EVENT TICKET"}
+              </div>
 
-                : buyingId === ticket.id
 
-                  ? "CONTINUING..."
+              {/* ============================
+                  TICKET NAME
+              ============================ */}
 
-                  : `BUY NOW — PAY R${ticket.deposit}`
+              <h2 style={ticketName}>
+                {ticket.name}
+              </h2>
 
-              }
 
-            </button>
+              {/* ============================
+                  DATE
+              ============================ */}
 
+              <div style={eventDate}>
+                📅 {ticket.eventDate}
+              </div>
 
-            {/* ==============================
-                PAYMENT MESSAGE
-            ============================== */}
 
-            <p style={loginMessage}>
+              {/* ============================
+                  TRIP
+              ============================ */}
 
-              {ticket.balance > 0
+              <div style={tripLabel}>
+                {ticket.eventName}
+              </div>
 
-                ? `Pay R${ticket.deposit} deposit now. Your remaining balance is R${ticket.balance}.`
 
-                : "Full payment is required for this ticket."
+              {/* ============================
+                  FULL PRICE
+              ============================ */}
 
-              }
+              <div style={price}>
+                R{ticket.price}
+              </div>
 
-            </p>
 
+              <p style={priceLabel}>
 
-            {/* ==============================
-                LOGIN MESSAGE
-            ============================== */}
+                {ticket.ticketCategory === "Couple"
 
-            <p style={loginMessage}>
+                  ? "FOR 2 PEOPLE"
 
-              {authLoading
+                  : ticket.ticketCategory === "Per Person"
 
-                ? "Checking your account..."
+                    ? "PER PERSON"
 
-                : user
+                    : "FULL TICKET PRICE"
 
-                  ? "You are logged in. Continue directly to ticket registration."
+                }
 
-                  : "Login or create an account before completing your purchase."
+              </p>
 
-              }
 
-            </p>
+              {/* ============================
+                  PAYMENT OPTIONS
+              ============================ */}
 
-          </div>
+              <div style={paymentBox}>
 
-        ))}
+                <h3 style={paymentTitle}>
+                  CHOOSE HOW YOU WANT TO PAY
+                </h3>
 
-      </div>
 
+                {/* FULL PAYMENT */}
 
-      {/* ==================================
-          FOOTER
-      ================================== */}
+                <label
+                  style={{
+                    ...paymentOption,
 
-      <div style={footer}>
+                    border:
+                      selectedOption === "full"
+                        ? "2px solid red"
+                        : "1px solid #333"
+                  }}
+                >
 
-        <p>
-          © 2026 MGS EVENTS
-        </p>
+                  <input
+                    type="radio"
+                    name={`payment-${ticket.id}`}
+                    value="full"
+                    checked={
+                      selectedOption === "full"
+                    }
+                    onChange={() =>
+                      changePaymentOption(
+                        ticket.id,
+                        "full"
+                      )
+                    }
+                    disabled={
+                      authLoading ||
+                      buyingId !== null
+                    }
+                  />
 
-        <p>
-          MGS EVENT TICKETS
-        </p>
 
-      </div>
+                  <span>
 
-    </div>
+                    <strong>
+                      💳 Pay Full Amount
+                    </strong>
 
-  )
+                    <small>
+                      Pay R{ticket.price} now
+                    </small>
 
-}
+                  </span>
 
+                </label>
 
-// ==================================================
-// PAGE STYLE
-// ==================================================
 
-const page = {
+                {/* DEPOSIT */}
 
-  minHeight: "100vh",
+                {ticket.depositAvailable && (
 
-  background:
-    "linear-gradient(180deg,#000000 0%,#090909 50%,#111111 100%)",
+                  <label
+                    style={{
+                      ...paymentOption,
 
-  color: "white",
+                      border:
+                        selectedOption === "deposit"
+                          ? "2px solid red"
+                          : "1px solid #333"
+                    }}
+                  >
 
-  paddingTop: "65px",
-
-  boxSizing: "border-box"
-
-}
-
-
-// ==================================================
-// HEADER
-// ==================================================
-
-const header = {
-
-  textAlign: "center",
-
-  padding:
-    "55px 20px 35px"
-
-}
-
-
-const smallTitle = {
-
-  color: "#aaa",
-
-  fontSize: "14px",
-
-  letterSpacing: "4px",
-
-  fontWeight: "bold",
-
-  marginBottom: "15px"
-
-}
-
-
-const title = {
-
-  color: "red",
-
-  fontSize:
-    "clamp(45px,8vw,80px)",
-
-  margin:
-    "0 0 20px",
-
-  fontWeight: "900",
-
-  letterSpacing: "3px"
-
-}
-
-
-const desc = {
-
-  color: "#aaa",
-
-  maxWidth: "650px",
-
-  margin: "0 auto",
-
-  lineHeight: "1.7",
-
-  fontSize: "16px"
-
-}
-
-
-// ==================================================
-// TICKET CONTAINER
-// ==================================================
-
-const ticketContainer = {
-
-  display: "grid",
-
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(300px,500px))",
-
-  justifyContent: "center",
-
-  gap: "30px",
-
-  padding:
-    "20px 20px 60px"
-
-}
-
-
-// ==================================================
-// CARD
-// ==================================================
-
-const card = {
-
-  width: "100%",
-
-  background:
-    "linear-gradient(145deg,#151515,#0b0b0b)",
-
-  border:
-    "2px solid red",
-
-  borderRadius: "25px",
-
-  padding: "35px",
-
-  boxSizing: "border-box",
-
-  textAlign: "center",
-
-  boxShadow:
-    "0 0 35px rgba(255,0,0,.25)"
-
-}
-
-
-// ==================================================
-// BADGE
-// ==================================================
-
-const badge = {
-
-  display: "inline-block",
-
-  background: "red",
-
-  color: "white",
-
-  padding:
-    "8px 18px",
-
-  borderRadius: "30px",
-
-  fontSize: "12px",
-
-  fontWeight: "bold",
-
-  letterSpacing: "1px",
-
-  marginBottom: "20px"
-
-}
-
-
-// ==================================================
-// TICKET NAME
-// ==================================================
-
-const ticketName = {
-
-  color: "white",
-
-  fontSize: "28px",
-
-  margin:
-    "5px 0 10px",
-
-  fontWeight: "900"
-
-}
-
-
-// ==================================================
-// EVENT DATE
-// ==================================================
-
-const eventDate = {
-
-  color: "#ddd",
-
-  fontSize: "16px",
-
-  fontWeight: "bold",
-
-  marginBottom: "10px"
-
-}
-
-
-// ==================================================
-// PRICE
-// ==================================================
-
-const price = {
-
-  color: "red",
-
-  fontSize: "60px",
-
-  fontWeight: "900",
-
-  margin:
-    "5px 0"
-
-}
-
-
-// ==================================================
-// PRICE LABEL
-// ==================================================
-
-const priceLabel = {
-
-  color: "#aaa",
-
-  fontSize: "12px",
-
-  fontWeight: "bold",
-
-  letterSpacing: "2px",
-
-  marginBottom: "20px"
-
-}
-
-
-// ==================================================
-// PAYMENT BOX
-// ==================================================
-
-const paymentBox = {
-
-  background:
-    "linear-gradient(145deg,#1b0000,#100000)",
-
-  border:
-    "1px solid red",
-
-  borderRadius: "14px",
-
-  padding: "15px",
-
-  marginBottom: "20px"
-
-}
-
-
-const paymentRow = {
-
-  display: "flex",
-
-  justifyContent: "space-between",
-
-  alignItems: "center",
-
-  gap: "10px",
-
-  padding: "8px 0",
-
-  color: "#ccc"
-
-}
-
-
-const depositAmount = {
-
-  color: "red",
-
-  fontSize: "20px"
-
-}
-
-
-const paidText = {
-
-  color: "#aaa",
-
-  margin: "8px 0 0",
-
-  fontSize: "13px"
-
-}
-
-
-// ==================================================
-// DESCRIPTION
-// ==================================================
-
-const description = {
-
-  color: "#aaa",
-
-  lineHeight: "1.6",
-
-  marginBottom: "25px"
-
-}
-
-
-// ==================================================
-// DETAILS
-// ==================================================
-
-const details = {
-
-  background: "#0a0a0a",
-
-  border:
-    "1px solid #292929",
-
-  borderRadius: "15px",
-
-  padding: "15px",
-
-  marginBottom: "25px"
-
-}
-
-
-const detailRow = {
-
-  display: "flex",
-
-  justifyContent:
-    "space-between",
-
-  alignItems: "center",
-
-  gap: "15px",
-
-  padding:
-    "12px 5px",
-
-  borderBottom:
-    "1px solid #222",
-
-  textAlign: "left"
-
-}
-
-
-// ==================================================
-// FEATURES
-// ==================================================
-
-const features = {
-
-  textAlign: "left",
-
-  marginBottom: "25px"
-
-}
-
-
-const featuresTitle = {
-
-  color: "red",
-
-  fontSize: "15px",
-
-  letterSpacing: "1px",
-
-  marginBottom: "15px"
-
-}
-
-
-const featureItem = {
-
-  color: "#ddd",
-
-  margin:
-    "10px 0",
-
-  fontSize: "15px"
-
-}
-
-
-// ==================================================
-// BUY BUTTON
-// ==================================================
-
-const buyBtn = {
-
-  width: "100%",
-
-  padding: "17px",
-
-  background: "red",
-
-  color: "white",
-
-  border: "none",
-
-  borderRadius: "12px",
-
-  cursor: "pointer",
-
-  fontWeight: "900",
-
-  fontSize: "17px",
-
-  letterSpacing: "1px"
-
-}
-
-
-// ==================================================
-// LOGIN MESSAGE
-// ==================================================
-
-const loginMessage = {
-
-  color: "#777",
-
-  fontSize: "12px",
-
-  lineHeight: "1.5",
-
-  marginTop: "15px"
-
-}
-
-
-// ==================================================
-// FOOTER
-// ==================================================
-
-const footer = {
-
-  textAlign: "center",
-
-  padding:
-    "30px 20px",
-
-  borderTop:
-    "1px solid #222",
-
-  color: "#666",
-
-  fontSize: "13px"
-
-}
+                    <input
+                      type="radio"
+                      name={`payment-${ticket.id}`}
+                      value="deposit"
+                      checked={
+                        selectedOption === "deposit"
+                      }
+                      onChange={() =>
+                        changePaymentOption(
+                          ticket
