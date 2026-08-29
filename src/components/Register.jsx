@@ -38,14 +38,6 @@ export default function Register() {
 
 
   // ======================================
-  // PAYMENT OPTION
-  // ======================================
-
-  const [paymentOption, setPaymentOption] =
-    useState("full")
-
-
-  // ======================================
   // FORM
   // ======================================
 
@@ -120,9 +112,10 @@ export default function Register() {
           JSON.parse(savedTicket)
 
 
-        // ----------------------------------
-        // NORMALIZE TICKET
-        // ----------------------------------
+        /*
+         * Make sure the important
+         * payment fields exist.
+         */
 
         const normalizedTicket = {
 
@@ -132,15 +125,7 @@ export default function Register() {
             Number(parsedTicket.price) || 420,
 
           deposit:
-            Number(parsedTicket.deposit) || 0,
-
-          balance:
-            Number(parsedTicket.balance) ||
-            Math.max(
-              0,
-              Number(parsedTicket.price || 420) -
-              Number(parsedTicket.deposit || 0)
-            )
+            Number(parsedTicket.deposit) || 0
 
         }
 
@@ -149,51 +134,22 @@ export default function Register() {
           normalizedTicket
         )
 
-
-        // ----------------------------------
-        // 12 SEPTEMBER = FULL ONLY
-        // ----------------------------------
-
-        if (
-          normalizedTicket.eventDate ===
-          "12 September 2026"
-        ) {
-
-          setPaymentOption("full")
-
-        }
-
-
-        // ----------------------------------
-        // 07 NOVEMBER = CUSTOMER CHOOSES
-        // ----------------------------------
-
-        if (
-          normalizedTicket.eventDate ===
-          "07 November 2026"
-        ) {
-
-          setPaymentOption("full")
-
-        }
-
-
         return
 
       }
 
 
       // ==================================
-      // DEFAULT THABISEKO TICKET
+      // DEFAULT EXISTING TICKET
       // ==================================
 
       const defaultTicket = {
 
         id:
-          "MGS-THABISEKO-2026",
+          "MGS-EVENT-2026",
 
         name:
-          "THABISEKO TRIP",
+          "MGS EVENT TICKET",
 
         price:
           420,
@@ -201,14 +157,11 @@ export default function Register() {
         deposit:
           420,
 
-        balance:
-          0,
-
         type:
-          "thabiseko-trip",
+          "mgs-event",
 
         eventName:
-          "THABISEKO TRIP",
+          "MGS EVENT",
 
         eventDate:
           "12 September 2026",
@@ -222,8 +175,6 @@ export default function Register() {
       setTicket(
         defaultTicket
       )
-
-      setPaymentOption("full")
 
 
       localStorage.setItem(
@@ -244,17 +195,13 @@ export default function Register() {
       )
 
 
-      // ==================================
-      // FALLBACK
-      // ==================================
-
       const fallbackTicket = {
 
         id:
-          "MGS-THABISEKO-2026",
+          "MGS-EVENT-2026",
 
         name:
-          "THABISEKO TRIP",
+          "MGS EVENT TICKET",
 
         price:
           420,
@@ -262,14 +209,11 @@ export default function Register() {
         deposit:
           420,
 
-        balance:
-          0,
-
         type:
-          "thabiseko-trip",
+          "mgs-event",
 
         eventName:
-          "THABISEKO TRIP",
+          "MGS EVENT",
 
         eventDate:
           "12 September 2026",
@@ -283,8 +227,6 @@ export default function Register() {
       setTicket(
         fallbackTicket
       )
-
-      setPaymentOption("full")
 
     }
 
@@ -319,7 +261,7 @@ export default function Register() {
 
 
   // ======================================
-  // LOADING PAGE
+  // LOADING
   // ======================================
 
   if (
@@ -331,12 +273,11 @@ export default function Register() {
 
       <div style={loadingPage}>
 
-        <div style={loadingCard}>
+        <div>
 
           <h1
             style={{
-              color: "#e00000",
-              marginBottom: "10px"
+              color: "red"
             }}
           >
             MGS EVENTS
@@ -386,37 +327,42 @@ export default function Register() {
 
 
   // ======================================
-  // DETERMINE EVENT
-  // ======================================
-
-  const isThabisekoTrip =
-    ticket.eventDate ===
-    "12 September 2026"
-
-
-  const isBelaBelaTrip =
-    ticket.eventDate ===
-    "07 November 2026"
-
-
-  // ======================================
   // DEPOSIT PER TICKET
   // ======================================
 
-  let depositPerTicket = 0
+  /*
+   * New 07 November tickets:
+   *
+   * Single  = R900
+   * Couple  = R1300
+   * Deposit = R400
+   *
+   * Existing 12 September ticket:
+   *
+   * R420 and paid in full.
+   */
+
+  let depositPerTicket =
+    Number(ticket.deposit)
 
 
-  if (isBelaBelaTrip) {
+  if (
+    !depositPerTicket ||
+    depositPerTicket <= 0
+  ) {
 
-    // November tickets require R400 deposit
+    if (
+      ticket.eventDate ===
+      "07 November 2026"
+    ) {
 
-    depositPerTicket = 400
+      depositPerTicket = 400
 
-  } else {
+    } else {
 
-    // September ticket must be paid in full
+      depositPerTicket = price
 
-    depositPerTicket = price
+    }
 
   }
 
@@ -430,10 +376,10 @@ export default function Register() {
 
 
   // ======================================
-  // FULL BALANCE
+  // REMAINING BALANCE
   // ======================================
 
-  const fullRemainingBalance =
+  const remainingBalance =
     Math.max(
       0,
       total - depositTotal
@@ -444,70 +390,15 @@ export default function Register() {
   // PAYMENT TYPE
   // ======================================
 
-  const isDepositPayment =
-    isBelaBelaTrip &&
-    paymentOption === "deposit"
+  const isDepositTicket =
+    ticket.eventDate ===
+      "07 November 2026"
 
-
-  // ======================================
-  // PAYMENT AMOUNT
-  // ======================================
 
   const paymentAmount =
-    isDepositPayment
+    isDepositTicket
       ? depositTotal
       : total
-
-
-  // ======================================
-  // BALANCE AFTER PAYMENT
-  // ======================================
-
-  const balanceAfterPayment =
-    isDepositPayment
-      ? fullRemainingBalance
-      : 0
-
-
-  // ======================================
-  // PAYMENT OPTION CHANGE
-  // ======================================
-
-  function handlePaymentOptionChange(
-    option
-  ) {
-
-    // ------------------------------------
-    // SEPTEMBER CAN ONLY PAY FULL
-    // ------------------------------------
-
-    if (isThabisekoTrip) {
-
-      setPaymentOption("full")
-
-      return
-
-    }
-
-
-    // ------------------------------------
-    // NOVEMBER
-    // ------------------------------------
-
-    if (isBelaBelaTrip) {
-
-      if (
-        option === "full" ||
-        option === "deposit"
-      ) {
-
-        setPaymentOption(option)
-
-      }
-
-    }
-
-  }
 
 
   // ======================================
@@ -522,58 +413,20 @@ export default function Register() {
     } = e.target
 
 
-    if (name === "quantity") {
-
-      const numericValue =
-        Number(value)
-
-
-      if (
-        !Number.isFinite(numericValue)
-      ) {
-
-        setFormData(prev => ({
-
-          ...prev,
-
-          quantity: 1
-
-        }))
-
-        return
-
-      }
-
-
-      setFormData(prev => ({
-
-        ...prev,
-
-        quantity:
-          Math.min(
-            20,
-            Math.max(
-              1,
-              Math.floor(
-                numericValue
-              )
-            )
-          )
-
-      }))
-
-
-      return
-
-    }
-
-
     setFormData(prev => ({
 
       ...prev,
 
       [name]:
-        value
+        name === "quantity"
+          ? Math.min(
+              20,
+              Math.max(
+                1,
+                Number(value) || 1
+              )
+            )
+          : value
 
     }))
 
@@ -589,9 +442,9 @@ export default function Register() {
     e.preventDefault()
 
 
-    // ====================================
+    // --------------------------------------
     // CHECK LOGIN
-    // ====================================
+    // --------------------------------------
 
     const currentUser =
       auth.currentUser
@@ -617,9 +470,9 @@ export default function Register() {
     }
 
 
-    // ====================================
+    // --------------------------------------
     // VALIDATION
-    // ====================================
+    // --------------------------------------
 
     if (
       !formData.fullName.trim()
@@ -661,51 +514,11 @@ export default function Register() {
 
 
     if (
-      quantity < 1 ||
-      quantity > 20
+      quantity < 1
     ) {
 
       alert(
-        "Ticket quantity must be between 1 and 20."
-      )
-
-      return
-
-    }
-
-
-    // ====================================
-    // SEPTEMBER SECURITY CHECK
-    // ====================================
-
-    if (
-      isThabisekoTrip &&
-      paymentOption !== "full"
-    ) {
-
-      alert(
-        "The 12 September 2026 ticket must be paid in full."
-      )
-
-      setPaymentOption("full")
-
-      return
-
-    }
-
-
-    // ====================================
-    // NOVEMBER SECURITY CHECK
-    // ====================================
-
-    if (
-      isBelaBelaTrip &&
-      paymentOption !== "full" &&
-      paymentOption !== "deposit"
-    ) {
-
-      alert(
-        "Please choose full payment or the R400 deposit."
+        "Ticket quantity must be at least 1."
       )
 
       return
@@ -719,7 +532,7 @@ export default function Register() {
     try {
 
       // ====================================
-      // UNIQUE LOCAL ORDER ID
+      // UNIQUE ORDER ID
       // ====================================
 
       const localOrderId =
@@ -730,24 +543,14 @@ export default function Register() {
 
 
       // ====================================
-      // PAYMENT LABEL
-      // ====================================
-
-      const paymentLabel =
-        isDepositPayment
-          ? "R400 DEPOSIT"
-          : "FULL PAYMENT"
-
-
-      // ====================================
       // ORDER OBJECT
       // ====================================
 
       const order = {
 
-        // --------------------------------
+        // -------------------------------
         // IDENTIFICATION
-        // --------------------------------
+        // -------------------------------
 
         orderId:
           localOrderId,
@@ -756,9 +559,9 @@ export default function Register() {
           currentUser.uid,
 
 
-        // --------------------------------
+        // -------------------------------
         // CUSTOMER
-        // --------------------------------
+        // -------------------------------
 
         fullName:
           formData.fullName.trim(),
@@ -773,41 +576,46 @@ export default function Register() {
           formData.delivery,
 
 
-        // --------------------------------
+        // -------------------------------
         // TICKET
-        // --------------------------------
+        // -------------------------------
 
         ticketId:
-          ticket.id,
+          ticket.id ||
+          "MGS-EVENT-2026",
 
         ticketType:
-          ticket.type,
+          ticket.type ||
+          "mgs-event",
 
         ticketName:
-          ticket.name,
+          ticket.name ||
+          "MGS EVENT TICKET",
 
         packageName:
-          ticket.name,
+          ticket.name ||
+          "MGS EVENT TICKET",
 
         eventName:
           ticket.eventName ||
           "MGS EVENT",
 
         eventDate:
-          ticket.eventDate,
+          ticket.eventDate ||
+          "12 September 2026",
 
 
-        // --------------------------------
+        // -------------------------------
         // QUANTITY
-        // --------------------------------
+        // -------------------------------
 
         quantity:
           quantity,
 
 
-        // --------------------------------
+        // -------------------------------
         // PRICING
-        // --------------------------------
+        // -------------------------------
 
         price:
           price,
@@ -815,53 +623,27 @@ export default function Register() {
         total:
           total,
 
-
-        // --------------------------------
-        // DEPOSIT
-        // --------------------------------
-
         depositPerTicket:
           depositPerTicket,
 
         depositTotal:
           depositTotal,
 
-
-        // --------------------------------
-        // ORIGINAL BALANCE
-        // --------------------------------
-
-        originalBalance:
-          fullRemainingBalance,
-
-
-        // --------------------------------
-        // BALANCE STILL OWED
-        // --------------------------------
-
         remainingBalance:
-          balanceAfterPayment,
+          remainingBalance,
 
 
-        // --------------------------------
+        // -------------------------------
         // PAYMENT
-        // --------------------------------
-
-        paymentType:
-          isDepositPayment
-            ? "deposit"
-            : "full",
-
-        paymentLabel:
-          paymentLabel,
+        // -------------------------------
 
         paymentAmount:
           paymentAmount,
 
-
-        // --------------------------------
-        // PAYMENT STATUS
-        // --------------------------------
+        paymentType:
+          isDepositTicket
+            ? "deposit"
+            : "full",
 
         paymentStatus:
           "unpaid",
@@ -873,9 +655,9 @@ export default function Register() {
           "Pending Payment",
 
 
-        // --------------------------------
-        // TICKET CREATION
-        // --------------------------------
+        // -------------------------------
+        // IMPORTANT
+        // -------------------------------
 
         ticketCreated:
           false,
@@ -883,32 +665,13 @@ export default function Register() {
         ticketCreatedAt:
           null,
 
-
-        // --------------------------------
-        // PAYFAST
-        // --------------------------------
-
         payfastPaymentId:
           null,
 
-        paymentVerified:
-          false,
 
-
-        // --------------------------------
-        // REMINDER
-        // --------------------------------
-
-        reminderSent:
-          false,
-
-        balanceReminderSent:
-          false,
-
-
-        // --------------------------------
+        // -------------------------------
         // DATE
-        // --------------------------------
+        // -------------------------------
 
         createdAt:
           new Date().toISOString()
@@ -961,7 +724,7 @@ export default function Register() {
 
 
       // ====================================
-      // LOCAL STORAGE
+      // SAVE LOCAL ORDER
       // ====================================
 
       localStorage.setItem(
@@ -985,7 +748,7 @@ export default function Register() {
 
 
       // ====================================
-      // PAYMENT AMOUNT
+      // SAVE PAYMENT AMOUNT
       // ====================================
 
       localStorage.setItem(
@@ -1000,7 +763,7 @@ export default function Register() {
 
 
       // ====================================
-      // PAYMENT INFO
+      // SAVE PAYMENT DETAILS
       // ====================================
 
       localStorage.setItem(
@@ -1019,32 +782,15 @@ export default function Register() {
             total,
 
           deposit:
-            isDepositPayment
-              ? depositTotal
-              : 0,
+            depositTotal,
 
           balance:
-            balanceAfterPayment,
-
-          originalBalance:
-            fullRemainingBalance,
+            remainingBalance,
 
           paymentType:
-            isDepositPayment
+            isDepositTicket
               ? "deposit"
-              : "full",
-
-          eventDate:
-            ticket.eventDate,
-
-          ticketName:
-            ticket.name,
-
-          ticketType:
-            ticket.type,
-
-          quantity:
-            quantity
+              : "full"
 
         })
 
@@ -1087,10 +833,7 @@ export default function Register() {
 
         "Could not create your order.\n\n" +
 
-        (
-          error?.message ||
-          "Unknown error occurred."
-        )
+        error.message
 
       )
 
@@ -1104,162 +847,172 @@ export default function Register() {
 
 
   // ======================================
-  // DISPLAY VALUES
-  // ======================================
-
-  const money = (amount) => {
-
-    return `R${Number(amount).toLocaleString(
-      "en-ZA",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    )}`
-
-  }
-
-
-  // ======================================
   // PAGE
   // ======================================
 
   return (
 
-    <div style={page}>
+    <div style={container}>
 
-      <div style={container}>
+      <div style={card}>
+
+
+        {/* HEADER */}
+
+        <p style={eventLabel}>
+          MGS EVENTS
+        </p>
+
+
+        <h1 style={title}>
+          TICKET REGISTRATION
+        </h1>
+
+
+        <p style={subtitle}>
+          Complete your details before payment.
+        </p>
+
 
         {/* ==================================
-            HEADER
+            TICKET SUMMARY
         ================================== */}
 
-        <div style={header}>
+        <div style={ticketSummary}>
 
-          <h1 style={title}>
-            MGS EVENTS
-          </h1>
-
-          <p style={subtitle}>
-            Ticket Registration
-          </p>
-
-        </div>
-
-
-        {/* ==================================
-            TICKET INFORMATION
-        ================================== */}
-
-        <div style={ticketCard}>
-
-          <div>
-
-            <p style={smallLabel}>
-              SELECTED EVENT
-            </p>
-
-            <h2 style={ticketTitle}>
-              {ticket.name}
-            </h2>
-
-            <p style={eventDate}>
-              {ticket.eventDate}
-            </p>
-
+          <div style={ticketBadge}>
+            MGS EVENT TICKET
           </div>
+
+
+          <h2 style={ticketTitle}>
+            {ticket.name}
+          </h2>
+
+
+          <p style={eventDate}>
+            📅 {ticket.eventDate}
+          </p>
 
 
           <div style={priceBox}>
 
-            <span style={smallLabel}>
-              PRICE
+            <span>
+              FULL PRICE
             </span>
 
-            <strong style={mainPrice}>
-              {money(price)}
+            <strong>
+              R{price}
             </strong>
 
-            {isBelaBelaTrip && (
+          </div>
 
-              <span style={depositText}>
-                R400 deposit available
+
+          {/* DEPOSIT */}
+
+          {isDepositTicket && (
+
+            <div
+              style={{
+                ...depositBox,
+                marginTop: "12px"
+              }}
+            >
+
+              <span>
+                DEPOSIT
               </span>
 
-            )}
+              <strong>
+                R{depositPerTicket}
+              </strong>
 
-          </div>
+            </div>
+
+          )}
 
         </div>
 
 
         {/* ==================================
-            REGISTRATION FORM
+            FORM
         ================================== */}
 
         <form
           onSubmit={handleSubmit}
-          style={form}
         >
+
 
           {/* FULL NAME */}
 
           <label style={label}>
-            Full Name
+            FULL NAME
           </label>
 
           <input
             type="text"
             name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
             placeholder="Enter your full name"
-            style={input}
+            required
+            value={
+              formData.fullName
+            }
+            onChange={
+              handleChange
+            }
+            style={inputStyle}
             disabled={loading}
-            autoComplete="name"
           />
 
 
           {/* EMAIL */}
 
           <label style={label}>
-            Email Address
+            EMAIL ADDRESS
           </label>
 
           <input
             type="email"
             name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email address"
-            style={input}
+            placeholder="Enter your email"
+            required
+            value={
+              formData.email
+            }
+            onChange={
+              handleChange
+            }
+            style={inputStyle}
             disabled={loading}
-            autoComplete="email"
           />
 
 
           {/* PHONE */}
 
           <label style={label}>
-            Phone Number
+            PHONE / WHATSAPP
           </label>
 
           <input
             type="tel"
             name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Enter your phone number"
-            style={input}
+            placeholder="e.g. 071 234 5678"
+            required
+            value={
+              formData.phone
+            }
+            onChange={
+              handleChange
+            }
+            style={inputStyle}
             disabled={loading}
-            autoComplete="tel"
           />
 
 
           {/* QUANTITY */}
 
           <label style={label}>
-            Number of Tickets
+            NUMBER OF TICKETS
           </label>
 
           <input
@@ -1267,10 +1020,13 @@ export default function Register() {
             name="quantity"
             min="1"
             max="20"
-            step="1"
-            value={formData.quantity}
-            onChange={handleChange}
-            style={input}
+            value={
+              quantity
+            }
+            onChange={
+              handleChange
+            }
+            style={inputStyle}
             disabled={loading}
           />
 
@@ -1278,131 +1034,30 @@ export default function Register() {
           {/* DELIVERY */}
 
           <label style={label}>
-            Ticket Delivery
+            TICKET DELIVERY
           </label>
 
           <select
             name="delivery"
-            value={formData.delivery}
-            onChange={handleChange}
-            style={input}
+            value={
+              formData.delivery
+            }
+            onChange={
+              handleChange
+            }
+            style={inputStyle}
             disabled={loading}
           >
 
             <option value="email">
-              Email
+              Email Ticket
             </option>
 
             <option value="whatsapp">
-              WhatsApp
+              WhatsApp Ticket
             </option>
 
           </select>
-
-
-          {/* ==================================
-              PAYMENT OPTION
-          ================================== */}
-
-          <div style={paymentSection}>
-
-            <h3 style={sectionTitle}>
-              Payment Option
-            </h3>
-
-
-            {/* FULL PAYMENT */}
-
-            <label style={paymentOptionCard}>
-
-              <input
-                type="radio"
-                name="paymentOption"
-                checked={
-                  paymentOption === "full"
-                }
-                onChange={() =>
-                  handlePaymentOptionChange(
-                    "full"
-                  )
-                }
-                disabled={loading}
-              />
-
-              <div>
-
-                <strong>
-                  Pay in Full
-                </strong>
-
-                <p style={optionDescription}>
-                  Pay {money(total)} now
-                </p>
-
-              </div>
-
-            </label>
-
-
-            {/* DEPOSIT */}
-
-            {isBelaBelaTrip && (
-
-              <label style={paymentOptionCard}>
-
-                <input
-                  type="radio"
-                  name="paymentOption"
-                  checked={
-                    paymentOption ===
-                    "deposit"
-                  }
-                  onChange={() =>
-                    handlePaymentOptionChange(
-                      "deposit"
-                    )
-                  }
-                  disabled={loading}
-                />
-
-                <div>
-
-                  <strong>
-                    Pay R400 Deposit
-                  </strong>
-
-                  <p style={optionDescription}>
-                    Pay {money(depositTotal)} now
-                    and owe {money(fullRemainingBalance)}
-                  </p>
-
-                </div>
-
-              </label>
-
-            )}
-
-
-            {/* SEPTEMBER MESSAGE */}
-
-            {isThabisekoTrip && (
-
-              <div style={notice}>
-
-                <strong>
-                  Full payment required
-                </strong>
-
-                <p>
-                  The 12 September 2026 ticket
-                  must be paid in full.
-                </p>
-
-              </div>
-
-            )}
-
-          </div>
 
 
           {/* ==================================
@@ -1411,19 +1066,45 @@ export default function Register() {
 
           <div style={summary}>
 
-            <h3 style={sectionTitle}>
-              Order Summary
-            </h3>
+            <h2 style={summaryTitle}>
+              ORDER SUMMARY
+            </h2>
 
 
             <div style={summaryRow}>
 
               <span>
-                Ticket price
+                Ticket
               </span>
 
               <strong>
-                {money(price)}
+                {ticket.name}
+              </strong>
+
+            </div>
+
+
+            <div style={summaryRow}>
+
+              <span>
+                Event Date
+              </span>
+
+              <strong>
+                {ticket.eventDate}
+              </strong>
+
+            </div>
+
+
+            <div style={summaryRow}>
+
+              <span>
+                Price Each
+              </span>
+
+              <strong>
+                R{price}
               </strong>
 
             </div>
@@ -1445,48 +1126,51 @@ export default function Register() {
             <div style={summaryRow}>
 
               <span>
-                Full order total
+                Full Order Value
               </span>
 
               <strong>
-                {money(total)}
+                R{total}
               </strong>
 
             </div>
 
 
-            {isDepositPayment && (
+            {/* DEPOSIT */}
+
+            {isDepositTicket && (
 
               <>
 
                 <div style={summaryRow}>
 
                   <span>
-                    Deposit today
+                    Deposit Required
                   </span>
 
-                  <strong>
-                    {money(depositTotal)}
+                  <strong
+                    style={{
+                      color: "orange"
+                    }}
+                  >
+                    R{depositTotal}
                   </strong>
 
                 </div>
 
 
-                <div
-                  style={{
-                    ...summaryRow,
-                    ...balanceRow
-                  }}
-                >
+                <div style={summaryRow}>
 
                   <span>
-                    Balance remaining
+                    Balance After Deposit
                   </span>
 
-                  <strong>
-                    {money(
-                      balanceAfterPayment
-                    )}
+                  <strong
+                    style={{
+                      color: "#ff7777"
+                    }}
+                  >
+                    R{remainingBalance}
                   </strong>
 
                 </div>
@@ -1496,39 +1180,70 @@ export default function Register() {
             )}
 
 
-            {!isDepositPayment && (
+            {/* PAYMENT TODAY */}
 
-              <div
-                style={{
-                  ...summaryRow,
-                  ...paymentTotalRow
-                }}
+            <div
+              style={{
+                ...summaryRow,
+                borderBottom: "none",
+                paddingTop: "20px"
+              }}
+            >
+
+              <span style={totalLabel}>
+                PAY NOW
+              </span>
+
+              <strong
+                style={totalPrice}
               >
+                R{paymentAmount}
+              </strong>
 
-                <span>
-                  Pay today
-                </span>
+            </div>
 
-                <strong>
-                  {money(paymentAmount)}
-                </strong>
-
-              </div>
-
-            )}
 
           </div>
 
 
           {/* ==================================
-              SUBMIT
+              PAYMENT NOTICE
+          ================================== */}
+
+          <div style={paymentNotice}>
+
+            <strong>
+              {isDepositTicket
+                ? "R400 deposit required"
+                : "Full payment required"
+              }
+            </strong>
+
+
+            <p>
+
+              {isDepositTicket
+
+                ? `You will pay R${paymentAmount} now. Your remaining balance will be R${remainingBalance}.`
+
+                : `You will pay the full amount of R${paymentAmount}.`
+
+              }
+
+            </p>
+
+          </div>
+
+
+          {/* ==================================
+              PAYMENT BUTTON
           ================================== */}
 
           <button
             type="submit"
             disabled={loading}
             style={{
-              ...submitButton,
+              ...button,
 
               opacity:
                 loading
@@ -1539,31 +1254,31 @@ export default function Register() {
                 loading
                   ? "not-allowed"
                   : "pointer"
+
             }}
           >
 
             {loading
-              ? "Creating Order..."
-              : `Continue to Payment — ${money(paymentAmount)}`
+
+              ? "CREATING ORDER..."
+
+              : `CONTINUE TO PAYMENT — R${paymentAmount}`
+
             }
 
           </button>
 
 
-          {/* ==================================
-              PAYMENT NOTICE
-          ================================== */}
+          <p style={secureText}>
 
-          <p style={paymentNotice}>
-
-            Your order will be created as
-            <strong> Pending Payment </strong>
-            first.
-
-            You will then be taken to the
-            PayFast payment page.
+            🔒 Your order will be saved as
+            <strong>
+              {" "}Pending Payment
+            </strong>
+            {" "}before you continue to PayFast.
 
           </p>
+
 
         </form>
 
@@ -1576,79 +1291,422 @@ export default function Register() {
 }
 
 
-// ==========================================
-// STYLES
-// ==========================================
+// ==================================================
+// LOADING PAGE
+// ==================================================
 
-const page = {
+const loadingPage = {
+
+  minHeight: "100vh",
+
+  background: "#000",
+
+  color: "white",
+
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
+
+  textAlign: "center"
+
+}
+
+
+// ==================================================
+// CONTAINER
+// ==================================================
+
+const container = {
 
   minHeight: "100vh",
 
   background:
-    "linear-gradient(135deg, #000000, #151515)",
+    "linear-gradient(180deg, #000000, #090909, #111111)",
 
-  color: "#ffffff",
+  display: "flex",
+
+  justifyContent: "center",
+
+  alignItems: "center",
 
   padding:
-    "30px 16px",
+    "100px 20px 50px",
 
-  boxSizing:
-    "border-box"
-
-}
-
-
-const container = {
-
-  width:
-    "100%",
-
-  maxWidth:
-    "650px",
-
-  margin:
-    "0 auto"
+  boxSizing: "border-box"
 
 }
 
 
-const header = {
+// ==================================================
+// CARD
+// ==================================================
 
-  textAlign:
-    "center",
+const card = {
 
-  marginBottom:
-    "25px"
+  width: "100%",
+
+  maxWidth: "560px",
+
+  background:
+    "linear-gradient(145deg, #151515, #0b0b0b)",
+
+  padding: "40px",
+
+  borderRadius: "25px",
+
+  color: "white",
+
+  border:
+    "2px solid red",
+
+  boxShadow:
+    "0 0 35px rgba(255,0,0,.35)",
+
+  boxSizing: "border-box"
+
+}
+
+
+// ==================================================
+// HEADER
+// ==================================================
+
+const eventLabel = {
+
+  color: "red",
+
+  textAlign: "center",
+
+  fontWeight: "bold",
+
+  letterSpacing: "4px",
+
+  fontSize: "13px"
 
 }
 
 
 const title = {
 
-  margin:
-    "0",
+  color: "white",
+
+  textAlign: "center",
 
   fontSize:
-    "32px",
+    "clamp(28px, 6vw, 42px)",
 
-  fontWeight:
-    "800",
-
-  letterSpacing:
-    "1px",
-
-  color:
-    "#e00000"
+  margin:
+    "10px 0"
 
 }
 
 
 const subtitle = {
 
-  marginTop:
-    "8px",
+  color: "#aaa",
 
-  color:
-    "#bbbbbb",
+  textAlign: "center",
 
-  fontSize:
+  marginBottom: "30px"
+
+}
+
+
+// ==================================================
+// TICKET SUMMARY
+// ==================================================
+
+const ticketSummary = {
+
+  background: "#0a0a0a",
+
+  border:
+    "1px solid #292929",
+
+  borderRadius: "18px",
+
+  padding: "25px",
+
+  textAlign: "center",
+
+  marginBottom: "30px"
+
+}
+
+
+const ticketBadge = {
+
+  display: "inline-block",
+
+  background: "red",
+
+  color: "white",
+
+  padding:
+    "7px 15px",
+
+  borderRadius: "20px",
+
+  fontSize: "11px",
+
+  fontWeight: "bold",
+
+  letterSpacing: "1px"
+
+}
+
+
+const ticketTitle = {
+
+  color: "white",
+
+  margin:
+    "15px 0 8px"
+
+}
+
+
+const eventDate = {
+
+  color: "#aaa",
+
+  marginBottom: "20px"
+
+}
+
+
+const priceBox = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  background: "#151515",
+
+  padding: "15px",
+
+  borderRadius: "10px"
+
+}
+
+
+const depositBox = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  background: "#211500",
+
+  border:
+    "1px solid #664400",
+
+  padding: "15px",
+
+  borderRadius: "10px",
+
+  color: "#ffb000"
+
+}
+
+
+// ==================================================
+// LABEL
+// ==================================================
+
+const label = {
+
+  display: "block",
+
+  color: "#aaa",
+
+  fontSize: "12px",
+
+  fontWeight: "bold",
+
+  marginBottom: "7px",
+
+  letterSpacing: "1px"
+
+}
+
+
+// ==================================================
+// INPUT
+// ==================================================
+
+const inputStyle = {
+
+  width: "100%",
+
+  padding: "15px",
+
+  marginBottom: "18px",
+
+  borderRadius: "10px",
+
+  border:
+    "1px solid #333",
+
+  background: "#1a1a1a",
+
+  color: "white",
+
+  fontSize: "16px",
+
+  boxSizing: "border-box",
+
+  outline: "none"
+
+}
+
+
+// ==================================================
+// SUMMARY
+// ==================================================
+
+const summary = {
+
+  background: "#1a1a1a",
+
+  padding: "20px",
+
+  borderRadius: "15px",
+
+  margin:
+    "5px 0 20px",
+
+  border:
+    "1px solid #292929"
+
+}
+
+
+const summaryTitle = {
+
+  color: "red",
+
+  marginTop: 0,
+
+  marginBottom: "15px"
+
+}
+
+
+const summaryRow = {
+
+  display: "flex",
+
+  justifyContent: "space-between",
+
+  alignItems: "center",
+
+  gap: "15px",
+
+  padding:
+    "12px 0",
+
+  borderBottom:
+    "1px solid #292929",
+
+  color: "#bbb"
+
+}
+
+
+const totalLabel = {
+
+  color: "white",
+
+  fontWeight: "bold",
+
+  fontSize: "18px"
+
+}
+
+
+const totalPrice = {
+
+  color: "red",
+
+  fontSize: "28px"
+
+}
+
+
+// ==================================================
+// PAYMENT NOTICE
+// ==================================================
+
+const paymentNotice = {
+
+  background: "#120000",
+
+  border:
+    "1px solid #550000",
+
+  borderRadius: "12px",
+
+  padding: "15px",
+
+  marginBottom: "20px",
+
+  color: "#ddd",
+
+  fontSize: "14px",
+
+  lineHeight: "1.6"
+
+}
+
+
+// ==================================================
+// BUTTON
+// ==================================================
+
+const button = {
+
+  width: "100%",
+
+  padding: "18px",
+
+  background: "red",
+
+  color: "white",
+
+  border: "none",
+
+  borderRadius: "12px",
+
+  fontSize: "18px",
+
+  fontWeight: "bold",
+
+  cursor: "pointer"
+
+}
+
+
+// ==================================================
+// SECURE TEXT
+// ==================================================
+
+const secureText = {
+
+  color: "#666",
+
+  textAlign: "center",
+
+  fontSize: "12px",
+
+  marginTop: "15px",
+
+  lineHeight: "1.5"
+
+}
