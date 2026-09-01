@@ -113,9 +113,9 @@ export default function Home() {
     // BELA BELA TRIP
     // 07 NOVEMBER 2026
     // SINGLE
-    // FULL = R900
+    // FULL = R1200
     // DEPOSIT = R400
-    // BALANCE = R500
+    // BALANCE = R800
     // ====================================
 
     {
@@ -123,11 +123,11 @@ export default function Home() {
 
       name: "BELA BELA TRIP — SINGLE",
 
-      price: 900,
+      price: 1200,
 
       deposit: 400,
 
-      balance: 500,
+      balance: 800,
 
       description:
         "Bela Bela Trip on 07 November 2026. Pay R900 in full or secure your spot with a R400 deposit.",
@@ -160,9 +160,9 @@ export default function Home() {
     // BELA BELA TRIP
     // 07 NOVEMBER 2026
     // COUPLE
-    // FULL = R1300
+    // FULL = R2100
     // DEPOSIT = R400
-    // BALANCE = R900
+    // BALANCE = R1700
     // ====================================
 
     {
@@ -170,11 +170,11 @@ export default function Home() {
 
       name: "BELA BELA TRIP — COUPLE",
 
-      price: 1300,
+      price: 2100,
 
       deposit: 400,
 
-      balance: 900,
+      balance: 1700,
 
       description:
         "Bela Bela Trip on 07 November 2026. Pay R1,300 in full or secure your spot with a R400 deposit.",
